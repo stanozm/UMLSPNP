@@ -10,6 +10,7 @@ import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import javafx.collections.ListChangeListener;
+import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
@@ -37,23 +38,17 @@ public class MainController {
     private void deploymentDiagramInit(DeploymentDiagram deployment){
         var deploymentDiagramView = view.getDeploymentDiagramView();
         
-        deployment.addDeploymentTargetsListChangeListener(new ListChangeListener(){
+        deployment.addDeploymentTargetsChangeListener(new MapChangeListener(){
             @Override
-            public void onChanged(ListChangeListener.Change change) {
-                while (change.next()) {
-                    if(change.wasAdded()){
-                        for(var addedItem : change.getAddedSubList()){
-                            DeploymentTarget newDT = (DeploymentTarget) addedItem;
-                            var newDTView = deploymentDiagramView.CreateDeploymentTarget(newDT.getObjectInfo().getID());
-                            deploymentTargetInit(newDTView);
-                        }
-                    }
-                    else if(change.wasRemoved()){
-                        for(var removedItem : change.getRemoved()){
-                            DeploymentTarget removedDT = (DeploymentTarget) removedItem;
-                            deploymentDiagramView.deleteDeploymentTargetView(removedDT.getObjectInfo().getID());
-                        }
-                    }
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    DeploymentTarget newDT = (DeploymentTarget) change.getValueAdded();
+                    var newDTView = deploymentDiagramView.CreateDeploymentTarget(newDT.getObjectInfo().getID());
+                    deploymentTargetInit(newDTView);
+                }
+                else if(change.wasRemoved()){
+                    DeploymentTarget removedDT = (DeploymentTarget) change.getValueRemoved();
+                    deploymentDiagramView.deleteDeploymentTargetView(removedDT.getObjectInfo().getID());
                 }
             }
         });

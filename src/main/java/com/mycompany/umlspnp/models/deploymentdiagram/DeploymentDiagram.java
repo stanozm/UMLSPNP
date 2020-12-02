@@ -6,32 +6,37 @@
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
 
-import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
-import javafx.collections.ObservableList;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableMap;
 
 /**
  *
  * @author 10ondr
  */
 public class DeploymentDiagram {
-    private final ObservableList<DeploymentTarget> deploymentTargets;
+    private final ObservableMap<Number, DeploymentTarget> deploymentTargets;
+    //private final ObservableList<DeploymentTarget> deploymentTargets;
     
     public DeploymentDiagram(){
-        deploymentTargets = FXCollections.observableArrayList();
+        //this.deploymentTargets = new HashMap<int, DeploymentTarget>();
+        //deploymentTargets = FXCollections.observableArrayList();
+        deploymentTargets = FXCollections.observableHashMap();
     }
     
-    public void addDeploymentTargetsListChangeListener(ListChangeListener listener){
+    public void addDeploymentTargetsChangeListener(MapChangeListener listener){
         deploymentTargets.addListener(listener);
     }
     
     public void addDeploymentTarget(DeploymentTarget newTarget){
-        deploymentTargets.add(newTarget);
+        deploymentTargets.put(newTarget.getObjectInfo().getID(), newTarget);
     }
     
     public boolean deleteDeploymentTarget(int objectID){
-        return deploymentTargets.removeIf(item -> 
-                (((DeploymentTarget) item).getObjectInfo().getID() == objectID));
+        if(deploymentTargets.containsKey(objectID)){
+            deploymentTargets.remove(objectID);
+            return true;
+        }
+        return false;
     }
 }

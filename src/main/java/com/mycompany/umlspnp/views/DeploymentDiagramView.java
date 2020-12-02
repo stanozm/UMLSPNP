@@ -7,7 +7,7 @@ package com.mycompany.umlspnp.views;
 
 import com.mycompany.umlspnp.views.common.Connection;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
-import java.util.ArrayList;
+import java.util.HashMap;
 import javafx.scene.Group;
 import javafx.scene.control.Menu;
 
@@ -17,24 +17,18 @@ import javafx.scene.control.Menu;
  */
 public class DeploymentDiagramView extends DiagramView {
     private final Group root;
-        private final ArrayList<DeploymentTargetView> deploymentTargetViews;
+        private final HashMap<Number, DeploymentTargetView> deploymentTargetViews;
     
     public DeploymentDiagramView(){
         this.root = new Group();
         
-        this.deploymentTargetViews = new ArrayList();
+        this.deploymentTargetViews = new HashMap();
         
         diagramPane.getChildren().add(root);
     }
 
     public DeploymentTargetView getDeploymentTarget(int objectID){
-        for (var item : deploymentTargetViews){
-            DeploymentTargetView DTV = (DeploymentTargetView) item;
-            if(DTV.getObjectInfo().getID() == objectID){
-                return item;
-            }
-        }
-        return null;
+        return deploymentTargetViews.get(objectID);
     }
     
     public void addMenu(Menu newMenu){
@@ -45,7 +39,7 @@ public class DeploymentDiagramView extends DiagramView {
         var dt = new DeploymentTargetView(0, 10, 150, 150, 10, modelObjectID);
 
         root.getChildren().add(dt);
-        deploymentTargetViews.add(dt);
+        deploymentTargetViews.put(modelObjectID, dt);
         return dt;
     }
     
@@ -53,7 +47,7 @@ public class DeploymentDiagramView extends DiagramView {
         DeploymentTargetView DTV = getDeploymentTarget(objectID);
 
         if(DTV != null){
-            boolean result = deploymentTargetViews.remove(DTV);
+            boolean result = deploymentTargetViews.remove(objectID) != null;
             if(result){
                 root.getChildren().remove(DTV);
             }
