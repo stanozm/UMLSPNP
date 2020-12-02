@@ -37,8 +37,8 @@ public class NamedRectangle extends BasicRectangle{
         nameLabel.setText(newName);
     }
     
-    public String getName(){
-        return nameLabel.getText();
+    public StringProperty getNameProperty(){
+        return nameLabel.textProperty();
     }
     
     public void bindLabelTo(StringProperty name){

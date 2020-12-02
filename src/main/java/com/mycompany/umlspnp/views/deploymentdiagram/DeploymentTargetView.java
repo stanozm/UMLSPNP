@@ -41,7 +41,7 @@ public class DeploymentTargetView extends Box{
         
         this.slots.forEach(slot -> {
             slot.refreshPosition();
-        }); 
+        });
     }
     
     public ArtifactView CreateArtifact(int modelObjectID){

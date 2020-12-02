@@ -44,6 +44,7 @@ public class MainController {
                 if(change.wasAdded()){
                     DeploymentTarget newDT = (DeploymentTarget) change.getValueAdded();
                     var newDTView = deploymentDiagramView.CreateDeploymentTarget(newDT.getObjectInfo().getID());
+                    newDTView.getNameProperty().bind(newDT.getNameProperty());
                     deploymentTargetInit(newDTView);
                 }
                 else if(change.wasRemoved()){
@@ -70,6 +71,7 @@ public class MainController {
                                 Artifact newArtifact = (Artifact) change.getValueAdded();
                                 var DTView = deploymentDiagramView.getDeploymentTarget(newDT.getObjectInfo().getID());
                                 var newArtifactView = DTView.CreateArtifact(newArtifact.getObjectInfo().getID());
+                                newArtifactView.getNameProperty().bind(newArtifact.getNameProperty());
                                 artifactInit(newArtifactView);
                             }
                             else if(change.wasRemoved()){
