@@ -19,8 +19,8 @@ public class Box extends NamedRectangle{
     private final Polygon polygonRight;
     private final DoubleProperty zOffset;
 
-    public Box(double x, double y, double width, double height, double zOffset, String name){
-        super(x, y, width, height, name);
+    public Box(double x, double y, double width, double height, double zOffset, String name, int modelObjectID){
+        super(x, y, width, height, name, modelObjectID);
         
         this.zOffset = new SimpleDoubleProperty(zOffset);
 

@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.views.common;
 
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 
 /**
  *
@@ -24,5 +25,9 @@ public class BasicElement extends Group{
     
     public ContextMenu getContextMenu(){
         return contextMenu;
+    }
+    
+    public void addMenuItem(MenuItem newMenuItem){
+        this.getContextMenu().getItems().add(newMenuItem);
     }
 }

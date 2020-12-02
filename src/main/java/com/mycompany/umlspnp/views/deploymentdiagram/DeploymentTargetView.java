@@ -6,10 +6,10 @@
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ObjectInfo;
-import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.common.Box;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javafx.scene.control.MenuItem;
 
 /**
@@ -19,23 +19,15 @@ import javafx.scene.control.MenuItem;
 public class DeploymentTargetView extends Box{
     private final ObjectInfo objectInfo;
     private final ArrayList<ConnectionSlot> slots;
-    private final ArrayList<ArtifactView> artifacts;
+    private final HashMap<Number, ArtifactView> artifacts;
 
     public DeploymentTargetView(double x, double y, double width, double height, double zOffset, int modelObjectID) {
-        super(x, y, width, height, zOffset, "New deployment target");
+        super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
         this.objectInfo = new ObjectInfo(modelObjectID);
         this.slots = new ArrayList<>();
-        this.artifacts = new ArrayList<>();
+        this.artifacts = new HashMap();
     }
 
-    public ObjectInfo getObjectInfo(){
-        return this.objectInfo;
-    }
-
-    public void addMenuItem(MenuItem newMenuItem){
-        this.getContextMenu().getItems().add(newMenuItem);
-    }
-    
     public ConnectionSlot getEmptySlot(){
         var cs = new ConnectionSlot(4.0, this.getZOffset(), this.translateXProperty(), this.translateYProperty(), this.widthProperty(), this.heightProperty());
         slots.add(cs);
@@ -52,8 +44,8 @@ public class DeploymentTargetView extends Box{
         }); 
     }
     
-    public void CreateArtifact(){
-        var av = new ArtifactView(borderOffset.getValue(), borderOffset.getValue() + getZOffset().getValue(), 150, 150);
+    public ArtifactView CreateArtifact(int modelObjectID){
+        var av = new ArtifactView(borderOffset.getValue(), borderOffset.getValue() + getZOffset().getValue(), 150, 150, modelObjectID);
         
         if(av.getWidth() + borderOffset.getValue() * 2 > this.getWidth()){
             this.changeDimensions(av.getWidth() + borderOffset.getValue() * 2, this.getHeight());
@@ -66,15 +58,22 @@ public class DeploymentTargetView extends Box{
         av.setMaxX(this.widthProperty());
         av.setMaxY(this.heightProperty());
 
-        MenuItem menuItem1 = new MenuItem("Add edge");
-
-        menuItem1.setOnAction((e) -> {
-            av.changeDimensions(av.getWidth() + 10, av.getHeight() + 10);
-        });
-
-        av.getContextMenu().getItems().addAll(menuItem1);
-        
-        artifacts.add(av);
+        artifacts.put(modelObjectID, av);
         this.getChildren().add(av);
+        
+        return av;
+    }
+    
+    public boolean deleteArtifact(int objectID){
+        ArtifactView AV = artifacts.get(objectID);
+
+        if(AV != null){
+            boolean result = artifacts.remove(objectID) != null;
+            if(result){
+                this.getChildren().remove(AV);
+            }
+            return result;
+        }
+        return false;
     }
 }

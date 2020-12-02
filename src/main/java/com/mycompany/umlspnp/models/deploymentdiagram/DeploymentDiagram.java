@@ -36,4 +36,8 @@ public class DeploymentDiagram {
         }
         return false;
     }
+    
+    public DeploymentTarget getDeploymentTarget(int objectID){
+        return deploymentTargets.get(objectID);
+    }
 }
