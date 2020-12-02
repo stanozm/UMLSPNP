@@ -16,11 +16,8 @@ import javafx.collections.ObservableMap;
  */
 public class DeploymentDiagram {
     private final ObservableMap<Number, DeploymentTarget> deploymentTargets;
-    //private final ObservableList<DeploymentTarget> deploymentTargets;
     
     public DeploymentDiagram(){
-        //this.deploymentTargets = new HashMap<int, DeploymentTarget>();
-        //deploymentTargets = FXCollections.observableArrayList();
         deploymentTargets = FXCollections.observableHashMap();
     }
     

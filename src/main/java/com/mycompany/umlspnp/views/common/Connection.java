@@ -5,13 +5,7 @@
  */
 package com.mycompany.umlspnp.views.common;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
-import javafx.scene.Node;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.shape.Line;
 
 /**
