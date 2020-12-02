@@ -5,31 +5,18 @@
  */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.common.*;
+import com.mycompany.umlspnp.models.common.*;
 import java.util.List;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
 
 /**
  *
  * @author 10ondr
  */
-public class DeploymentTarget {
-    private final ObjectInfo objectInfo;
-    private final StringProperty name = new SimpleStringProperty();
+public class DeploymentTarget extends NamedNode {
     private List<DeploymentTarget> innerTargets;
     private List<Artifact> artifacts;
     
     public DeploymentTarget(String name){
-        this.objectInfo = new ObjectInfo(Utils.generateObjectID());
-        this.name.setValue(name);
-    }
-    
-    public StringProperty getNameProperty(){
-        return name;
-    }
-    
-    public ObjectInfo getObjectInfo(){
-        return this.objectInfo;
+        super(name);
     }
 }

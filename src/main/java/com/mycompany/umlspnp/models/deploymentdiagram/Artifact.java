@@ -5,10 +5,15 @@
  */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
+import com.mycompany.umlspnp.models.common.*;
+
 /**
  *
  * @author 10ondr
  */
-public class Artifact {
+public class Artifact extends NamedNode{
     
+    public Artifact(String name){
+        super(name);
+    }
 }
