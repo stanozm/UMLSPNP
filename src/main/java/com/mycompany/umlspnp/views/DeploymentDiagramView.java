@@ -49,7 +49,8 @@ public class DeploymentDiagramView extends DiagramView {
 
     public DeploymentTargetView CreateDeploymentTarget(int modelObjectID){
         var dt = new DeploymentTargetView(0, 10, 150, 150, 10, modelObjectID);
-
+        dt.setRestrictionsInParent(null);
+        
         root.getChildren().add(dt);
         deploymentTargetViews.put(modelObjectID, dt);
         return dt;

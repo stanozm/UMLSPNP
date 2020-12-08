@@ -9,6 +9,8 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Cursor;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
@@ -34,7 +36,7 @@ public class BasicRectangle extends BasicElement{
     
     public BasicRectangle(double x, double y, double width, double height) {
         super(10);
-        
+
         rect = new Rectangle(0, 0, width, height);
         this.setTranslateX(x);
         this.setTranslateY(y);
@@ -59,7 +61,7 @@ public class BasicRectangle extends BasicElement{
     private void moveInGrid(double scenePosX, double scenePosY){
         double moveX = this.getTranslateX() + getPositionInGrid(scenePosX, originalPositionX);
 
-        if(moveX >= parentBorderOffset.getValue() && moveX <= xMax.getValue() - getWidth() - parentBorderOffset.getValue()){
+        if(true /*moveX >= parentBorderOffset.getValue() && moveX <= xMax.getValue() - getWidth() - parentBorderOffset.getValue()*/){
             if(moveX != this.getTranslateX()){
                 originalPositionX = scenePosX - ((this.getTranslateX() + (scenePosX - originalPositionX)) - moveX);
             }
@@ -67,7 +69,7 @@ public class BasicRectangle extends BasicElement{
         }
 
         double moveY = this.getTranslateY() + getPositionInGrid(scenePosY, originalPositionY);
-        if(moveY >= parentBorderOffset.getValue() && moveY <= yMax.getValue() - getHeight() - parentBorderOffset.getValue()){
+        if(true /*moveY >= parentBorderOffset.getValue() && moveY <= yMax.getValue() - getHeight() - parentBorderOffset.getValue()*/){
             if(moveY != this.getTranslateY()){
                 originalPositionY = scenePosY - ((this.getTranslateY() + (scenePosY - originalPositionY)) - moveY);
             }
@@ -123,7 +125,7 @@ public class BasicRectangle extends BasicElement{
             if(e.getButton() == MouseButton.PRIMARY){
                 double scenePosX = e.getSceneX();
                 double moveX = this.getWidth() + getPositionInGrid(scenePosX, originalPositionX);
-                if(moveX >= parentBorderOffset.getValue() * 3 && this.getTranslateX() + moveX <= xMax.getValue() - parentBorderOffset.getValue()){
+                if(true /*moveX >= parentBorderOffset.getValue() * 3 && this.getTranslateX() + moveX <= xMax.getValue() - parentBorderOffset.getValue()*/){
                     if(moveX != this.getWidth()){
                         originalPositionX = scenePosX - ((this.getWidth() + (scenePosX - originalPositionX)) - moveX);
                     }
@@ -141,7 +143,7 @@ public class BasicRectangle extends BasicElement{
             if(e.getButton() == MouseButton.PRIMARY){
                 double scenePosY = e.getSceneY();
                 double moveY = this.getHeight() + getPositionInGrid(scenePosY, originalPositionY);
-                if(moveY >= parentBorderOffset.getValue() * 3 && this.getTranslateY() + moveY <= yMax.getValue() - parentBorderOffset.getValue()){
+                if(true /*moveY >= parentBorderOffset.getValue() * 3 && this.getTranslateY() + moveY <= yMax.getValue() - parentBorderOffset.getValue()*/){
                     if(moveY != this.getHeight()){
                         originalPositionY = scenePosY - ((this.getHeight() + (scenePosY - originalPositionY)) - moveY);
                     }
@@ -152,6 +154,82 @@ public class BasicRectangle extends BasicElement{
         });
 
         this.getChildren().addAll(resizeBottom, resizeRight);
+    }
+    
+    public void setRestrictionsInParent(BasicRectangle parent){
+        this.widthProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if((double) newValue > (double) oldValue){
+                    if(parent != null){
+                        double newParentWidth = (double) newValue + getTranslateX() + parent.borderOffset.getValue();
+                        if(newParentWidth > parent.getWidth()){
+                            parent.changeDimensions(newParentWidth, parent.getHeight());
+                        }
+                    }
+                }
+                else if((double) newValue < 30){
+                    changeDimensions((double) oldValue, getHeight());
+                }
+            }
+        });
+
+        this.heightProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if((double) newValue > (double) oldValue){
+                    if(parent != null){
+                        double newParentHeight = (double) newValue + getTranslateY() + parent.borderOffset.getValue();
+                        if(newParentHeight > parent.getHeight()){
+                            parent.changeDimensions(parent.getWidth(), newParentHeight);
+                        }
+                    }
+                }
+                else if((double) newValue < 30){
+                   changeDimensions(getWidth(), (double) oldValue);
+                }
+            }
+        });
+
+        this.translateXProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(parent != null){
+                    if((double) newValue + getWidth() > parent.getWidth() - parent.borderOffset.getValue()){
+                        setTranslateX((double) oldValue);
+                    }
+                }
+                double minVal;
+                if(parent != null)
+                    minVal = parent.borderOffset.getValue();
+                else
+                    minVal = 0;
+
+                if((double) newValue < minVal){
+                    setTranslateX(minVal);
+                }
+            }
+        });
+
+        this.translateYProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(parent != null){
+                    if((double) newValue + getHeight() > parent.getHeight() - parent.borderOffset.getValue()){
+                        setTranslateY((double) oldValue);
+                    }
+                }
+
+                double minVal;
+                if(parent != null)
+                    minVal = parent.borderOffset.getValue();
+                else
+                    minVal = 0;
+                if((double) newValue < minVal){
+                    setTranslateY(minVal);
+                }
+            }
+        });
     }
     
     public void changeDimensions(double newWidth, double newHeight){

@@ -6,13 +6,13 @@
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ObjectInfo;
-import com.mycompany.umlspnp.models.common.NamedNode;
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.views.common.Box;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 /**
  *
@@ -37,6 +37,23 @@ public class DeploymentTargetView extends Box{
 
     @Override
     public void changeDimensions(double newWidth, double newHeight){
+        if(newWidth < getWidth()){
+            for(var child : innerNodes.values()){
+                if(newWidth < child.getTranslateX() + child.getWidth() + borderOffset.getValue()){
+                    newWidth = getWidth();
+                    break;
+                }
+            }
+        }
+        if(newHeight < getHeight()){
+            for(var child : innerNodes.values()){        
+                if(newHeight < child.getTranslateY() + child.getHeight() + borderOffset.getValue()){
+                    newHeight = getHeight();
+                    break;
+                }
+            }
+        }
+        
         super.changeDimensions(newWidth, newHeight);
         
         this.slots.forEach(slot -> {
@@ -44,33 +61,34 @@ public class DeploymentTargetView extends Box{
         });
     }
 
-    private void addInnerNode(NamedRectangle child){
-        if(child.getWidth() + borderOffset.getValue() * 2 > this.getWidth()){
-            this.changeDimensions(child.getWidth() + borderOffset.getValue() * 2, this.getHeight());
-        }
-        if(child.getHeight() + borderOffset.getValue() * 2 > this.getHeight()){
-            this.changeDimensions(this.getWidth(), child.getHeight() + borderOffset.getValue() * 2);
-        }
 
+    private void addInnerNode(NamedRectangle child){        
         child.setParentBorderOffset(borderOffset);
+        
+        child.setRestrictionsInParent(this);
+        
+        // Apply positioning restriction in parent
+        child.setTranslateX(1);
+        child.setTranslateY(1);
+        
         child.setMaxX(this.widthProperty());
         child.setMaxY(this.heightProperty());
-        
+                
         innerNodes.put(child.getObjectInfo().getID(), child);
         this.getChildren().add(child);
     }
     
     public ArtifactView CreateArtifact(int modelObjectID){
-        var newArtifact = new ArtifactView(borderOffset.getValue(), borderOffset.getValue() + getZOffset().getValue(), 150, 150, modelObjectID);
+        var newArtifact = new ArtifactView(0, 0, 0, 0, modelObjectID);
         addInnerNode(newArtifact);
+        newArtifact.changeDimensions(150, 150);
         return newArtifact;
     }
     
     public DeploymentTargetView CreateDeploymentTarget(int modelObjectID){
-        var newDeploymentTarget = new DeploymentTargetView(0, 10, 150, 150, 10, modelObjectID);
-        
-        addInnerNode(newDeploymentTarget);
-
+        var newDeploymentTarget = new DeploymentTargetView(0, 0, 0, 0, 10, modelObjectID);
+        addInnerNode(newDeploymentTarget);        
+        newDeploymentTarget.changeDimensions(150, 150);
         return newDeploymentTarget;
     }
     
