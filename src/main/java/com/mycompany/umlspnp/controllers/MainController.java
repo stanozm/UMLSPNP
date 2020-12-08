@@ -45,7 +45,7 @@ public class MainController {
                     DeploymentTarget newDT = (DeploymentTarget) change.getValueAdded();
                     var newDTView = deploymentDiagramView.CreateDeploymentTarget(newDT.getObjectInfo().getID());
                     newDTView.getNameProperty().bind(newDT.getNameProperty());
-                    deploymentTargetInit(newDTView);
+                    deploymentTargetMenuInit(newDTView);
                 }
                 else if(change.wasRemoved()){
                     DeploymentTarget removedDT = (DeploymentTarget) change.getValueRemoved();
@@ -62,27 +62,9 @@ public class MainController {
             @Override
             public void handle(ActionEvent tt) {
                 if(tt.getSource().equals(deviceMenuItem)){
-                    DeploymentTarget newDT = new DeploymentTarget("New deployment target");
+                    DeploymentTarget newDT = deployment.createDeploymentTarget();
                     
-                    newDT.addArtifactsChangeListener(new MapChangeListener(){
-                        @Override
-                        public void onChanged(MapChangeListener.Change change) {
-                            if(change.wasAdded()){
-                                Artifact newArtifact = (Artifact) change.getValueAdded();
-                                var DTView = deploymentDiagramView.getDeploymentTarget(newDT.getObjectInfo().getID());
-                                var newArtifactView = DTView.CreateArtifact(newArtifact.getObjectInfo().getID());
-                                newArtifactView.getNameProperty().bind(newArtifact.getNameProperty());
-                                artifactInit(newArtifactView);
-                            }
-                            else if(change.wasRemoved()){
-                                Artifact removedArtifact = (Artifact) change.getValueRemoved();
-                                var DTView = deploymentDiagramView.getDeploymentTarget(newDT.getObjectInfo().getID());
-                                DTView.deleteArtifact(removedArtifact.getObjectInfo().getID());
-                            }
-                        }
-                    });
-                    
-                    deployment.addDeploymentTarget(newDT);
+                    deploymentTargetListenerInit(newDT);
 
                     //var dt2 = deploymentDiagramView.CreateDeploymentTarget();
                     //var c = deploymentDiagramView.CreateConnection(dt1, dt2);
@@ -96,11 +78,49 @@ public class MainController {
         deploymentDiagramView.addMenu(addNodeMenu);
     }
     
-    private void deploymentTargetInit(DeploymentTargetView deploymentTargetView){
+    private void deploymentTargetListenerInit(DeploymentTarget DT){
+        var deploymentDiagramView = view.getDeploymentDiagramView();
+        
+        DT.addInnerNodesChangeListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    if(change.getValueAdded() instanceof Artifact) {
+                        Artifact newArtifact = (Artifact) change.getValueAdded();
+                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
+                        var newArtifactView = DTView.CreateArtifact(newArtifact.getObjectInfo().getID());
+                        newArtifactView.getNameProperty().bind(newArtifact.getNameProperty());
+                        artifactMenuInit(newArtifactView);
+                    }
+                    else if (change.getValueAdded() instanceof DeploymentTarget) {
+                        DeploymentTarget newInnerDT = (DeploymentTarget) change.getValueAdded();
+                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
+                        var newDTView = DTView.CreateDeploymentTarget(newInnerDT.getObjectInfo().getID());
+                        newDTView.getNameProperty().bind(newInnerDT.getNameProperty());
+                        deploymentTargetMenuInit(newDTView);
+                    }
+                }
+                else if(change.wasRemoved()){
+                    if(change.getValueRemoved() instanceof Artifact) {
+                        Artifact removedArtifact = (Artifact) change.getValueRemoved();
+                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
+                        DTView.deleteInnerNode(removedArtifact.getObjectInfo().getID());
+                    }
+                    else if (change.getValueRemoved() instanceof DeploymentTarget) {
+                        DeploymentTarget removedDT = (DeploymentTarget) change.getValueRemoved();
+                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
+                        DTView.deleteInnerNode(removedDT.getObjectInfo().getID());
+                    }
+                }
+            }
+        });
+    }
+    
+    private void deploymentTargetMenuInit(DeploymentTargetView deploymentTargetView){
         MenuItem menuItemDelete = new MenuItem("Delete");
         menuItemDelete.setOnAction((e) -> {
             var deploymentDiagram = this.model.getDeploymentDiagram();
-            deploymentDiagram.deleteDeploymentTarget(deploymentTargetView.getObjectInfo().getID());
+            deploymentDiagram.deleteDeploymentTargetRecursive(deploymentTargetView.getObjectInfo().getID());
         });
         deploymentTargetView.addMenuItem(menuItemDelete);
                
@@ -109,24 +129,41 @@ public class MainController {
         menuItemAddArtifact.setOnAction((e) -> {
             var deploymentDiagram = this.model.getDeploymentDiagram();
             var deploymentTargetObjectID = deploymentTargetView.getObjectInfo().getID();
-            var deploymentTarget = deploymentDiagram.getDeploymentTarget(deploymentTargetObjectID);
+            var deploymentTarget = deploymentDiagram.getDeploymentTargetRecursive(deploymentTargetObjectID);
             if(deploymentTarget != null){
-                var newArtifact = new Artifact("New artifact");
-                deploymentTarget.addArtifact(newArtifact);
+                deploymentTarget.createArtifact();
             }
             else{
                 System.err.println("Deployment target with id " + deploymentTargetObjectID + " was not found!");
             }
         });
+        
         deploymentTargetView.addMenuItem(menuItemAddArtifact);
+        
+        MenuItem menuItemAddDT = new MenuItem("Add deployment target");
+        
+        menuItemAddDT.setOnAction((e) -> {
+            var deploymentDiagram = this.model.getDeploymentDiagram();
+            var deploymentTargetObjectID = deploymentTargetView.getObjectInfo().getID();
+            var deploymentTarget = deploymentDiagram.getDeploymentTargetRecursive(deploymentTargetObjectID);
+            if(deploymentTarget != null){
+                var newDT = deploymentTarget.createDeploymentTarget();
+                deploymentTargetListenerInit(newDT);
+            }
+            else{
+                System.err.println("Deployment target with id " + deploymentTargetObjectID + " was not found!");
+            }
+        });
+        
+        deploymentTargetView.addMenuItem(menuItemAddDT);
     }
     
-    private void artifactInit(ArtifactView artifactView){
+    private void artifactMenuInit(ArtifactView artifactView){
         MenuItem menuItemDelete = new MenuItem("Delete");
         menuItemDelete.setOnAction((e) -> {
             int parentID = artifactView.getParentDeploymentTargetview().getObjectInfo().getID();
-            var deploymentTarget = this.model.getDeploymentDiagram().getDeploymentTarget(parentID);
-            deploymentTarget.deleteArtifact(artifactView.getObjectInfo().getID());
+            var deploymentTarget = this.model.getDeploymentDiagram().getDeploymentTargetRecursive(parentID);
+            deploymentTarget.deleteInnerNodeRecursive(artifactView.getObjectInfo().getID());
         });
         artifactView.addMenuItem(menuItemDelete);
     }

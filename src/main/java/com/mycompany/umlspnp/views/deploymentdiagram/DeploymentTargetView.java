@@ -6,11 +6,13 @@
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ObjectInfo;
+import com.mycompany.umlspnp.models.common.NamedNode;
+import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.views.common.Box;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
+import com.mycompany.umlspnp.views.common.NamedRectangle;
 import java.util.ArrayList;
 import java.util.HashMap;
-import javafx.scene.control.MenuItem;
 
 /**
  *
@@ -18,14 +20,12 @@ import javafx.scene.control.MenuItem;
  */
 public class DeploymentTargetView extends Box{
     private final ObjectInfo objectInfo;
-    private final ArrayList<ConnectionSlot> slots;
-    private final HashMap<Number, ArtifactView> artifacts;
+    private final ArrayList<ConnectionSlot> slots = new ArrayList<>();
+    private final HashMap<Number, NamedRectangle> innerNodes = new HashMap();
 
     public DeploymentTargetView(double x, double y, double width, double height, double zOffset, int modelObjectID) {
         super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
         this.objectInfo = new ObjectInfo(modelObjectID);
-        this.slots = new ArrayList<>();
-        this.artifacts = new HashMap();
     }
 
     public ConnectionSlot getEmptySlot(){
@@ -43,37 +43,65 @@ public class DeploymentTargetView extends Box{
             slot.refreshPosition();
         });
     }
-    
-    public ArtifactView CreateArtifact(int modelObjectID){
-        var av = new ArtifactView(borderOffset.getValue(), borderOffset.getValue() + getZOffset().getValue(), 150, 150, modelObjectID);
-        
-        if(av.getWidth() + borderOffset.getValue() * 2 > this.getWidth()){
-            this.changeDimensions(av.getWidth() + borderOffset.getValue() * 2, this.getHeight());
+
+    private void addInnerNode(NamedRectangle child){
+        if(child.getWidth() + borderOffset.getValue() * 2 > this.getWidth()){
+            this.changeDimensions(child.getWidth() + borderOffset.getValue() * 2, this.getHeight());
         }
-        if(av.getHeight() + borderOffset.getValue() * 2 > this.getHeight()){
-            this.changeDimensions(this.getWidth(), av.getHeight() + borderOffset.getValue() * 2);
+        if(child.getHeight() + borderOffset.getValue() * 2 > this.getHeight()){
+            this.changeDimensions(this.getWidth(), child.getHeight() + borderOffset.getValue() * 2);
         }
 
-        av.setParentBorderOffset(borderOffset);
-        av.setMaxX(this.widthProperty());
-        av.setMaxY(this.heightProperty());
-
-        artifacts.put(modelObjectID, av);
-        this.getChildren().add(av);
+        child.setParentBorderOffset(borderOffset);
+        child.setMaxX(this.widthProperty());
+        child.setMaxY(this.heightProperty());
         
-        return av;
+        innerNodes.put(child.getObjectInfo().getID(), child);
+        this.getChildren().add(child);
     }
     
-    public boolean deleteArtifact(int objectID){
-        ArtifactView AV = artifacts.get(objectID);
+    public ArtifactView CreateArtifact(int modelObjectID){
+        var newArtifact = new ArtifactView(borderOffset.getValue(), borderOffset.getValue() + getZOffset().getValue(), 150, 150, modelObjectID);
+        addInnerNode(newArtifact);
+        return newArtifact;
+    }
+    
+    public DeploymentTargetView CreateDeploymentTarget(int modelObjectID){
+        var newDeploymentTarget = new DeploymentTargetView(0, 10, 150, 150, 10, modelObjectID);
+        
+        addInnerNode(newDeploymentTarget);
 
-        if(AV != null){
-            boolean result = artifacts.remove(objectID) != null;
+        return newDeploymentTarget;
+    }
+    
+    public boolean deleteInnerNode(int objectID){
+        var innerNode = innerNodes.get(objectID);
+
+        if(innerNode != null){
+            boolean result = innerNodes.remove(objectID) != null;
             if(result){
-                this.getChildren().remove(AV);
+                this.getChildren().remove(innerNode);
             }
             return result;
         }
         return false;
+    }
+    
+    public NamedRectangle getInnerNode(int objectID){
+        return innerNodes.get(objectID);
+    }
+
+    public NamedRectangle getInnerNodeRecursive(int objectID){
+        var node = getInnerNode(objectID);
+        if(node != null)
+            return node;
+        for(var item : innerNodes.values()){
+            if(item instanceof DeploymentTargetView){
+                var innerNode = ((DeploymentTargetView) item).getInnerNodeRecursive(objectID);
+                if(innerNode != null)
+                    return innerNode;
+            }
+        }
+        return null;
     }
 }

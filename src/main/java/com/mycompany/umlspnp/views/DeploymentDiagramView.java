@@ -31,6 +31,18 @@ public class DeploymentDiagramView extends DiagramView {
         return deploymentTargetViews.get(objectID);
     }
     
+    public DeploymentTargetView getDeploymentTargetRecursive(int objectID){
+        var DTV = getDeploymentTarget(objectID);
+        if(DTV != null)
+            return DTV;
+        for(var item : deploymentTargetViews.values()){
+            var innerNode = item.getInnerNodeRecursive(objectID);
+            if(innerNode instanceof DeploymentTargetView)
+                return (DeploymentTargetView) innerNode;
+        }
+        return null;
+    }
+    
     public void addMenu(Menu newMenu){
         diagramMenu.getMenus().add(newMenu);
     }

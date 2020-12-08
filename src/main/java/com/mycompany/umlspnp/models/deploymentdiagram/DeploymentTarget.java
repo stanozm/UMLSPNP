@@ -6,7 +6,6 @@
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.*;
-import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
@@ -16,28 +15,63 @@ import javafx.collections.ObservableMap;
  * @author 10ondr
  */
 public class DeploymentTarget extends NamedNode {
-    private List<DeploymentTarget> innerTargets;
-    private final ObservableMap<Number, Artifact> artifacts;
+    private final ObservableMap<Number, NamedNode> innerNodes;
     
     public DeploymentTarget(String name){
         super(name);
         
-        artifacts = FXCollections.observableHashMap();
+        innerNodes = FXCollections.observableHashMap();
     }
 
-    public void addArtifactsChangeListener(MapChangeListener listener){
-        artifacts.addListener(listener);
+    public void addInnerNodesChangeListener(MapChangeListener listener){
+        innerNodes.addListener(listener);
     }
     
-    public void addArtifact(Artifact newArtifact){
-        artifacts.put(newArtifact.getObjectInfo().getID(), newArtifact);
+    public Artifact createArtifact(){
+        var newArtifact = new Artifact("New artifact");
+        addInnerNode(newArtifact);
+        return newArtifact;
+    }
+
+    public DeploymentTarget createDeploymentTarget(){
+        var newDT = new DeploymentTarget("New deployment target");
+        addInnerNode(newDT);
+        return newDT;
     }
     
-    public boolean deleteArtifact(int objectID){
-        if(artifacts.containsKey(objectID)){
-            artifacts.remove(objectID);
+    public void addInnerNode(NamedNode newInnerNode){
+        innerNodes.put(newInnerNode.getObjectInfo().getID(), newInnerNode);
+    }
+    
+    public boolean deleteInnerNodeRecursive(int objectID){
+        if(innerNodes.containsKey(objectID)){
+            innerNodes.remove(objectID);
             return true;
         }
+        for(var item : innerNodes.values()){
+            if(item instanceof DeploymentTarget){
+                if(((DeploymentTarget) item).deleteInnerNodeRecursive(objectID))
+                    return true;
+            }
+        }
         return false;
+    }
+    
+    public NamedNode getInnerNode(int objectID){
+        return innerNodes.get(objectID);
+    }
+
+    public NamedNode getInnerNodeRecursive(int objectID){
+        var node = getInnerNode(objectID);
+        if(node != null)
+            return node;
+        for(var item : innerNodes.values()){
+            if(item instanceof DeploymentTarget){
+                var innerNode = ((DeploymentTarget) item).getInnerNodeRecursive(objectID);
+                if(innerNode != null)
+                    return innerNode;
+            }
+        }
+        return null;
     }
 }

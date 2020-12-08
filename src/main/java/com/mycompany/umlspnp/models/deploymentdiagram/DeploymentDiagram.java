@@ -25,19 +25,41 @@ public class DeploymentDiagram {
         deploymentTargets.addListener(listener);
     }
     
+    public DeploymentTarget createDeploymentTarget(){
+        var newDT = new DeploymentTarget("New deployment target");
+        addDeploymentTarget(newDT);
+        return newDT;
+    }
+    
     public void addDeploymentTarget(DeploymentTarget newTarget){
         deploymentTargets.put(newTarget.getObjectInfo().getID(), newTarget);
     }
     
-    public boolean deleteDeploymentTarget(int objectID){
+    public boolean deleteDeploymentTargetRecursive(int objectID){
         if(deploymentTargets.containsKey(objectID)){
             deploymentTargets.remove(objectID);
             return true;
+        }
+        for(var item : deploymentTargets.values()){
+            if(item.deleteInnerNodeRecursive(objectID))
+                return true;
         }
         return false;
     }
     
     public DeploymentTarget getDeploymentTarget(int objectID){
         return deploymentTargets.get(objectID);
+    }
+
+    public DeploymentTarget getDeploymentTargetRecursive(int objectID){
+        var DT = getDeploymentTarget(objectID);
+        if(DT != null)
+            return DT;
+        for(var item : deploymentTargets.values()){
+            var innerNode = item.getInnerNodeRecursive(objectID);
+            if(innerNode instanceof DeploymentTarget)
+                return (DeploymentTarget) innerNode;
+        }
+        return null;
     }
 }
