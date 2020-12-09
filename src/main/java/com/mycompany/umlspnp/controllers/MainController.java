@@ -13,8 +13,11 @@ import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
  *
@@ -123,7 +126,22 @@ public class MainController {
             deploymentDiagram.deleteDeploymentTargetRecursive(deploymentTargetView.getObjectInfo().getID());
         });
         deploymentTargetView.addMenuItem(menuItemDelete);
-               
+        
+        MenuItem menuItemRename = new MenuItem("Rename");
+        menuItemRename.setOnAction((e) -> {
+            var deploymentDiagram = this.model.getDeploymentDiagram();
+            var deploymentTargetObjectID = deploymentTargetView.getObjectInfo().getID();
+            var deploymentTarget = deploymentDiagram.getDeploymentTargetRecursive(deploymentTargetObjectID);
+            if(deploymentTarget != null){
+                this.view.createStringModalWindow("Rename", "New name", deploymentTarget.getNameProperty());
+            }
+            else{
+                System.err.println("Deployment target with id " + deploymentTargetObjectID + " was not found!");
+            }
+        });
+        deploymentTargetView.addMenuItem(menuItemRename);
+
+
         MenuItem menuItemAddArtifact = new MenuItem("Add artifact");
 
         menuItemAddArtifact.setOnAction((e) -> {

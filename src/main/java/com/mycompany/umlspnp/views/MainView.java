@@ -5,11 +5,10 @@
  */
 package com.mycompany.umlspnp.views;
 
+import com.mycompany.umlspnp.views.common.StringModalWindow;
 import java.io.PrintStream;
-import javafx.geometry.NodeOrientation;
+import javafx.beans.property.StringProperty;
 import javafx.geometry.Orientation;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
@@ -17,10 +16,10 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
 /**
  *
@@ -29,8 +28,12 @@ import javafx.scene.layout.VBox;
 public class MainView extends VBox{
     private final DeploymentDiagramView deploymentDiagramView;
     private final SequenceDiagramView sequenceDiagramView;
+    private final Stage appStage;
     
-    public MainView(){
+    
+    public MainView(Stage appStage){
+        this.appStage = appStage;
+        
         /* Main menu */
         Menu fileMenu = new Menu("File");
         Menu aboutMenu = new Menu("About");
@@ -84,6 +87,10 @@ public class MainView extends VBox{
         
         this.getChildren().add(splitPane);
     }
+ 
+    public Stage getAppStage(){
+        return appStage;
+    }
     
     public DeploymentDiagramView getDeploymentDiagramView(){
         return deploymentDiagramView;
@@ -91,5 +98,10 @@ public class MainView extends VBox{
     
     public SequenceDiagramView getSequenceDiagramView(){
         return sequenceDiagramView;
+    }
+    
+    public void createStringModalWindow(String windowName, String labelText, StringProperty output){
+        var modal = new StringModalWindow(appStage, windowName, labelText, output);
+        modal.showAndWait();
     }
 }

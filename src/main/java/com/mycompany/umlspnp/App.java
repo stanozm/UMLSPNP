@@ -19,7 +19,7 @@ public class App extends Application {
         var javaVersion = SystemInfo.javaVersion();
         var javafxVersion = SystemInfo.javafxVersion();
 
-        var mainController = new MainController(new MainModel(), new MainView());
+        var mainController = new MainController(new MainModel(), new MainView(stage));
 
         var scene = new Scene(mainController.getView(), 640, 480);
         stage.setTitle("UML2SPNP");
