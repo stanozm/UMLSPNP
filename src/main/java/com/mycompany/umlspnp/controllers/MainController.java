@@ -8,16 +8,16 @@ package com.mycompany.umlspnp.controllers;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
+import com.mycompany.umlspnp.views.common.ConnectionContainer;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.Scene;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 
 /**
  *
@@ -41,18 +41,61 @@ public class MainController {
     private void deploymentDiagramInit(DeploymentDiagram deployment){
         var deploymentDiagramView = view.getDeploymentDiagramView();
         
+        var connectionContainer = deploymentDiagramView.getConnectionContainer();
+        connectionContainer.connectionProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(newValue == null)
+                    return;
+                
+                var firstElementID = connectionContainer.getFirstElementID();
+                var secondElementID = connectionContainer.getSecondElementID();
+                if(firstElementID != null && secondElementID != null){
+                    if(connectionContainer.getFirstElement() instanceof DeploymentTargetView){
+                        var firstDT = deployment.getDeploymentTargetRecursive(firstElementID.intValue());
+                        var secondDT = deployment.getDeploymentTargetRecursive(secondElementID.intValue());
+
+                        deployment.createCommunicationLink(firstDT, secondDT);
+                    }
+                    connectionContainer.clear();
+                }
+            }
+        });
+        
+        
+        deployment.addCommunicationLinksChangeListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    if(change.getValueAdded() instanceof CommunicationLink) {
+                        var newConnection = (CommunicationLink) change.getValueAdded();
+                        var firstID = newConnection.getFirst().getObjectInfo().getID();
+                        var secondID = newConnection.getSecond().getObjectInfo().getID();
+                        deploymentDiagramView.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
+                    }
+                }
+                if(change.wasRemoved()){
+                    if(change.getValueRemoved() instanceof CommunicationLink) {
+                        var removedConnection = (CommunicationLink) change.getValueRemoved();
+                        deploymentDiagramView.removeConnection(removedConnection.getObjectInfo().getID());
+                    }
+                }
+            }
+        });
+        
+        
         deployment.addDeploymentTargetsChangeListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
                 if(change.wasAdded()){
                     DeploymentTarget newDT = (DeploymentTarget) change.getValueAdded();
-                    var newDTView = deploymentDiagramView.CreateDeploymentTarget(newDT.getObjectInfo().getID());
+                    var newDTView = deploymentDiagramView.createDeploymentTarget(newDT.getObjectInfo().getID());
                     newDTView.getNameProperty().bind(newDT.getNameProperty());
                     deploymentTargetMenuInit(newDTView);
                 }
                 else if(change.wasRemoved()){
                     DeploymentTarget removedDT = (DeploymentTarget) change.getValueRemoved();
-                    deploymentDiagramView.deleteDeploymentTargetView(removedDT.getObjectInfo().getID());
+                    deploymentDiagramView.removeDeploymentTargetView(removedDT.getObjectInfo().getID());
                 }
             }
         });
@@ -68,9 +111,6 @@ public class MainController {
                     DeploymentTarget newDT = deployment.createDeploymentTarget();
                     
                     deploymentTargetListenerInit(newDT);
-
-                    //var dt2 = deploymentDiagramView.CreateDeploymentTarget();
-                    //var c = deploymentDiagramView.CreateConnection(dt1, dt2);
                 }
             }
         };
@@ -98,7 +138,8 @@ public class MainController {
                     else if (change.getValueAdded() instanceof DeploymentTarget) {
                         DeploymentTarget newInnerDT = (DeploymentTarget) change.getValueAdded();
                         var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
-                        var newDTView = DTView.CreateDeploymentTarget(newInnerDT.getObjectInfo().getID());
+                        //var newDTView = DTView.createDeploymentTarget(newInnerDT.getObjectInfo().getID());
+                        var newDTView = deploymentDiagramView.createDeploymentTarget(DTView, newInnerDT.getObjectInfo().getID());
                         newDTView.getNameProperty().bind(newInnerDT.getNameProperty());
                         deploymentTargetMenuInit(newDTView);
                     }
@@ -123,7 +164,7 @@ public class MainController {
         MenuItem menuItemDelete = new MenuItem("Delete");
         menuItemDelete.setOnAction((e) -> {
             var deploymentDiagram = this.model.getDeploymentDiagram();
-            deploymentDiagram.deleteDeploymentTargetRecursive(deploymentTargetView.getObjectInfo().getID());
+            deploymentDiagram.removeDeploymentTargetRecursive(deploymentTargetView.getObjectInfo().getID());
         });
         deploymentTargetView.addMenuItem(menuItemDelete);
         
@@ -174,6 +215,14 @@ public class MainController {
         });
         
         deploymentTargetView.addMenuItem(menuItemAddDT);
+        
+                
+        MenuItem menuItemConnect = new MenuItem("Connect");
+        menuItemConnect.setOnAction((e) -> {
+            this.view.getDeploymentDiagramView().startConnection(deploymentTargetView);
+        });
+        deploymentTargetView.addMenuItem(menuItemConnect);
+
     }
     
     private void artifactMenuInit(ArtifactView artifactView){

@@ -14,23 +14,16 @@ import javafx.scene.control.Label;
  * @author 10ondr
  */
 public class NamedRectangle extends BasicRectangle{
-    private final ObjectInfo objectInfo;
     private final Label nameLabel;
     
     public NamedRectangle(double x, double y, double width, double height, String name, int modelObjectID) {
-        super(x, y, width, height);
-        
-        this.objectInfo = new ObjectInfo(modelObjectID);
+        super(modelObjectID, x, y, width, height);
         
         nameLabel = new Label(name);
         nameLabel.translateXProperty().bind(rect.translateXProperty().add(rect.widthProperty().divide(2)).subtract(nameLabel.widthProperty().divide(2)));
         nameLabel.translateYProperty().bind(rect.yProperty());
         
         this.getChildren().add(nameLabel);
-    }
-
-    public ObjectInfo getObjectInfo(){
-        return this.objectInfo;
     }
 
     public void setName(String newName){

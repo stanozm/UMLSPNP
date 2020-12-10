@@ -5,19 +5,20 @@
  */
 package com.mycompany.umlspnp.views.common;
 
-import javafx.scene.Group;
 import javafx.scene.shape.Line;
 
 /**
  *
  * @author 10ondr
  */
-public class Connection extends Group {
+public class Connection extends BasicElement {
     private final ConnectionSlot source;
     private final ConnectionSlot destination;
     private final Line line;
     
-    public Connection(ConnectionSlot source, ConnectionSlot destination){
+    public Connection(int modelObjectID, ConnectionSlot source, ConnectionSlot destination){
+        super(modelObjectID);
+        
         this.source = source;
         this.destination = destination;
 
@@ -32,14 +33,8 @@ public class Connection extends Group {
         this.getChildren().add(line);
     }
 
-    /*
-    public void setConnectionSource(ConnectionSlot newSource){
-        this.source = newSource;
+    public void removeSlots(){
+        this.source.setDeleted(true);
+        this.destination.setDeleted(true);
     }
-    
-    public void setConnectionDestination(ConnectionSlot newDest){
-        this.destination = newDest;
-    }
-    */
-
 }

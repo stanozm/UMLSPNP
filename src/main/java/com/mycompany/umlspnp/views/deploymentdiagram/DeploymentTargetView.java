@@ -5,7 +5,6 @@
  */
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
-import com.mycompany.umlspnp.common.ObjectInfo;
 import com.mycompany.umlspnp.views.common.Box;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
@@ -19,17 +18,24 @@ import javafx.beans.value.ObservableValue;
  * @author 10ondr
  */
 public class DeploymentTargetView extends Box{
-    private final ObjectInfo objectInfo;
     private final ArrayList<ConnectionSlot> slots = new ArrayList<>();
     private final HashMap<Number, NamedRectangle> innerNodes = new HashMap();
 
     public DeploymentTargetView(double x, double y, double width, double height, double zOffset, int modelObjectID) {
         super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
-        this.objectInfo = new ObjectInfo(modelObjectID);
     }
 
     public ConnectionSlot getEmptySlot(){
         var cs = new ConnectionSlot(4.0, this.getZOffset(), this.translateXProperty(), this.translateYProperty(), this.widthProperty(), this.heightProperty());
+        cs.deletedProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if((boolean) newValue){
+                    slots.remove(cs);
+                    getChildren().remove(cs);
+                }
+            }
+        });
         slots.add(cs);
         this.getChildren().add(cs);
         return cs;
@@ -61,19 +67,13 @@ public class DeploymentTargetView extends Box{
         });
     }
 
-
     private void addInnerNode(NamedRectangle child){        
-        child.setParentBorderOffset(borderOffset);
-        
         child.setRestrictionsInParent(this);
         
         // Apply positioning restriction in parent
         child.setTranslateX(1);
         child.setTranslateY(1);
-        
-        child.setMaxX(this.widthProperty());
-        child.setMaxY(this.heightProperty());
-                
+
         innerNodes.put(child.getObjectInfo().getID(), child);
         this.getChildren().add(child);
     }

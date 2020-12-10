@@ -7,7 +7,6 @@ package com.mycompany.umlspnp.views.common;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -29,13 +28,9 @@ public class BasicRectangle extends BasicElement{
 
     protected Rectangle resizeBottom;
     protected Rectangle resizeRight;
-    
-    private ReadOnlyDoubleProperty yMax = new SimpleDoubleProperty(Double.POSITIVE_INFINITY);
-    private ReadOnlyDoubleProperty xMax = new SimpleDoubleProperty(Double.POSITIVE_INFINITY);
-    private ReadOnlyDoubleProperty parentBorderOffset = new SimpleDoubleProperty(0);
-    
-    public BasicRectangle(double x, double y, double width, double height) {
-        super(10);
+
+    public BasicRectangle(int modelObjectID, double x, double y, double width, double height) {
+        super(modelObjectID);
 
         rect = new Rectangle(0, 0, width, height);
         this.setTranslateX(x);
@@ -47,34 +42,33 @@ public class BasicRectangle extends BasicElement{
 
         createResizeAreas(5);
         
-        rect.setOnMousePressed((e) -> {
+        this.setOnMousePressed((e) -> {
             actionElementClicked(e);
+            e.consume();
         });
 
-        rect.setOnMouseDragged((e) -> {
+        this.setOnMouseDragged((e) -> {
             if(e.getButton() == MouseButton.PRIMARY){
                 moveInGrid(e.getSceneX(), e.getSceneY());
             }
+            e.consume();
         });
     }
 
     private void moveInGrid(double scenePosX, double scenePosY){
         double moveX = this.getTranslateX() + getPositionInGrid(scenePosX, originalPositionX);
 
-        if(true /*moveX >= parentBorderOffset.getValue() && moveX <= xMax.getValue() - getWidth() - parentBorderOffset.getValue()*/){
-            if(moveX != this.getTranslateX()){
-                originalPositionX = scenePosX - ((this.getTranslateX() + (scenePosX - originalPositionX)) - moveX);
-            }
-            this.setTranslateX(moveX);
+        if(moveX != this.getTranslateX()){
+            originalPositionX = scenePosX - ((this.getTranslateX() + (scenePosX - originalPositionX)) - moveX);
         }
+        this.setTranslateX(moveX);
+
 
         double moveY = this.getTranslateY() + getPositionInGrid(scenePosY, originalPositionY);
-        if(true /*moveY >= parentBorderOffset.getValue() && moveY <= yMax.getValue() - getHeight() - parentBorderOffset.getValue()*/){
-            if(moveY != this.getTranslateY()){
-                originalPositionY = scenePosY - ((this.getTranslateY() + (scenePosY - originalPositionY)) - moveY);
-            }
-            this.setTranslateY(moveY);
+        if(moveY != this.getTranslateY()){
+            originalPositionY = scenePosY - ((this.getTranslateY() + (scenePosY - originalPositionY)) - moveY);
         }
+        this.setTranslateY(moveY);
     }
 
  
@@ -125,13 +119,11 @@ public class BasicRectangle extends BasicElement{
             if(e.getButton() == MouseButton.PRIMARY){
                 double scenePosX = e.getSceneX();
                 double moveX = this.getWidth() + getPositionInGrid(scenePosX, originalPositionX);
-                if(true /*moveX >= parentBorderOffset.getValue() * 3 && this.getTranslateX() + moveX <= xMax.getValue() - parentBorderOffset.getValue()*/){
-                    if(moveX != this.getWidth()){
-                        originalPositionX = scenePosX - ((this.getWidth() + (scenePosX - originalPositionX)) - moveX);
-                    }
-                    
-                    this.changeDimensions(moveX, this.getHeight());
+                if(moveX != this.getWidth()){
+                    originalPositionX = scenePosX - ((this.getWidth() + (scenePosX - originalPositionX)) - moveX);
                 }
+
+                this.changeDimensions(moveX, this.getHeight());
             }
         });
         
@@ -143,13 +135,11 @@ public class BasicRectangle extends BasicElement{
             if(e.getButton() == MouseButton.PRIMARY){
                 double scenePosY = e.getSceneY();
                 double moveY = this.getHeight() + getPositionInGrid(scenePosY, originalPositionY);
-                if(true /*moveY >= parentBorderOffset.getValue() * 3 && this.getTranslateY() + moveY <= yMax.getValue() - parentBorderOffset.getValue()*/){
-                    if(moveY != this.getHeight()){
-                        originalPositionY = scenePosY - ((this.getHeight() + (scenePosY - originalPositionY)) - moveY);
-                    }
-                    
-                    this.changeDimensions(this.getWidth(), moveY);
+                if(moveY != this.getHeight()){
+                    originalPositionY = scenePosY - ((this.getHeight() + (scenePosY - originalPositionY)) - moveY);
                 }
+
+                this.changeDimensions(this.getWidth(), moveY);
             }
         });
 
@@ -255,17 +245,5 @@ public class BasicRectangle extends BasicElement{
     
     public void setFill(Color newColor){
         rect.setFill(newColor);
-    }
-    
-    public void setMaxX(ReadOnlyDoubleProperty maxProp){
-        xMax = maxProp;
-    }
-    
-    public void setMaxY(ReadOnlyDoubleProperty maxProp){
-        yMax = maxProp;
-    }
-    
-    public void setParentBorderOffset(ReadOnlyDoubleProperty borderOffset){
-        parentBorderOffset = borderOffset;
     }
 }

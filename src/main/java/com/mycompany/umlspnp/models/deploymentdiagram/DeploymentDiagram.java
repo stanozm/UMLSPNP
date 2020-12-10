@@ -16,9 +16,11 @@ import javafx.collections.ObservableMap;
  */
 public class DeploymentDiagram {
     private final ObservableMap<Number, DeploymentTarget> deploymentTargets;
+    private final ObservableMap<Number, CommunicationLink> communicationLinks;
     
     public DeploymentDiagram(){
         deploymentTargets = FXCollections.observableHashMap();
+        communicationLinks = FXCollections.observableHashMap();
     }
     
     public void addDeploymentTargetsChangeListener(MapChangeListener listener){
@@ -35,11 +37,25 @@ public class DeploymentDiagram {
         deploymentTargets.put(newTarget.getObjectInfo().getID(), newTarget);
     }
     
-    public boolean deleteDeploymentTargetRecursive(int objectID){
+    public void removeDeploymentTargetConnections(DeploymentTarget target){
+        for(CommunicationLink item : communicationLinks.values()){
+            if(item.getFirst().equals(target) || item.getSecond().equals(target)){
+                communicationLinks.remove(item.getObjectInfo().getID());
+            }
+        }
+    }
+    
+    public boolean removeDeploymentTargetRecursive(int objectID){
         if(deploymentTargets.containsKey(objectID)){
+            removeDeploymentTargetConnections(deploymentTargets.get(objectID));
             deploymentTargets.remove(objectID);
             return true;
         }
+        DeploymentTarget dt = getDeploymentTargetRecursive(objectID);
+        if(dt == null)
+            return false;
+        removeDeploymentTargetConnections(dt);
+        
         for(var item : deploymentTargets.values()){
             if(item.deleteInnerNodeRecursive(objectID))
                 return true;
@@ -62,4 +78,16 @@ public class DeploymentDiagram {
         }
         return null;
     }
+    
+    public CommunicationLink createCommunicationLink(DeploymentTarget source, DeploymentTarget destination){
+        var commLink = new CommunicationLink(source, destination);
+        
+        communicationLinks.put(commLink.getObjectInfo().getID(), commLink);
+        return commLink;
+    }
+    
+    public void addCommunicationLinksChangeListener(MapChangeListener listener){
+        communicationLinks.addListener(listener);
+    }
+    
 }

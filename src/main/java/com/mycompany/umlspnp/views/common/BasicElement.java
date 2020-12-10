@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views.common;
 
+import com.mycompany.umlspnp.common.ObjectInfo;
 import javafx.scene.Group;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
@@ -14,13 +15,19 @@ import javafx.scene.control.MenuItem;
  * @author 10ondr
  */
 public class BasicElement extends Group{
-    protected final double gridSize;
+    private final ObjectInfo objectInfo;
+    protected final static double gridSize = 10;
     
     protected final ContextMenu contextMenu;
     
-    public BasicElement(double gridSize){
-        this.gridSize = gridSize;
+    public BasicElement(int modelObjectID){
+        this.objectInfo = new ObjectInfo(modelObjectID);
+        
         contextMenu = new ContextMenu();
+    }
+    
+    public ObjectInfo getObjectInfo(){
+        return this.objectInfo;
     }
     
     public ContextMenu getContextMenu(){
