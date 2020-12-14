@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
+import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.Box;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.paint.Color;
 
 /**
  *
@@ -20,11 +22,27 @@ import javafx.beans.value.ObservableValue;
 public class DeploymentTargetView extends Box{
     private final ArrayList<ConnectionSlot> slots = new ArrayList<>();
     private final HashMap<Number, NamedRectangle> innerNodes = new HashMap();
+    
+    private final Annotation statesAnnotation;
+    private final Annotation stateTransitionsAnnotation;
 
     public DeploymentTargetView(double x, double y, double width, double height, double zOffset, int modelObjectID) {
         super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
+        
+        statesAnnotation = new Annotation(250, 10, 100, 100, this.getCenterX(), this.getCenterY(), "States");
+        statesAnnotation.setFill(Color.LIGHTCYAN);
+        stateTransitionsAnnotation = new Annotation(250, 150, 100, 100, this.getCenterX(), this.getCenterY(), "State Transitions");
+        stateTransitionsAnnotation.setFill(Color.LIGHTPINK);
     }
 
+    public Annotation getStatesAnnotation(){
+        return statesAnnotation;
+    }
+    
+    public Annotation getStateTransitionsAnnotation(){
+        return stateTransitionsAnnotation;
+    }
+    
     public ConnectionSlot getEmptySlot(){
         var cs = new ConnectionSlot(4.0, this.getZOffset(), this.translateXProperty(), this.translateYProperty(), this.widthProperty(), this.heightProperty());
         cs.deletedProperty().addListener(new ChangeListener(){

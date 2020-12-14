@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views;
 
+import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.BasicRectangle;
 import com.mycompany.umlspnp.views.common.Connection;
 import com.mycompany.umlspnp.views.common.ConnectionContainer;
@@ -62,6 +63,17 @@ public class DeploymentDiagramView extends DiagramView {
         
         root.getChildren().add(dt);
         deploymentTargetViews.put(modelObjectID, dt);
+        
+        Annotation states = dt.getStatesAnnotation();
+        Annotation stateTransitions = dt.getStateTransitionsAnnotation();
+        
+        root.getChildren().add(states);
+        root.getChildren().add(states.getLine());
+        states.getLine().toBack();
+        root.getChildren().add(stateTransitions);
+        root.getChildren().add(stateTransitions.getLine());
+        stateTransitions.getLine().toBack();
+        
         return dt;
     }
     
@@ -92,6 +104,13 @@ public class DeploymentDiagramView extends DiagramView {
         if(DTV != null){
             boolean result = deploymentTargetViews.remove(objectID) != null;
             if(result){
+                Annotation states = DTV.getStatesAnnotation();
+                Annotation stateTransitions = DTV.getStateTransitionsAnnotation();
+                root.getChildren().remove(states);
+                root.getChildren().remove(states.getLine());
+                root.getChildren().remove(stateTransitions);
+                root.getChildren().remove(stateTransitions.getLine());
+                
                 root.getChildren().remove(DTV);
             }
             return result;

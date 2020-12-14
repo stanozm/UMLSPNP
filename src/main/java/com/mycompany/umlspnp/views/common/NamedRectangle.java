@@ -5,7 +5,6 @@
  */
 package com.mycompany.umlspnp.views.common;
 
-import com.mycompany.umlspnp.common.ObjectInfo;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Label;
 
@@ -26,6 +25,15 @@ public class NamedRectangle extends BasicRectangle{
         this.getChildren().add(nameLabel);
     }
 
+    public void setBoldHeader(boolean value){
+        if(value){
+            nameLabel.setStyle("-fx-font-weight: bold");
+        }
+        else{
+            nameLabel.setStyle("-fx-font-weight: normal");
+        }
+    }
+    
     public void setName(String newName){
         nameLabel.setText(newName);
     }

@@ -37,7 +37,7 @@ public class DeploymentDiagram {
         deploymentTargets.put(newTarget.getObjectInfo().getID(), newTarget);
     }
     
-    public void removeDeploymentTargetConnections(DeploymentTarget target){
+    public void deploymentTargetCleanup(DeploymentTarget target){
         for(CommunicationLink item : communicationLinks.values()){
             if(item.getFirst().equals(target) || item.getSecond().equals(target)){
                 communicationLinks.remove(item.getObjectInfo().getID());
@@ -47,14 +47,14 @@ public class DeploymentDiagram {
     
     public boolean removeDeploymentTargetRecursive(int objectID){
         if(deploymentTargets.containsKey(objectID)){
-            removeDeploymentTargetConnections(deploymentTargets.get(objectID));
+            deploymentTargetCleanup(deploymentTargets.get(objectID));
             deploymentTargets.remove(objectID);
             return true;
         }
         DeploymentTarget dt = getDeploymentTargetRecursive(objectID);
         if(dt == null)
             return false;
-        removeDeploymentTargetConnections(dt);
+        deploymentTargetCleanup(dt);
         
         for(var item : deploymentTargets.values()){
             if(item.deleteInnerNodeRecursive(objectID))
@@ -89,5 +89,4 @@ public class DeploymentDiagram {
     public void addCommunicationLinksChangeListener(MapChangeListener listener){
         communicationLinks.addListener(listener);
     }
-    
 }

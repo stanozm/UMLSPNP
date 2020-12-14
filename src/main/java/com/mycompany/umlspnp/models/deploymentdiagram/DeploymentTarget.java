@@ -7,7 +7,9 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.*;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
@@ -17,16 +19,30 @@ import javafx.collections.ObservableMap;
 public class DeploymentTarget extends NamedNode {
     private final ObservableMap<Number, NamedNode> innerNodes;
     
+    // Annotations
+    private final ObservableList<State> states;
+    private final ObservableList<StateTransition> stateTransitions;
+    
     public DeploymentTarget(String name){
         super(name);
         
         innerNodes = FXCollections.observableHashMap();
+        states = FXCollections.observableArrayList();
+        stateTransitions = FXCollections.observableArrayList();
     }
 
     public void addInnerNodesChangeListener(MapChangeListener listener){
         innerNodes.addListener(listener);
     }
     
+    public void addStatesChangeListener(ListChangeListener listener){
+        states.addListener(listener);
+    }
+    
+    public void addStateTransitionsChangeListener(ListChangeListener listener){
+        stateTransitions.addListener(listener);
+    }
+
     public Artifact createArtifact(){
         var newArtifact = new Artifact("New artifact");
         addInnerNode(newArtifact);
@@ -73,5 +89,13 @@ public class DeploymentTarget extends NamedNode {
             }
         }
         return null;
+    }
+    
+    public void addState(State newState){
+        states.add(newState);
+    }
+    
+    public void addStateTransition(StateTransition newTransition){
+        stateTransitions.add(newTransition);
     }
 }

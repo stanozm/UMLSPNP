@@ -8,11 +8,12 @@ package com.mycompany.umlspnp.controllers;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
-import com.mycompany.umlspnp.views.common.ConnectionContainer;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
+import java.util.List;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -111,6 +112,7 @@ public class MainController {
                     DeploymentTarget newDT = deployment.createDeploymentTarget();
                     
                     deploymentTargetListenerInit(newDT);
+                    deploymentTargetAnnotationsInit(newDT);
                 }
             }
         };
@@ -121,8 +123,22 @@ public class MainController {
         deploymentDiagramView.addMenu(addNodeMenu);
     }
     
+    private void deploymentTargetAnnotationsInit(DeploymentTarget DT){
+        State stateUp = new State("UP");
+        stateUp.setDefault(true);
+        State stateDown = new State("DOWN");
+        DT.addState(stateUp);
+        DT.addState(stateDown);
+
+        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.5);
+        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.2);
+        DT.addStateTransition(upDownTransition);
+        DT.addStateTransition(downUpTransition);
+    }
+    
     private void deploymentTargetListenerInit(DeploymentTarget DT){
         var deploymentDiagramView = view.getDeploymentDiagramView();
+        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
         
         DT.addInnerNodesChangeListener(new MapChangeListener(){
             @Override
@@ -130,15 +146,12 @@ public class MainController {
                 if(change.wasAdded()){
                     if(change.getValueAdded() instanceof Artifact) {
                         Artifact newArtifact = (Artifact) change.getValueAdded();
-                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
                         var newArtifactView = DTView.CreateArtifact(newArtifact.getObjectInfo().getID());
                         newArtifactView.getNameProperty().bind(newArtifact.getNameProperty());
                         artifactMenuInit(newArtifactView);
                     }
                     else if (change.getValueAdded() instanceof DeploymentTarget) {
                         DeploymentTarget newInnerDT = (DeploymentTarget) change.getValueAdded();
-                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
-                        //var newDTView = DTView.createDeploymentTarget(newInnerDT.getObjectInfo().getID());
                         var newDTView = deploymentDiagramView.createDeploymentTarget(DTView, newInnerDT.getObjectInfo().getID());
                         newDTView.getNameProperty().bind(newInnerDT.getNameProperty());
                         deploymentTargetMenuInit(newDTView);
@@ -147,13 +160,56 @@ public class MainController {
                 else if(change.wasRemoved()){
                     if(change.getValueRemoved() instanceof Artifact) {
                         Artifact removedArtifact = (Artifact) change.getValueRemoved();
-                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
                         DTView.deleteInnerNode(removedArtifact.getObjectInfo().getID());
                     }
                     else if (change.getValueRemoved() instanceof DeploymentTarget) {
                         DeploymentTarget removedDT = (DeploymentTarget) change.getValueRemoved();
-                        var DTView = deploymentDiagramView.getDeploymentTargetRecursive(DT.getObjectInfo().getID());
                         DTView.deleteInnerNode(removedDT.getObjectInfo().getID());
+                    }
+                }
+            }
+        });
+        
+        
+        DT.addStatesChangeListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasAdded()){
+                        List added = change.getAddedSubList();
+                        for(var item : added){
+                            State newState = (State) item;
+                            DTView.getStatesAnnotation().addItem(newState.toString());
+                        }
+                    }
+                    else if (change.wasRemoved()){
+                        List removed = change.getRemoved();
+                        for(var item : removed){
+                            State removedState = (State) item;
+                            DTView.getStatesAnnotation().removeItem(removedState.toString());
+                        }
+                    }
+                }
+            }
+        });        
+        
+        DT.addStateTransitionsChangeListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasAdded()){
+                        List added = change.getAddedSubList();
+                        for(var item : added){
+                            StateTransition newTransition = (StateTransition) item;
+                            DTView.getStateTransitionsAnnotation().addItem(newTransition.toString());
+                        }
+                    }
+                    else if (change.wasRemoved()){
+                        List removed = change.getRemoved();
+                        for(var item : removed){
+                            StateTransition removedTransition = (StateTransition) item;
+                            DTView.getStateTransitionsAnnotation().removeItem(removedTransition.toString());
+                        }
                     }
                 }
             }

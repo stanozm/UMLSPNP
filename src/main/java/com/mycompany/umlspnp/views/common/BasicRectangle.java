@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.views.common;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
@@ -24,14 +25,17 @@ public class BasicRectangle extends BasicElement{
     protected Rectangle rect;
     private double originalPositionX, originalPositionY;
 
+    private final DoubleExpression centerX;
+    private final DoubleExpression centerY;
+    
     protected final DoubleProperty borderOffset = new SimpleDoubleProperty(20.0);
-
+    
     protected Rectangle resizeBottom;
     protected Rectangle resizeRight;
 
     public BasicRectangle(int modelObjectID, double x, double y, double width, double height) {
         super(modelObjectID);
-
+        
         rect = new Rectangle(0, 0, width, height);
         this.setTranslateX(x);
         this.setTranslateY(y);
@@ -40,6 +44,9 @@ public class BasicRectangle extends BasicElement{
 
         this.getChildren().add(rect);
 
+        centerX = this.translateXProperty().add(this.widthProperty().divide(2));
+        centerY = this.translateYProperty().add(this.heightProperty().divide(2));
+        
         createResizeAreas(5);
         
         this.setOnMousePressed((e) -> {
@@ -55,6 +62,14 @@ public class BasicRectangle extends BasicElement{
         });
     }
 
+    public DoubleExpression getCenterX(){
+        return this.centerX;
+    }
+    
+    public DoubleExpression getCenterY(){
+        return this.centerY;
+    }
+    
     private void moveInGrid(double scenePosX, double scenePosY){
         double moveX = this.getTranslateX() + getPositionInGrid(scenePosX, originalPositionX);
 
