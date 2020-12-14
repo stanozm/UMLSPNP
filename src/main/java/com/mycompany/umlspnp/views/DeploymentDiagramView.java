@@ -93,6 +93,7 @@ public class DeploymentDiagramView extends DiagramView {
                 }
                 else{
                     System.err.println("Unable to create connection. Select suitable destination node.");
+                    connectionContainer.clear();
                 }
             }
         });
