@@ -13,7 +13,7 @@ import javafx.scene.control.Label;
  * @author 10ondr
  */
 public class NamedRectangle extends BasicRectangle{
-    private final Label nameLabel;
+    protected final Label nameLabel;
     
     public NamedRectangle(double x, double y, double width, double height, String name, int modelObjectID) {
         super(modelObjectID, x, y, width, height);

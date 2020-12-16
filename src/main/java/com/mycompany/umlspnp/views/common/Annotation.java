@@ -6,6 +6,9 @@
 package com.mycompany.umlspnp.views.common;
 
 import javafx.beans.binding.DoubleExpression;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
@@ -19,8 +22,8 @@ public class Annotation extends NamedRectangle {
     private final VBox items = new VBox();
     private final Line line = new Line();
     
-    public Annotation(double x, double y, double width, double height, DoubleExpression targetX, DoubleExpression targetY, String name) {
-        super(x, y, width, height, name, -1);
+    public Annotation(double x, double y, DoubleExpression targetX, DoubleExpression targetY, String name) {
+        super(x, y, 0, 0, name, -1);
         
         this.setBoldHeader(true);
 
@@ -38,6 +41,15 @@ public class Annotation extends NamedRectangle {
         items.setTranslateY(20);
         this.getChildren().add(items);
         this.setEmpty(false);
+        
+        this.items.boundsInParentProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                resizeByContent();
+            }
+        });
+        
+        this.setResizable(false);
     }
 
     public Line getLine(){
@@ -82,5 +94,12 @@ public class Annotation extends NamedRectangle {
     public void setEmpty(boolean value){
         this.setVisible(value);
         this.line.setVisible(value);
+    }
+    
+    private void resizeByContent(){
+        Bounds newBounds = this.items.getBoundsInParent();
+        double newWidth = 20.0 + Math.max(nameLabel.getWidth(), newBounds.getWidth());
+        double newHeight = 10.0 + nameLabel.getHeight() + newBounds.getHeight();
+        this.changeDimensions(newWidth, newHeight);
     }
 }

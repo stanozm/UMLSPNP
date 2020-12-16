@@ -30,13 +30,13 @@ public class DeploymentTargetView extends Box{
     public DeploymentTargetView(double x, double y, double width, double height, double zOffset, int modelObjectID) {
         super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
         
-        statesAnnotation = new Annotation(250, 10, 100, 100, this.getCenterX(), this.getCenterY(), "States");
+        statesAnnotation = new Annotation(250, 10, this.getCenterX(), this.getCenterY(), "States");
         statesAnnotation.setFill(Color.LIGHTCYAN);
         
-        stateTransitionsAnnotation = new Annotation(250, 150, 100, 100, this.getCenterX(), this.getCenterY(), "State Transitions");
+        stateTransitionsAnnotation = new Annotation(250, 100, this.getCenterX(), this.getCenterY(), "State Transitions");
         stateTransitionsAnnotation.setFill(Color.LIGHTPINK);
         
-        stateOperationsAnnotation = new Annotation(250, 310, 100, 100, this.getCenterX(), this.getCenterY(), "Supported Operations");
+        stateOperationsAnnotation = new Annotation(250, 200, this.getCenterX(), this.getCenterY(), "Supported Operations");
         stateOperationsAnnotation.setFill(Color.OLDLACE);
     }
 

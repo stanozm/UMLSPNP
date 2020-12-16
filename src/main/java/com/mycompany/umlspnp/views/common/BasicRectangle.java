@@ -239,6 +239,11 @@ public class BasicRectangle extends BasicElement{
         });
     }
     
+    public void setResizable(boolean value){
+        resizeBottom.setDisable(!value);
+        resizeRight.setDisable(!value);
+    }
+    
     public void changeDimensions(double newWidth, double newHeight){
         rect.setWidth(newWidth);
         rect.setHeight(newHeight);
