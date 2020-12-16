@@ -111,10 +111,13 @@ public class DeploymentDiagramView extends DiagramView {
             if(result){
                 Annotation states = DTV.getStatesAnnotation();
                 Annotation stateTransitions = DTV.getStateTransitionsAnnotation();
+                Annotation stateOperations = DTV.getStateOperationsAnnotation();
                 root.getChildren().remove(states);
                 root.getChildren().remove(states.getLine());
                 root.getChildren().remove(stateTransitions);
                 root.getChildren().remove(stateTransitions.getLine());
+                root.getChildren().remove(stateOperations);
+                root.getChildren().remove(stateOperations.getLine());
                 
                 root.getChildren().remove(DTV);
             }
