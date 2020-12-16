@@ -6,7 +6,10 @@
 package com.mycompany.umlspnp.views.common;
 
 import com.mycompany.umlspnp.common.ObjectInfo;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 
@@ -36,5 +39,23 @@ public class BasicElement extends Group{
     
     public void addMenuItem(MenuItem newMenuItem){
         this.getContextMenu().getItems().add(newMenuItem);
+    }
+    
+    protected void lockMovement(Node childElement){
+        this.translateXProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                double diff = (double) newValue - (double) oldValue;
+                childElement.setTranslateX(childElement.getTranslateX() + diff);
+            }
+        });
+        
+        this.translateYProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                double diff = (double) newValue - (double) oldValue;
+                childElement.setTranslateY(childElement.getTranslateY() + diff);
+            }
+        });
     }
 }

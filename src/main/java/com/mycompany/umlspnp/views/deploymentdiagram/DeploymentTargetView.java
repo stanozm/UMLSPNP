@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.paint.Color;
 
 /**
@@ -32,12 +33,15 @@ public class DeploymentTargetView extends Box{
         
         statesAnnotation = new Annotation(250, 10, this.getCenterX(), this.getCenterY(), "States");
         statesAnnotation.setFill(Color.LIGHTCYAN);
+        lockMovement(statesAnnotation);
         
         stateTransitionsAnnotation = new Annotation(250, 100, this.getCenterX(), this.getCenterY(), "State Transitions");
         stateTransitionsAnnotation.setFill(Color.LIGHTPINK);
+        lockMovement(stateTransitionsAnnotation);
         
         stateOperationsAnnotation = new Annotation(250, 200, this.getCenterX(), this.getCenterY(), "Supported Operations");
         stateOperationsAnnotation.setFill(Color.OLDLACE);
+        lockMovement(stateOperationsAnnotation);
     }
 
     public Annotation getStatesAnnotation(){
