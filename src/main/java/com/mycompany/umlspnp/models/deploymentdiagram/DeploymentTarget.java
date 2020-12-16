@@ -108,4 +108,17 @@ public class DeploymentTarget extends NamedNode {
     public void addStateOperation(StateOperation newOperation){
         stateOperations.add(newOperation);
     }
+
+    public ObservableList<State> getStates() {
+        return this.states;
+    }
+    
+    public void setDefaultState(State newDefaultState){
+        for(var state : states){
+            if(state.equals(newDefaultState))
+                state.setDefault(true);
+            else
+                state.setDefault(false);
+        }
+    }
 }

@@ -8,9 +8,14 @@ package com.mycompany.umlspnp.controllers;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
+import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
+import com.mycompany.umlspnp.views.common.layouts.EditableListView;
+import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import java.util.List;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ListChangeListener;
@@ -19,6 +24,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+import javafx.stage.Stage;
 
 /**
  *
@@ -125,10 +132,10 @@ public class MainController {
     
     private void deploymentTargetAnnotationsInit(DeploymentTarget DT){
         State stateUp = new State("UP");
-        stateUp.setDefault(true);
         State stateDown = new State("DOWN");
         DT.addState(stateUp);
         DT.addState(stateDown);
+        DT.setDefaultState(stateUp);
 
         StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.5);
         StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.2);
@@ -308,6 +315,78 @@ public class MainController {
             this.view.getDeploymentDiagramView().startConnection(deploymentTargetView);
         });
         deploymentTargetView.addMenuItem(menuItemConnect);
+       
+        SeparatorMenuItem separator = new SeparatorMenuItem();
+        deploymentTargetView.addMenuItem(separator);
+        
+        MenuItem menuProperties = new MenuItem("Properties");
+        menuProperties.setOnAction((e) -> {
+            var deploymentDiagram = this.model.getDeploymentDiagram();
+            var deploymentTargetObjectID = deploymentTargetView.getObjectInfo().getID();
+            var deploymentTarget = deploymentDiagram.getDeploymentTargetRecursive(deploymentTargetObjectID);
+            if(deploymentTarget != null){
+                var states = deploymentTarget.getStates();
+                var statesView = new EditableListView("States:", states);
+                var addBtnHandler = new EventHandler<ActionEvent>(){
+                    @Override
+                    public void handle(ActionEvent e) {
+                        deploymentTarget.addState(new State("New state"));
+                    }
+                };
+
+                var removeBtnHandler = new EventHandler<ActionEvent>(){
+                    @Override
+                    public void handle(ActionEvent e) {
+                        var selected = (State) statesView.getSelected();
+                        if(selected != null){
+                            BooleanModalWindow confirmWindow = 
+                                    new BooleanModalWindow((Stage) statesView.getScene().getWindow(), 
+                                    "Confirm", "The state \"" + selected + "\" will be deleted. Proceed?");
+                            confirmWindow.showAndWait();
+                            if(confirmWindow.getResult()){
+                                states.remove(selected);
+                            }
+                        }
+                    }
+                };
+                
+                var renameBtnHandler = new EventHandler<ActionEvent>(){
+                    @Override
+                    public void handle(ActionEvent e) {
+                        var selected = (State) statesView.getSelected();
+                        if(selected != null){
+                            StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
+                                    "Rename state", "Type new name of the state \"" + selected + "\":", selected.nameProperty());
+                            renameWindow.showAndWait();
+                            statesView.refresh();
+                        }
+                    }
+                };
+                
+                var setDefaultBtnHandler = new EventHandler<ActionEvent>(){
+                    @Override
+                    public void handle(ActionEvent e) {
+                        var selected = (State) statesView.getSelected();
+                        if(selected != null){
+                            deploymentTarget.setDefaultState(selected);
+                            statesView.refresh();
+                        }
+                    }
+                };
+
+                statesView.createButton("Add", addBtnHandler);
+                statesView.createButton("Remove", removeBtnHandler);
+                statesView.createButton("Rename", renameBtnHandler);
+                statesView.createButton("Set default", setDefaultBtnHandler);
+                
+                
+                this.view.createPropertiesModalWindow("\"" + deploymentTarget.getNameProperty().getValue() + "\" properties", statesView);
+            }
+            else{
+                System.err.println("Deployment target with id " + deploymentTargetObjectID + " was not found!");
+            }
+        });
+        deploymentTargetView.addMenuItem(menuProperties);
 
     }
     

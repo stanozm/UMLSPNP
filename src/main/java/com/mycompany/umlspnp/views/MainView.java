@@ -5,9 +5,13 @@
  */
 package com.mycompany.umlspnp.views;
 
-import com.mycompany.umlspnp.views.common.StringModalWindow;
+import com.mycompany.umlspnp.models.deploymentdiagram.State;
+import com.mycompany.umlspnp.views.common.layouts.EditableListView;
+import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
+import com.mycompany.umlspnp.views.deploymentdiagram.DTPropertiesModalWindow;
 import java.io.PrintStream;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -102,6 +106,11 @@ public class MainView extends VBox{
     
     public void createStringModalWindow(String windowName, String labelText, StringProperty output){
         var modal = new StringModalWindow(appStage, windowName, labelText, output);
+        modal.showAndWait();
+    }
+    
+    public void createPropertiesModalWindow(String windowName, EditableListView statesView){
+        var modal = new DTPropertiesModalWindow(appStage, windowName, statesView);
         modal.showAndWait();
     }
 }
