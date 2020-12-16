@@ -22,6 +22,7 @@ public class DeploymentTarget extends NamedNode {
     // Annotations
     private final ObservableList<State> states;
     private final ObservableList<StateTransition> stateTransitions;
+    private final ObservableList<StateOperation> stateOperations;
     
     public DeploymentTarget(String name){
         super(name);
@@ -29,6 +30,7 @@ public class DeploymentTarget extends NamedNode {
         innerNodes = FXCollections.observableHashMap();
         states = FXCollections.observableArrayList();
         stateTransitions = FXCollections.observableArrayList();
+        stateOperations = FXCollections.observableArrayList();
     }
 
     public void addInnerNodesChangeListener(MapChangeListener listener){
@@ -41,6 +43,10 @@ public class DeploymentTarget extends NamedNode {
     
     public void addStateTransitionsChangeListener(ListChangeListener listener){
         stateTransitions.addListener(listener);
+    }
+    
+    public void addStateOperationsChangeListener(ListChangeListener listener){
+        stateOperations.addListener(listener);
     }
 
     public Artifact createArtifact(){
@@ -97,5 +103,9 @@ public class DeploymentTarget extends NamedNode {
     
     public void addStateTransition(StateTransition newTransition){
         stateTransitions.add(newTransition);
+    }
+    
+    public void addStateOperation(StateOperation newOperation){
+        stateOperations.add(newOperation);
     }
 }

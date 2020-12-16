@@ -66,6 +66,7 @@ public class DeploymentDiagramView extends DiagramView {
         
         Annotation states = dt.getStatesAnnotation();
         Annotation stateTransitions = dt.getStateTransitionsAnnotation();
+        Annotation stateOperations = dt.getStateOperationsAnnotation();
         
         root.getChildren().add(states);
         root.getChildren().add(states.getLine());
@@ -73,6 +74,9 @@ public class DeploymentDiagramView extends DiagramView {
         root.getChildren().add(stateTransitions);
         root.getChildren().add(stateTransitions.getLine());
         stateTransitions.getLine().toBack();
+        root.getChildren().add(stateOperations);
+        root.getChildren().add(stateOperations.getLine());
+        stateOperations.getLine().toBack();
         
         return dt;
     }

@@ -37,6 +37,7 @@ public class Annotation extends NamedRectangle {
         items.setTranslateX(5);
         items.setTranslateY(20);
         this.getChildren().add(items);
+        this.setEmpty(false);
     }
 
     public Line getLine(){
@@ -54,6 +55,8 @@ public class Annotation extends NamedRectangle {
     }
 
     public void addItem(String newItem){
+        if(!this.isVisible())
+            this.setEmpty(true);
         items.getChildren().add(new Label(newItem));
     }
     
@@ -70,6 +73,14 @@ public class Annotation extends NamedRectangle {
         Node item = getItem(removedItem);
         if(item == null)
             return false;
-        return items.getChildren().remove(item);
+        boolean result = items.getChildren().remove(item);
+        if(items.getChildren().size() < 1)
+            this.setEmpty(false);
+        return result;
+    }
+    
+    public void setEmpty(boolean value){
+        this.setVisible(value);
+        this.line.setVisible(value);
     }
 }

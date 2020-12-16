@@ -134,6 +134,14 @@ public class MainController {
         StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.2);
         DT.addStateTransition(upDownTransition);
         DT.addStateTransition(downUpTransition);
+        
+        StateOperation operationsUp = new StateOperation(stateUp);
+        operationsUp.addOperation("ReadDeviceData", null);
+        operationsUp.addOperation("WriteDeviceData", null);
+        StateOperation operationsDown = new StateOperation(stateDown);
+        operationsDown.addOperation("ReadDeviceData", new StateEffect("processing speed: 50%"));
+        DT.addStateOperation(operationsUp);
+        DT.addStateOperation(operationsDown);
     }
     
     private void deploymentTargetListenerInit(DeploymentTarget DT){
@@ -209,6 +217,28 @@ public class MainController {
                         for(var item : removed){
                             StateTransition removedTransition = (StateTransition) item;
                             DTView.getStateTransitionsAnnotation().removeItem(removedTransition.toString());
+                        }
+                    }
+                }
+            }
+        });
+        
+        DT.addStateOperationsChangeListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasAdded()){
+                        List added = change.getAddedSubList();
+                        for(var item : added){
+                            StateOperation newOperation = (StateOperation) item;
+                            DTView.getStateOperationsAnnotation().addItem(newOperation.toString());
+                        }
+                    }
+                    else if (change.wasRemoved()){
+                        List removed = change.getRemoved();
+                        for(var item : removed){
+                            StateOperation removedOperation = (StateOperation) item;
+                            DTView.getStateOperationsAnnotation().removeItem(removedOperation.toString());
                         }
                     }
                 }

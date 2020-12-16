@@ -25,14 +25,19 @@ public class DeploymentTargetView extends Box{
     
     private final Annotation statesAnnotation;
     private final Annotation stateTransitionsAnnotation;
+    private final Annotation stateOperationsAnnotation;
 
     public DeploymentTargetView(double x, double y, double width, double height, double zOffset, int modelObjectID) {
         super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
         
         statesAnnotation = new Annotation(250, 10, 100, 100, this.getCenterX(), this.getCenterY(), "States");
         statesAnnotation.setFill(Color.LIGHTCYAN);
+        
         stateTransitionsAnnotation = new Annotation(250, 150, 100, 100, this.getCenterX(), this.getCenterY(), "State Transitions");
         stateTransitionsAnnotation.setFill(Color.LIGHTPINK);
+        
+        stateOperationsAnnotation = new Annotation(250, 310, 100, 100, this.getCenterX(), this.getCenterY(), "Supported Operations");
+        stateOperationsAnnotation.setFill(Color.OLDLACE);
     }
 
     public Annotation getStatesAnnotation(){
@@ -41,6 +46,10 @@ public class DeploymentTargetView extends Box{
     
     public Annotation getStateTransitionsAnnotation(){
         return stateTransitionsAnnotation;
+    }
+    
+    public Annotation getStateOperationsAnnotation(){
+        return stateOperationsAnnotation;
     }
     
     public ConnectionSlot getEmptySlot(){
