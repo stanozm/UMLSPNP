@@ -140,6 +140,7 @@ public class BasicRectangle extends BasicElement{
 
                 this.changeDimensions(moveX, this.getHeight());
             }
+            e.consume();
         });
         
         resizeBottom.setOnMousePressed((e) -> {
@@ -156,6 +157,7 @@ public class BasicRectangle extends BasicElement{
 
                 this.changeDimensions(this.getWidth(), moveY);
             }
+            e.consume();
         });
 
         this.getChildren().addAll(resizeBottom, resizeRight);
