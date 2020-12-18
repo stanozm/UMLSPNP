@@ -13,12 +13,8 @@ import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
-import java.util.List;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -136,7 +132,7 @@ public class MainController {
         DT.addState(stateUp);
         DT.addState(stateDown);
         DT.setDefaultState(stateUp);
-
+       
         StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.5);
         StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.2);
         DT.addStateTransition(upDownTransition);
@@ -185,72 +181,9 @@ public class MainController {
             }
         });
         
-        
-        DT.addStatesChangeListener(new ListChangeListener(){
-            @Override
-            public void onChanged(ListChangeListener.Change change) {
-                while (change.next()) {
-                    if (change.wasAdded()){
-                        List added = change.getAddedSubList();
-                        for(var item : added){
-                            State newState = (State) item;
-                            DTView.getStatesAnnotation().addItem(newState.toString());
-                        }
-                    }
-                    else if (change.wasRemoved()){
-                        List removed = change.getRemoved();
-                        for(var item : removed){
-                            State removedState = (State) item;
-                            DTView.getStatesAnnotation().removeItem(removedState.toString());
-                        }
-                    }
-                }
-            }
-        });        
-        
-        DT.addStateTransitionsChangeListener(new ListChangeListener(){
-            @Override
-            public void onChanged(ListChangeListener.Change change) {
-                while (change.next()) {
-                    if (change.wasAdded()){
-                        List added = change.getAddedSubList();
-                        for(var item : added){
-                            StateTransition newTransition = (StateTransition) item;
-                            DTView.getStateTransitionsAnnotation().addItem(newTransition.toString());
-                        }
-                    }
-                    else if (change.wasRemoved()){
-                        List removed = change.getRemoved();
-                        for(var item : removed){
-                            StateTransition removedTransition = (StateTransition) item;
-                            DTView.getStateTransitionsAnnotation().removeItem(removedTransition.toString());
-                        }
-                    }
-                }
-            }
-        });
-        
-        DT.addStateOperationsChangeListener(new ListChangeListener(){
-            @Override
-            public void onChanged(ListChangeListener.Change change) {
-                while (change.next()) {
-                    if (change.wasAdded()){
-                        List added = change.getAddedSubList();
-                        for(var item : added){
-                            StateOperation newOperation = (StateOperation) item;
-                            DTView.getStateOperationsAnnotation().addItem(newOperation.toString());
-                        }
-                    }
-                    else if (change.wasRemoved()){
-                        List removed = change.getRemoved();
-                        for(var item : removed){
-                            StateOperation removedOperation = (StateOperation) item;
-                            DTView.getStateOperationsAnnotation().removeItem(removedOperation.toString());
-                        }
-                    }
-                }
-            }
-        });
+        DTView.getStatesAnnotation().setItems(DT.getStates());
+        DTView.getStateTransitionsAnnotation().setItems(DT.getStateTransitions());
+        DTView.getStateOperationsAnnotation().setItems(DT.getStateOperations());
     }
     
     private void deploymentTargetMenuInit(DeploymentTargetView deploymentTargetView){

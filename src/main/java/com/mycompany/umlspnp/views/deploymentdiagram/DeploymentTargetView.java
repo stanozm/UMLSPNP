@@ -35,11 +35,11 @@ public class DeploymentTargetView extends Box{
         statesAnnotation.setFill(Color.LIGHTCYAN);
         lockMovement(statesAnnotation);
         
-        stateTransitionsAnnotation = new Annotation(250, 100, this.getCenterX(), this.getCenterY(), "State Transitions");
+        stateTransitionsAnnotation = new Annotation(250, 125, this.getCenterX(), this.getCenterY(), "State Transitions");
         stateTransitionsAnnotation.setFill(Color.LIGHTPINK);
         lockMovement(stateTransitionsAnnotation);
         
-        stateOperationsAnnotation = new Annotation(250, 200, this.getCenterX(), this.getCenterY(), "Supported Operations");
+        stateOperationsAnnotation = new Annotation(250, 250, this.getCenterX(), this.getCenterY(), "Supported Operations");
         stateOperationsAnnotation.setFill(Color.OLDLACE);
         lockMovement(stateOperationsAnnotation);
     }

@@ -6,11 +6,14 @@
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.*;
+import javafx.beans.Observable;
+import javafx.beans.binding.StringBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.util.Callback;
 
 /**
  *
@@ -28,7 +31,16 @@ public class DeploymentTarget extends NamedNode {
         super(name);
         
         innerNodes = FXCollections.observableHashMap();
-        states = FXCollections.observableArrayList();
+        states = FXCollections.observableArrayList(
+                new Callback<State, Observable[]>() {
+                    @Override
+                    public Observable[] call(State param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
+        
         stateTransitions = FXCollections.observableArrayList();
         stateOperations = FXCollections.observableArrayList();
     }
@@ -101,6 +113,10 @@ public class DeploymentTarget extends NamedNode {
         states.add(newState);
     }
     
+    public boolean removeState(State removedState){
+        return states.remove(removedState);
+    }
+    
     public void addStateTransition(StateTransition newTransition){
         stateTransitions.add(newTransition);
     }
@@ -120,5 +136,13 @@ public class DeploymentTarget extends NamedNode {
             else
                 state.setDefault(false);
         }
+    }
+    
+    public ObservableList<StateTransition> getStateTransitions(){
+        return this.stateTransitions;
+    }
+    
+    public ObservableList<StateOperation> getStateOperations(){
+        return this.stateOperations;
     }
 }

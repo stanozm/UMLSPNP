@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
+import com.mycompany.umlspnp.models.common.ObservableString;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 
@@ -12,15 +13,17 @@ import javafx.collections.ObservableMap;
  *
  * @author 10ondr
  */
-public class StateOperation {
+public class StateOperation extends ObservableString {
     private final State state;
     private final ObservableMap<String, StateEffect> operations;
-
+    
     public StateOperation(State state){
         this.state = state;
         this.operations = FXCollections.observableHashMap();
-    }
 
+        this.updateStringRepresentation();
+    }
+    
     public State getState(){
         return this.state;
     }
@@ -46,5 +49,6 @@ public class StateOperation {
     
     public void addOperation(String name, StateEffect effect){
         operations.put(name, effect);
+        this.updateStringRepresentation();
     }
 }
