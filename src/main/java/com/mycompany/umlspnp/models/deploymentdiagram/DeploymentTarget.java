@@ -41,8 +41,24 @@ public class DeploymentTarget extends NamedNode {
                     }
                 });
         
-        stateTransitions = FXCollections.observableArrayList();
-        stateOperations = FXCollections.observableArrayList();
+        stateTransitions = FXCollections.observableArrayList(
+                new Callback<StateTransition, Observable[]>() {
+                    @Override
+                    public Observable[] call(StateTransition param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
+        stateOperations = FXCollections.observableArrayList(
+                new Callback<StateOperation, Observable[]>() {
+                    @Override
+                    public Observable[] call(StateOperation param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
     }
 
     public void addInnerNodesChangeListener(MapChangeListener listener){

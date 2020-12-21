@@ -40,6 +40,8 @@ public class StateTransition extends ObservableString {
         
         this.transitionName.addListener(stringChangeListener);
         this.rate.addListener(stringChangeListener);
+        this.from.addListener(stringChangeListener);
+        this.to.addListener(stringChangeListener);
     }
 
     public State getStateFrom(){
@@ -76,12 +78,10 @@ public class StateTransition extends ObservableString {
     
     public void setStateFrom(State newState){
         this.from.setValue(newState);
-        this.updateStringRepresentation();
     }
     
     public void setStateTo(State newState){
         this.to.setValue(newState);
-        this.updateStringRepresentation();
     }
     
     @Override
