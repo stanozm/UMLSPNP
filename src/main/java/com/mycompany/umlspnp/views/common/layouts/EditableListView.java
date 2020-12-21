@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.views.common.layouts;
 
 import java.util.ArrayList;
+import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -62,13 +63,18 @@ public class EditableListView extends GridPane {
         this.add(newButton, btnCount - 1, 2);
     }
     
-    public void createButton(String buttonName, EventHandler<ActionEvent> eventHandler){
+    public Button createButton(String buttonName, EventHandler<ActionEvent> eventHandler, boolean enabledOnSelection){
         Button newbtn = new Button(buttonName);
         newbtn.setMaxWidth(Double.MAX_VALUE);
         newbtn.setMinSize(Button.USE_PREF_SIZE, Button.USE_PREF_SIZE);
         
         newbtn.setOnAction(eventHandler);
+        
+        if(enabledOnSelection)
+            newbtn.disableProperty().bind(Bindings.isNull(itemList.getSelectionModel().selectedItemProperty()));
+        
         this.addButton(newbtn);
+        return newbtn;
     }
     
     public Object getSelected(){

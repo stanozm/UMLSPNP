@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.ModalWindow;
+import java.util.ArrayList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Button;
@@ -19,7 +20,7 @@ import javafx.stage.Stage;
 public class DTPropertiesModalWindow extends ModalWindow{
     private final Button closeButton;
     
-    public DTPropertiesModalWindow(Stage parentStage, String windowName, EditableListView statesList) {
+    public DTPropertiesModalWindow(Stage parentStage, String windowName, ArrayList<EditableListView> sections) {
         super(parentStage, windowName);
 
         this.closeButton = new Button("Close");
@@ -30,7 +31,10 @@ public class DTPropertiesModalWindow extends ModalWindow{
             }
         });
         
-        this.rootGrid.add(statesList, 0, 0);
-        this.rootGrid.add(closeButton, 0, 2);
+        for (int i = 0; i < sections.size(); i ++){
+            this.rootGrid.add(sections.get(i), i, 0);
+        }
+        
+        this.rootGrid.add(closeButton, 0, 1);
     }
 }

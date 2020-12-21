@@ -13,6 +13,9 @@ import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
+import com.mycompany.umlspnp.views.deploymentdiagram.EditTransitionModalWindow;
+import java.util.ArrayList;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.MapChangeListener;
@@ -258,62 +261,13 @@ public class MainController {
             var deploymentTargetObjectID = deploymentTargetView.getObjectInfo().getID();
             var deploymentTarget = deploymentDiagram.getDeploymentTargetRecursive(deploymentTargetObjectID);
             if(deploymentTarget != null){
-                var states = deploymentTarget.getStates();
-                var statesView = new EditableListView("States:", states);
-                var addBtnHandler = new EventHandler<ActionEvent>(){
-                    @Override
-                    public void handle(ActionEvent e) {
-                        deploymentTarget.addState(new State("New state"));
-                    }
-                };
-
-                var removeBtnHandler = new EventHandler<ActionEvent>(){
-                    @Override
-                    public void handle(ActionEvent e) {
-                        var selected = (State) statesView.getSelected();
-                        if(selected != null){
-                            BooleanModalWindow confirmWindow = 
-                                    new BooleanModalWindow((Stage) statesView.getScene().getWindow(), 
-                                    "Confirm", "The state \"" + selected + "\" will be deleted. Proceed?");
-                            confirmWindow.showAndWait();
-                            if(confirmWindow.getResult()){
-                                states.remove(selected);
-                            }
-                        }
-                    }
-                };
+                var statesView = createStatesProperties(deploymentTarget);
+                var stateTransitionsView = createStateTransitionsProperties(deploymentTarget);
+                ArrayList<EditableListView> sections = new ArrayList();
+                sections.add(statesView);
+                sections.add(stateTransitionsView);
                 
-                var renameBtnHandler = new EventHandler<ActionEvent>(){
-                    @Override
-                    public void handle(ActionEvent e) {
-                        var selected = (State) statesView.getSelected();
-                        if(selected != null){
-                            StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
-                                    "Rename state", "Type new name of the state \"" + selected + "\":", selected.nameProperty());
-                            renameWindow.showAndWait();
-                            statesView.refresh();
-                        }
-                    }
-                };
-                
-                var setDefaultBtnHandler = new EventHandler<ActionEvent>(){
-                    @Override
-                    public void handle(ActionEvent e) {
-                        var selected = (State) statesView.getSelected();
-                        if(selected != null){
-                            deploymentTarget.setDefaultState(selected);
-                            statesView.refresh();
-                        }
-                    }
-                };
-
-                statesView.createButton("Add", addBtnHandler);
-                statesView.createButton("Remove", removeBtnHandler);
-                statesView.createButton("Rename", renameBtnHandler);
-                statesView.createButton("Set default", setDefaultBtnHandler);
-                
-                
-                this.view.createPropertiesModalWindow("\"" + deploymentTarget.getNameProperty().getValue() + "\" properties", statesView);
+                this.view.createPropertiesModalWindow("\"" + deploymentTarget.getNameProperty().getValue() + "\" properties", sections);
             }
             else{
                 System.err.println("Deployment target with id " + deploymentTargetObjectID + " was not found!");
@@ -331,5 +285,121 @@ public class MainController {
             deploymentTarget.deleteInnerNodeRecursive(artifactView.getObjectInfo().getID());
         });
         artifactView.addMenuItem(menuItemDelete);
+    }
+    
+    private EditableListView createStatesProperties(DeploymentTarget deploymentTarget){
+        var states = deploymentTarget.getStates();
+        var statesView = new EditableListView("States:", states);
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                deploymentTarget.addState(new State("New state"));
+            }
+        };
+
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (State) statesView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) statesView.getScene().getWindow(), 
+                            "Confirm", "The state \"" + selected + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        states.remove(selected);
+                    }
+                }
+            }
+        };
+
+        var renameBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (State) statesView.getSelected();
+                if(selected != null){
+                    StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
+                            "Rename state", "Type new name of the state \"" + selected + "\":", selected.nameProperty());
+                    renameWindow.showAndWait();
+                    statesView.refresh();
+                }
+            }
+        };
+
+        var setDefaultBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (State) statesView.getSelected();
+                if(selected != null){
+                    deploymentTarget.setDefaultState(selected);
+                    statesView.refresh();
+                }
+            }
+        };
+
+        statesView.createButton("Add", addBtnHandler, false);
+        statesView.createButton("Remove", removeBtnHandler, true);
+        statesView.createButton("Rename", renameBtnHandler, true);
+        statesView.createButton("Set default", setDefaultBtnHandler, true);
+        
+        return statesView;
+    }
+
+    
+    private EditableListView createStateTransitionsProperties(DeploymentTarget deploymentTarget){
+        var states = deploymentTarget.getStates();
+        var transitions = deploymentTarget.getStateTransitions();
+        var transitionsView = new EditableListView("State Transitions:", transitions);
+        
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                // Button is disabled when there are not at least 2 states
+                var state1 = states.get(0);
+                var state2 = states.get(1);
+                deploymentTarget.addStateTransition(new StateTransition(state1, state2, "New Transition", 1.0));
+            }
+        };
+        
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (StateTransition) transitionsView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) transitionsView.getScene().getWindow(), 
+                            "Confirm", "The transition \"" + selected + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        transitions.remove(selected);
+                    }
+                }
+            }
+        };
+
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (StateTransition) transitionsView.getSelected();
+                if(selected != null){
+                    EditTransitionModalWindow editWindow = new EditTransitionModalWindow(   (Stage) transitionsView.getScene().getWindow(),
+                                                                                            "Edit transition",
+                                                                                            selected.nameProperty(),
+                                                                                            selected.rateProperty(),
+                                                                                            selected.fromStateProperty(),
+                                                                                            selected.toStateProperty(),
+                                                                                            states
+                                                                                            );
+                    editWindow.showAndWait();
+                    transitionsView.refresh();
+                }
+            }
+        };
+
+        var addBtn = transitionsView.createButton("Add", addBtnHandler, false);
+        addBtn.disableProperty().bind(Bindings.size(states).lessThan(2));
+        transitionsView.createButton("Remove", removeBtnHandler, true);
+        transitionsView.createButton("Edit", editBtnHandler, true);
+        return transitionsView;
     }
 }

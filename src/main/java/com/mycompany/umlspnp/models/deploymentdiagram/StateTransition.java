@@ -7,7 +7,9 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.ObservableString;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -18,14 +20,14 @@ import javafx.beans.value.ObservableValue;
  * @author 10ondr
  */
 public class StateTransition extends ObservableString {
-    private State from;
-    private State to;
+    private final ObjectProperty<State> from;
+    private final ObjectProperty<State> to;
     private final StringProperty transitionName = new SimpleStringProperty();
     private final DoubleProperty rate = new SimpleDoubleProperty();
     
     public StateTransition(State from, State to, String name, double rate){
-        this.from = from;
-        this.to = to;
+        this.from = new SimpleObjectProperty(from);
+        this.to = new SimpleObjectProperty(to);
         this.setName(name);
         this.setRate(rate);
         
@@ -41,10 +43,18 @@ public class StateTransition extends ObservableString {
     }
 
     public State getStateFrom(){
-        return this.from;
+        return this.from.getValue();
     }
     
     public State getStateTo(){
+        return this.to.getValue();
+    }
+    
+    public ObjectProperty fromStateProperty(){
+        return this.from;
+    }
+    
+    public ObjectProperty toStateProperty(){
         return this.to;
     }
 
@@ -65,17 +75,17 @@ public class StateTransition extends ObservableString {
     }
     
     public void setStateFrom(State newState){
-        this.from = newState;
+        this.from.setValue(newState);
         this.updateStringRepresentation();
     }
     
     public void setStateTo(State newState){
-        this.to = newState;
+        this.to.setValue(newState);
         this.updateStringRepresentation();
     }
     
     @Override
     public String toString() {
-        return String.format("[" + from.toString() + "->" + to.toString() + "]: " + transitionName.getValue() + ", Rate: " + rate.getValue().toString());
+        return String.format("[" + getStateFrom().toString() + "->" + getStateTo().toString() + "]: " + transitionName.getValue() + ", Rate: " + rate.getValue().toString());
     }
 }

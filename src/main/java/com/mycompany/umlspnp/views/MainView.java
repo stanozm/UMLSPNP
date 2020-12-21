@@ -10,6 +10,7 @@ import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.DTPropertiesModalWindow;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.geometry.Orientation;
@@ -109,8 +110,8 @@ public class MainView extends VBox{
         modal.showAndWait();
     }
     
-    public void createPropertiesModalWindow(String windowName, EditableListView statesView){
-        var modal = new DTPropertiesModalWindow(appStage, windowName, statesView);
+    public void createPropertiesModalWindow(String windowName, ArrayList sections){
+        var modal = new DTPropertiesModalWindow(appStage, windowName, sections);
         modal.showAndWait();
     }
 }
