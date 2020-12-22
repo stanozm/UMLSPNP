@@ -13,12 +13,16 @@ import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
+import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationEntryModalWindow;
+import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditTransitionModalWindow;
 import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
@@ -142,10 +146,10 @@ public class MainController {
         DT.addStateTransition(downUpTransition);
         
         StateOperation operationsUp = new StateOperation(stateUp);
-        operationsUp.addOperation("ReadDeviceData", null);
-        operationsUp.addOperation("WriteDeviceData", null);
+        operationsUp.addOperationEntry("ReadDeviceData", null);
+        operationsUp.addOperationEntry("WriteDeviceData", null);
         StateOperation operationsDown = new StateOperation(stateDown);
-        operationsDown.addOperation("ReadDeviceData", new StateEffect("processing speed: 50%"));
+        operationsDown.addOperationEntry("ReadDeviceData", 50);
         DT.addStateOperation(operationsUp);
         DT.addStateOperation(operationsDown);
     }
@@ -263,9 +267,12 @@ public class MainController {
             if(deploymentTarget != null){
                 var statesView = createStatesProperties(deploymentTarget);
                 var stateTransitionsView = createStateTransitionsProperties(deploymentTarget);
+                var stateOperationsView = createStateOperationsProperties(deploymentTarget);
+                
                 ArrayList<EditableListView> sections = new ArrayList();
                 sections.add(statesView);
                 sections.add(stateTransitionsView);
+                sections.add(stateOperationsView);
                 
                 this.view.createPropertiesModalWindow("\"" + deploymentTarget.getNameProperty().getValue() + "\" properties", sections);
             }
@@ -402,4 +409,111 @@ public class MainController {
         transitionsView.createButton("Edit", editBtnHandler, true);
         return transitionsView;
     }
+    
+    private EditableListView createStateOperationsProperties(DeploymentTarget deploymentTarget){
+        var statesWithNoOperations = deploymentTarget.getStatesWithoutOperations();
+        var operations = deploymentTarget.getStateOperations();
+        var operationsView = new EditableListView("Supported Operations:", operations);
+        
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                // Button is disabled when there is not at least 1 state available
+                deploymentTarget.addStateOperation(new StateOperation(statesWithNoOperations.get(0)));
+            }
+        };
+        
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (StateOperation) operationsView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) operationsView.getScene().getWindow(), 
+                            "Confirm", "The operation \"" + selected + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        operations.remove(selected);
+                    }
+                }
+            }
+        };
+
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (StateOperation) operationsView.getSelected();
+                if(selected != null){
+                    EditableListView operationEntriesView = createStateOperationEntriesProperties(selected);
+                    
+                    EditOperationModalWindow editWindow = new EditOperationModalWindow(   (Stage) operationsView.getScene().getWindow(),
+                                                                                            "Edit operation",
+                                                                                            selected.stateProperty(),
+                                                                                            statesWithNoOperations,
+                                                                                            operationEntriesView
+                                                                                            );
+                    editWindow.showAndWait();
+                    operationsView.refresh();
+                }
+            }
+        };
+        
+        var addBtn = operationsView.createButton("Add", addBtnHandler, false);
+        addBtn.disableProperty().bind(Bindings.size(statesWithNoOperations).lessThan(1));
+        operationsView.createButton("Remove", removeBtnHandler, true);
+        operationsView.createButton("Edit", editBtnHandler, true);
+        return operationsView;
+    }
+
+    private EditableListView createStateOperationEntriesProperties(StateOperation operation){
+        var operationEntries = operation.getOperationEntries();
+        
+        var operationEntriesView = new EditableListView("Operations:", operation.getOperationEntries());
+        
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                operationEntries.add(new OperationEntry("New operation", -1));
+            }
+        };
+        
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (OperationEntry) operationEntriesView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) operationEntriesView.getScene().getWindow(), 
+                            "Confirm", "The operation entry \"" + selected + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        operationEntries.remove(selected);
+                    }
+                }
+            }
+        };
+
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (OperationEntry) operationEntriesView.getSelected();
+                
+                EditOperationEntryModalWindow editWindow = 
+                        new EditOperationEntryModalWindow( (Stage) operationEntriesView.getScene().getWindow(),
+                                                            "Edit Operation Entry",
+                                                            selected.nameProperty(),
+                                                            selected.speedLimitProperty()
+                                                            );
+                editWindow.showAndWait();
+
+                operationEntriesView.refresh();
+            }
+        };
+
+        operationEntriesView.createButton("Add", addBtnHandler, false);
+        operationEntriesView.createButton("Remove", removeBtnHandler, true);
+        operationEntriesView.createButton("Edit", editBtnHandler, true);
+        return operationEntriesView;
+    }
+
 }

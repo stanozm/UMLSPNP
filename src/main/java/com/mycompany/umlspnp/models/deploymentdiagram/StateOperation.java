@@ -11,8 +11,8 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 
 /**
  *
@@ -20,11 +20,11 @@ import javafx.collections.ObservableMap;
  */
 public class StateOperation extends ObservableString {
     private final ObjectProperty<State> state;
-    private final ObservableMap<String, StateEffect> operations;
+    private final ObservableList<OperationEntry> operationEntries;
     
     public StateOperation(State state){
         this.state = new SimpleObjectProperty(state);
-        this.operations = FXCollections.observableHashMap();
+        this.operationEntries = FXCollections.observableArrayList();
 
         var stringChangeListener = new ChangeListener(){
             @Override
@@ -33,15 +33,16 @@ public class StateOperation extends ObservableString {
             }
         };
         
-        var stringMapChangeListener = new MapChangeListener(){
+        var stringListChangeListener = new ListChangeListener(){
             @Override
-            public void onChanged(MapChangeListener.Change change) {
+            public void onChanged(ListChangeListener.Change change) {
                 updateStringRepresentation();
             }
+
         };
         
         this.state.addListener(stringChangeListener);
-        this.operations.addListener(stringMapChangeListener);
+        this.operationEntries.addListener(stringListChangeListener);
         
         this.updateStringRepresentation();
     }
@@ -49,28 +50,36 @@ public class StateOperation extends ObservableString {
     public State getState(){
         return this.state.getValue();
     }
+    
+    public ObjectProperty stateProperty(){
+        return this.state;
+    }
+    
+    public ObservableList getOperationEntries(){
+        return this.operationEntries;
+    } 
 
     @Override
     public String toString() {
         String res_str = String.format("[" + getState().toString() + "]");
-        if(operations.size() < 1){
+        if(operationEntries.size() < 1){
             res_str += " None";
         }
         else{
-            for(String operation : operations.keySet()){
+            for(OperationEntry operation : operationEntries){
                 res_str += ", ";
                 res_str += operation;
-                StateEffect effect = operations.get(operation);
-                if(effect != null){
-                    res_str += String.format(" <" + effect.getName().replace("%", "%%") + ">");
-                }
             }
         }
         return res_str;
     }
     
-    public void addOperation(String name, StateEffect effect){
-        operations.put(name, effect);
+    public void addOperationEntry(OperationEntry newOperation){
+        this.operationEntries.add(newOperation);
         this.updateStringRepresentation();
+    }
+    
+    public void addOperationEntry(String name, Integer processingSpeed){
+        addOperationEntry(new OperationEntry(name, processingSpeed));
     }
 }

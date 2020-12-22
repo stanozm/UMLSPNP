@@ -7,7 +7,6 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.*;
 import javafx.beans.Observable;
-import javafx.beans.binding.StringBinding;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -26,6 +25,8 @@ public class DeploymentTarget extends NamedNode {
     private final ObservableList<State> states;
     private final ObservableList<StateTransition> stateTransitions;
     private final ObservableList<StateOperation> stateOperations;
+    
+    private final ObservableList<State> statesWithoutOperations;
     
     public DeploymentTarget(String name){
         super(name);
@@ -59,6 +60,9 @@ public class DeploymentTarget extends NamedNode {
                         };
                     }
                 });
+        
+        statesWithoutOperations = FXCollections.observableArrayList();
+        initStatesWithoutOperations();
     }
 
     public void addInnerNodesChangeListener(MapChangeListener listener){
@@ -145,6 +149,10 @@ public class DeploymentTarget extends NamedNode {
         return this.states;
     }
     
+    public ObservableList<State> getStatesWithoutOperations() {
+        return this.statesWithoutOperations;
+    }
+    
     public void setDefaultState(State newDefaultState){
         for(var state : states){
             if(state.equals(newDefaultState))
@@ -160,5 +168,49 @@ public class DeploymentTarget extends NamedNode {
     
     public ObservableList<StateOperation> getStateOperations(){
         return this.stateOperations;
+    }
+    
+    private boolean stateHasOperations(State state){
+        for(var operation : stateOperations){
+            if(state == operation.getState()){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public void refilterStatesWithoutOperations(){
+        this.statesWithoutOperations.setAll(states.filtered(state -> !stateHasOperations(state)));
+    }
+    
+    public void initStatesWithoutOperations(){
+        refilterStatesWithoutOperations();
+        
+        states.addListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasAdded()) {
+                        for (var addedItem : change.getAddedSubList()){
+                            var addedState = (State) addedItem;
+                            statesWithoutOperations.add(addedState);
+                        }
+                    }
+                    else if (change.wasRemoved()) {
+                        for(var removedItem : change.getRemoved()){
+                            var removedState = (State) removedItem;
+                            statesWithoutOperations.remove(removedState);
+                        }
+                    }
+                }
+            }
+        });
+        
+        stateOperations.addListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                refilterStatesWithoutOperations();
+            }
+        });
     }
 }
