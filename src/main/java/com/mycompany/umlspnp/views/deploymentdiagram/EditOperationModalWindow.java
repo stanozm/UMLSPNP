@@ -63,10 +63,6 @@ public class EditOperationModalWindow extends ModalWindow {
         GridPane.setVgrow(operationsInput, Priority.ALWAYS);
         
         this.rootGrid.add(confirmButton, 0, 3);
-        
-        // TODO: make responsive
-        this.setWidth(300);
-        this.setHeight(400);
     }
 
     private void setDefaultState(Object state){

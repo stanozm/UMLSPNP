@@ -72,10 +72,6 @@ public class EditOperationEntryModalWindow extends ModalWindow{
         this.rootGrid.add(speedInput, 1, 2);
         
         this.rootGrid.add(confirmButton, 0, 3);
-        
-        // TODO: make responsive
-        this.setWidth(300);
-        this.setHeight(200);
     }
     
     private Integer parseProcessingSpeedValue(){

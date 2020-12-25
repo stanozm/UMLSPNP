@@ -40,10 +40,6 @@ public class StringModalWindow extends ModalWindow {
         this.rootGrid.add(stringLabel, 0, 0);
         this.rootGrid.add(stringField, 1, 0);
         this.rootGrid.add(confirmButton, 0, 1);
-        
-        // TODO: make responsive
-        this.setWidth(300);
-        this.setHeight(100);
     }
     
     public Label getLabel(){

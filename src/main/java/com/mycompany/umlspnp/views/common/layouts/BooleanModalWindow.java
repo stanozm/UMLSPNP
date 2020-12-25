@@ -49,10 +49,6 @@ public class BooleanModalWindow extends ModalWindow{
         this.rootGrid.add(stringLabel, 0, 0, 2, 1);
         this.rootGrid.add(yesButton, 0, 1);
         this.rootGrid.add(noButton, 1, 1);
-        
-        // TODO: make responsive
-        this.setWidth(300);
-        this.setHeight(100);
     }
     
     public BooleanModalWindow(Stage parentStage, String windowName, String labelText, BooleanProperty output) {

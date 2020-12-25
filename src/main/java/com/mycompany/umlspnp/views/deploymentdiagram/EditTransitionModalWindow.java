@@ -82,10 +82,6 @@ public class EditTransitionModalWindow extends ModalWindow {
         this.rootGrid.add(this.rateInput, 1, 3);
         
         this.rootGrid.add(confirmButton, 0, 4);
-        
-        // TODO: make responsive
-        this.setWidth(300);
-        this.setHeight(200);
     }
     
     private boolean checkInputs(){
