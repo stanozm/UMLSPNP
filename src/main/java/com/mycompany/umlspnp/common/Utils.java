@@ -26,4 +26,12 @@ public class Utils {
         t.applyCss();
         return t.getLayoutBounds().getWidth();
     }
+    
+    public static String shortenString(String text, int maxLength){
+        String shortenedString = text;
+        if (text.length() > maxLength){
+            shortenedString = text.substring(0, maxLength).concat("...");
+        }
+        return shortenedString;
+    }
 }

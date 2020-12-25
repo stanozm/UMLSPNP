@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.controllers;
 
+import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
@@ -311,7 +312,7 @@ public class MainController {
                 if(selected != null){
                     BooleanModalWindow confirmWindow = 
                             new BooleanModalWindow((Stage) statesView.getScene().getWindow(), 
-                            "Confirm", "The state \"" + selected + "\" will be deleted. Proceed?");
+                            "Confirm", "The state \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
                     confirmWindow.showAndWait();
                     if(confirmWindow.getResult()){
                         states.remove(selected);
@@ -326,7 +327,7 @@ public class MainController {
                 var selected = (State) statesView.getSelected();
                 if(selected != null){
                     StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
-                            "Rename state", "Type new name of the state \"" + selected + "\":", selected.nameProperty());
+                            "Rename state", "Type new name of the state \"" + Utils.shortenString(selected.toString(), 50) + "\":", selected.nameProperty());
                     renameWindow.showAndWait();
                     statesView.refresh();
                 }
@@ -375,7 +376,7 @@ public class MainController {
                 if(selected != null){
                     BooleanModalWindow confirmWindow = 
                             new BooleanModalWindow((Stage) transitionsView.getScene().getWindow(), 
-                            "Confirm", "The transition \"" + selected + "\" will be deleted. Proceed?");
+                            "Confirm", "The transition \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
                     confirmWindow.showAndWait();
                     if(confirmWindow.getResult()){
                         transitions.remove(selected);
@@ -430,7 +431,7 @@ public class MainController {
                 if(selected != null){
                     BooleanModalWindow confirmWindow = 
                             new BooleanModalWindow((Stage) operationsView.getScene().getWindow(), 
-                            "Confirm", "The operation \"" + selected + "\" will be deleted. Proceed?");
+                            "Confirm", "The operation \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
                     confirmWindow.showAndWait();
                     if(confirmWindow.getResult()){
                         operations.remove(selected);
@@ -484,7 +485,7 @@ public class MainController {
                 if(selected != null){
                     BooleanModalWindow confirmWindow = 
                             new BooleanModalWindow((Stage) operationEntriesView.getScene().getWindow(), 
-                            "Confirm", "The operation entry \"" + selected + "\" will be deleted. Proceed?");
+                            "Confirm", "The operation entry \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
                     confirmWindow.showAndWait();
                     if(confirmWindow.getResult()){
                         operationEntries.remove(selected);
