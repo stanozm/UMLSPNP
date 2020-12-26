@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.ObservableString;
+import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -13,6 +14,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.util.Callback;
 
 /**
  *
@@ -24,7 +26,15 @@ public class StateOperation extends ObservableString {
     
     public StateOperation(State state){
         this.state = new SimpleObjectProperty(state);
-        this.operationEntries = FXCollections.observableArrayList();
+        this.operationEntries = FXCollections.observableArrayList(
+                new Callback<OperationEntry, Observable[]>() {
+                    @Override
+                    public Observable[] call(OperationEntry param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
 
         var stringChangeListener = new ChangeListener(){
             @Override
