@@ -5,7 +5,10 @@
  */
 package com.mycompany.umlspnp.views.common;
 
+import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 
 /**
@@ -21,6 +24,20 @@ public class NamedRectangle extends BasicRectangle{
         nameLabel = new Label(name);
         nameLabel.translateXProperty().bind(rect.translateXProperty().add(rect.widthProperty().divide(2)).subtract(nameLabel.widthProperty().divide(2)));
         nameLabel.translateYProperty().bind(rect.yProperty());
+
+        // Label clipping when its width is not sufficient to display it
+        widthProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                Platform.runLater(new Runnable() {
+                     @Override
+                     public void run() {
+                         nameLabel.setMaxWidth(widthProperty().getValue() - 10.0);
+                     }
+                 });     
+            }
+        });
+
         
         this.getChildren().add(nameLabel);
     }
