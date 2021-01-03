@@ -6,87 +6,86 @@
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
 
-import javafx.collections.FXCollections;
+import com.mycompany.umlspnp.common.ElementContainer;
+import com.mycompany.umlspnp.models.common.NamedNode;
 import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
 
 /**
  *
  * @author 10ondr
  */
 public class DeploymentDiagram {
-    private final ObservableMap<Number, DeploymentTarget> deploymentTargets;
-    private final ObservableMap<Number, CommunicationLink> communicationLinks;
+    private final ElementContainer allElements = ElementContainer.getInstanceModel();
     
     public DeploymentDiagram(){
-        deploymentTargets = FXCollections.observableHashMap();
-        communicationLinks = FXCollections.observableHashMap();
     }
     
-    public void addDeploymentTargetsChangeListener(MapChangeListener listener){
-        deploymentTargets.addListener(listener);
+    public void addAllNodesChangeListener(MapChangeListener listener){
+        allElements.addAllNodesChangeListener(listener);
     }
     
-    public DeploymentTarget createDeploymentTarget(){
-        var newDT = new DeploymentTarget("New deployment target");
-        addDeploymentTarget(newDT);
+    public void addCommunicationLinksChangeListener(MapChangeListener listener){
+        allElements.addAllConnectionsChangeListener(listener);
+    }
+
+    public DeploymentTarget createDeploymentTarget(DeploymentTarget parent){
+        var newDT = new DeploymentTarget("New deployment target", parent);
+        addNode(newDT);
+        if(parent != null)
+            parent.addInnerNode(newDT);
         return newDT;
     }
     
-    public void addDeploymentTarget(DeploymentTarget newTarget){
-        deploymentTargets.put(newTarget.getObjectInfo().getID(), newTarget);
+    public Artifact createArtifact(DeploymentTarget parent){
+        var newArtifact = new Artifact("New artifact", parent);
+        addNode(newArtifact);
+        if(parent != null)
+            parent.addInnerNode(newArtifact);
+        return newArtifact;
     }
     
-    public void deploymentTargetCleanup(DeploymentTarget target){
-        for(CommunicationLink item : communicationLinks.values()){
-            if(item.getFirst().equals(target) || item.getSecond().equals(target)){
-                communicationLinks.remove(item.getObjectInfo().getID());
-            }
-        }
+    public void addNode(NamedNode newNode){
+        allElements.addNode(newNode, newNode.getObjectInfo().getID());
     }
-    
-    public boolean removeDeploymentTargetRecursive(int objectID){
-        if(deploymentTargets.containsKey(objectID)){
-            deploymentTargetCleanup(deploymentTargets.get(objectID));
-            deploymentTargets.remove(objectID);
-            return true;
-        }
-        DeploymentTarget dt = getDeploymentTargetRecursive(objectID);
-        if(dt == null)
+
+    public boolean removeNode(int objectID){
+        var removed = allElements.getNode(objectID);
+        if(removed == null)
             return false;
-        deploymentTargetCleanup(dt);
         
-        for(var item : deploymentTargets.values()){
-            if(item.deleteInnerNodeRecursive(objectID))
-                return true;
+        allElements.removeNode(objectID);
+        
+        if(removed instanceof DeploymentTarget){
+            var removedDeploymentTarget = (DeploymentTarget) removed;
+            DeploymentTarget parent = removedDeploymentTarget.getParent();
+            if(parent != null)
+                parent.removeInnerNode(objectID);
+            removedDeploymentTarget.cleanupRecursive();
         }
-        return false;
+        else if(removed instanceof Artifact){
+            var removedArtifact = (Artifact) removed;
+            DeploymentTarget parent = removedArtifact.getParent();
+            if(parent != null)
+                parent.removeInnerNode(objectID);
+        }
+        return true;
     }
     
     public DeploymentTarget getDeploymentTarget(int objectID){
-        return deploymentTargets.get(objectID);
-    }
-
-    public DeploymentTarget getDeploymentTargetRecursive(int objectID){
-        var DT = getDeploymentTarget(objectID);
-        if(DT != null)
-            return DT;
-        for(var item : deploymentTargets.values()){
-            var innerNode = item.getInnerNodeRecursive(objectID);
-            if(innerNode instanceof DeploymentTarget)
-                return (DeploymentTarget) innerNode;
-        }
+        var node = allElements.getNode(objectID);
+        if(node instanceof DeploymentTarget)
+            return (DeploymentTarget) node;
         return null;
     }
     
     public CommunicationLink createCommunicationLink(DeploymentTarget source, DeploymentTarget destination){
         var commLink = new CommunicationLink(source, destination);
         
-        communicationLinks.put(commLink.getObjectInfo().getID(), commLink);
+        allElements.addConnection(commLink, commLink.getObjectInfo().getID());
+        
+        source.addInnerConnection(commLink);
+        destination.addInnerConnection(commLink);
+        
         return commLink;
-    }
-    
-    public void addCommunicationLinksChangeListener(MapChangeListener listener){
-        communicationLinks.addListener(listener);
     }
 }

@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.Node;
 import javafx.scene.paint.Color;
 
 /**
@@ -42,6 +41,34 @@ public class DeploymentTargetView extends Box{
         stateOperationsAnnotation = new Annotation(250, 250, this.getCenterX(), this.getCenterY(), "Supported Operations");
         stateOperationsAnnotation.setFill(Color.OLDLACE);
         lockMovement(stateOperationsAnnotation);
+    }
+
+    public void addInnerNode(NamedRectangle child){
+        child.setRestrictionsInParent(this);
+
+        // Apply positioning restriction in parent
+        child.setTranslateX(1);
+        child.setTranslateY(1);
+
+        innerNodes.put(child.getObjectInfo().getID(), child);
+        this.getChildren().add(child);
+    }
+
+    public boolean removeInnerNode(int objectID){
+        var innerNode = innerNodes.get(objectID);
+
+        if(innerNode != null){
+            boolean result = innerNodes.remove(objectID) != null;
+            if(result){
+                this.getChildren().remove(innerNode);
+            }
+            return result;
+        }
+        return false;
+    }
+    
+    public NamedRectangle getInnerNode(int objectID){
+        return innerNodes.get(objectID);
     }
 
     public Annotation getStatesAnnotation(){
@@ -96,61 +123,5 @@ public class DeploymentTargetView extends Box{
         this.slots.forEach(slot -> {
             slot.refreshPosition();
         });
-    }
-
-    private void addInnerNode(NamedRectangle child){        
-        child.setRestrictionsInParent(this);
-        
-        // Apply positioning restriction in parent
-        child.setTranslateX(1);
-        child.setTranslateY(1);
-
-        innerNodes.put(child.getObjectInfo().getID(), child);
-        this.getChildren().add(child);
-    }
-    
-    public ArtifactView CreateArtifact(int modelObjectID){
-        var newArtifact = new ArtifactView(0, 0, 0, 0, modelObjectID);
-        addInnerNode(newArtifact);
-        newArtifact.changeDimensions(150, 150);
-        return newArtifact;
-    }
-    
-    public DeploymentTargetView CreateDeploymentTarget(int modelObjectID){
-        var newDeploymentTarget = new DeploymentTargetView(0, 0, 0, 0, 10, modelObjectID);
-        addInnerNode(newDeploymentTarget);        
-        newDeploymentTarget.changeDimensions(150, 150);
-        return newDeploymentTarget;
-    }
-    
-    public boolean deleteInnerNode(int objectID){
-        var innerNode = innerNodes.get(objectID);
-
-        if(innerNode != null){
-            boolean result = innerNodes.remove(objectID) != null;
-            if(result){
-                this.getChildren().remove(innerNode);
-            }
-            return result;
-        }
-        return false;
-    }
-    
-    public NamedRectangle getInnerNode(int objectID){
-        return innerNodes.get(objectID);
-    }
-
-    public NamedRectangle getInnerNodeRecursive(int objectID){
-        var node = getInnerNode(objectID);
-        if(node != null)
-            return node;
-        for(var item : innerNodes.values()){
-            if(item instanceof DeploymentTargetView){
-                var innerNode = ((DeploymentTargetView) item).getInnerNodeRecursive(objectID);
-                if(innerNode != null)
-                    return innerNode;
-            }
-        }
-        return null;
     }
 }

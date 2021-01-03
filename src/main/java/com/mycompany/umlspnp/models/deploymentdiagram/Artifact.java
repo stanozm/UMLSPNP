@@ -12,8 +12,15 @@ import com.mycompany.umlspnp.models.common.*;
  * @author 10ondr
  */
 public class Artifact extends NamedNode{
+    private final DeploymentTarget DTparent;
     
-    public Artifact(String name){
+    public Artifact(String name, DeploymentTarget parent){
         super(name);
+        
+        DTparent = parent;
+    }
+    
+    public DeploymentTarget getParent(){
+        return DTparent;
     }
 }

@@ -5,12 +5,14 @@
  */
 package com.mycompany.umlspnp.views;
 
+import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.BasicRectangle;
 import com.mycompany.umlspnp.views.common.Connection;
 import com.mycompany.umlspnp.views.common.ConnectionContainer;
+import com.mycompany.umlspnp.views.common.NamedRectangle;
+import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
-import java.util.HashMap;
 import javafx.scene.Group;
 import javafx.scene.control.Menu;
 import javafx.scene.input.MouseEvent;
@@ -21,49 +23,51 @@ import javafx.scene.input.MouseEvent;
  */
 public class DeploymentDiagramView extends DiagramView {
     private final Group root;
-    private final HashMap<Number, DeploymentTargetView> deploymentTargetViews;
-    private final HashMap<Number, Connection> connections;
+    
+    private final ElementContainer allElements = ElementContainer.getInstanceView();
     
     private final ConnectionContainer connectionContainer = new ConnectionContainer();
     
     public DeploymentDiagramView(){
         this.root = new Group();
         
-        this.deploymentTargetViews = new HashMap();
-        this.connections = new HashMap();
-        
         diagramPane.getChildren().add(root);
     }
 
-    public DeploymentTargetView getDeploymentTarget(int objectID){
-        return deploymentTargetViews.get(objectID);
-    }
-    
-    public DeploymentTargetView getDeploymentTargetRecursive(int objectID){
-        var DTV = getDeploymentTarget(objectID);
-        if(DTV != null)
-            return DTV;
-        for(var item : deploymentTargetViews.values()){
-            var innerNode = item.getInnerNodeRecursive(objectID);
-            if(innerNode instanceof DeploymentTargetView)
-                return (DeploymentTargetView) innerNode;
-        }
-        return null;
-    }
-    
     public void addMenu(Menu newMenu){
         diagramMenu.getMenus().add(newMenu);
     }
-
-    public DeploymentTargetView createDeploymentTarget(int modelObjectID){
-        var dt = new DeploymentTargetView(0, 10, 150, 150, 10, modelObjectID);
+    
+    public NamedRectangle getNode(int objectID){
+        return (NamedRectangle) allElements.getNode(objectID);
+    }
+    
+    public DeploymentTargetView getDeploymentTargetView(int objectID){
+        var node = getNode(objectID);
+        if(node instanceof DeploymentTargetView)
+            return (DeploymentTargetView) node;
+        return null;
+    }
+    
+    public DeploymentTargetView createDeploymentTargetView(DeploymentTargetView parentNode, int modelObjectID){
+        var dt = new DeploymentTargetView(0, 10, 0, 0, 10, modelObjectID);
+        allElements.addNode(dt, modelObjectID);
         registerNodeToSelect(dt);
         
-        dt.setRestrictionsInParent(null);
+        if(parentNode == null){
+            dt.setRestrictionsInParent(null);
+            root.getChildren().add(dt);
+        }
+        else{
+            parentNode.addInnerNode(dt);
+        }
         
-        root.getChildren().add(dt);
-        deploymentTargetViews.put(modelObjectID, dt);
-        
+        dt.changeDimensions(150, 150);
+        addAnnotations(dt);
+        return dt;
+    }
+    
+    private void addAnnotations(DeploymentTargetView dt){
         Annotation states = dt.getStatesAnnotation();
         Annotation stateTransitions = dt.getStateTransitionsAnnotation();
         Annotation stateOperations = dt.getStateOperationsAnnotation();
@@ -77,15 +81,14 @@ public class DeploymentDiagramView extends DiagramView {
         root.getChildren().add(stateOperations);
         root.getChildren().add(stateOperations.getLine());
         stateOperations.getLine().toBack();
-        
-        return dt;
     }
     
-    public DeploymentTargetView createDeploymentTarget(DeploymentTargetView parentNode, int modelObjectID){
-        var dt = parentNode.CreateDeploymentTarget(modelObjectID);
-        registerNodeToSelect(dt);
-        
-        return dt;
+    public ArtifactView CreateArtifact(DeploymentTargetView parentNode, int modelObjectID){
+        var newArtifact = new ArtifactView(0, 0, 0, 0, modelObjectID);
+        allElements.addNode(newArtifact, modelObjectID);
+        parentNode.addInnerNode(newArtifact);
+        newArtifact.changeDimensions(150, 150);
+        return newArtifact;
     }
     
     private void registerNodeToSelect(BasicRectangle node){
@@ -103,12 +106,23 @@ public class DeploymentDiagramView extends DiagramView {
         });
     }
     
-    public boolean removeDeploymentTargetView(int objectID){
-        DeploymentTargetView DTV = getDeploymentTarget(objectID);
+    private boolean removeInnerNode(NamedRectangle removedNode){
+        var parent = removedNode.getParentDeploymentTargetview();
+        if(parent != null)
+            return parent.removeInnerNode(removedNode.getObjectInfo().getID());
+        return false;
+    }
+    
+    public boolean removeNode(int objectID){
+        var removedNode = getNode(objectID);
 
-        if(DTV != null){
-            boolean result = deploymentTargetViews.remove(objectID) != null;
-            if(result){
+        if(removedNode == null)
+            return false;
+
+        boolean result = allElements.removeNode(objectID);
+        if(result){
+            if(removedNode instanceof DeploymentTargetView){
+                var DTV = (DeploymentTargetView) removedNode;
                 Annotation states = DTV.getStatesAnnotation();
                 Annotation stateTransitions = DTV.getStateTransitionsAnnotation();
                 Annotation stateOperations = DTV.getStateOperationsAnnotation();
@@ -118,12 +132,13 @@ public class DeploymentDiagramView extends DiagramView {
                 root.getChildren().remove(stateTransitions.getLine());
                 root.getChildren().remove(stateOperations);
                 root.getChildren().remove(stateOperations.getLine());
-                
-                root.getChildren().remove(DTV);
             }
-            return result;
+ 
+            if(!root.getChildren().remove(removedNode)){
+                removeInnerNode(removedNode);
+            }
         }
-        return false;
+        return result;
     }
 
     public ConnectionContainer getConnectionContainer(){
@@ -135,28 +150,36 @@ public class DeploymentDiagramView extends DiagramView {
         connectionContainer.setFirstElement(startingNode);
     }
     
-    public Connection createConnection(DeploymentTargetView source, DeploymentTargetView destination, int connectionModelID){
-        var c = new Connection(connectionModelID, source.getEmptySlot(), destination.getEmptySlot());
+    public Connection getConnection(int objectID){
+        var connection = allElements.getConnection(objectID);
 
-        connections.put(connectionModelID, c);
-        root.getChildren().add(c);
-        return c;
+        if(connection instanceof Connection)
+            return (Connection) connection;
+        return null;
+    }
+    
+    public Connection createConnection(DeploymentTargetView source, DeploymentTargetView destination, int connectionModelID){
+        var newConnection = new Connection(connectionModelID, source.getEmptySlot(), destination.getEmptySlot());
+
+        allElements.addConnection(newConnection, connectionModelID);
+        root.getChildren().add(newConnection);
+        return newConnection;
     }
     
     public Connection createConnection(int sourceID, int destinationID, int connectionModelID){
-        var source = getDeploymentTargetRecursive(sourceID);
-        var destination = getDeploymentTargetRecursive(destinationID);
+        var source = getDeploymentTargetView(sourceID);
+        var destination = getDeploymentTargetView(destinationID);
         return createConnection(source, destination, connectionModelID);
     }
     
     public boolean removeConnection(int connectionModelID){
-        var connection = connections.get(connectionModelID);
+        var connection = getConnection(connectionModelID);
 
         if(connection == null)
             return false;
 
         connection.removeSlots();
-        connections.remove(connectionModelID);
+        allElements.removeConnection(connectionModelID);
         root.getChildren().remove(connection);
         return true;
     }

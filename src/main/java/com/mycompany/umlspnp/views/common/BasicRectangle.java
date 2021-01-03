@@ -197,7 +197,7 @@ public class BasicRectangle extends BasicElement{
                 }
             }
         });
-
+        
         this.translateXProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {

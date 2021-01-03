@@ -19,8 +19,4 @@ public class ArtifactView extends NamedRectangle {
         
         this.setFill(Color.WHITE);
     }
-    
-    public DeploymentTargetView getParentDeploymentTargetview(){
-        return (DeploymentTargetView) this.getParent();
-    }
 }

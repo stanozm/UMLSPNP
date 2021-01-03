@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
+import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.*;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -19,7 +20,13 @@ import javafx.util.Callback;
  * @author 10ondr
  */
 public class DeploymentTarget extends NamedNode {
+    private final ElementContainer allElements = ElementContainer.getInstanceModel();
+    
     private final ObservableMap<Number, NamedNode> innerNodes;
+    private final ObservableMap<Number, CommunicationLink> innerConnections;
+    
+    private final DeploymentTarget DTparent;
+    
     
     // Annotations
     private final ObservableList<State> states;
@@ -28,10 +35,13 @@ public class DeploymentTarget extends NamedNode {
     
     private final ObservableList<State> statesWithoutOperations;
     
-    public DeploymentTarget(String name){
+    public DeploymentTarget(String name, DeploymentTarget parent){
         super(name);
         
         innerNodes = FXCollections.observableHashMap();
+        innerConnections = FXCollections.observableHashMap();
+        this.DTparent = parent;
+        
         states = FXCollections.observableArrayList(
                 new Callback<State, Observable[]>() {
                     @Override
@@ -51,6 +61,7 @@ public class DeploymentTarget extends NamedNode {
                         };
                     }
                 });
+
         stateOperations = FXCollections.observableArrayList(
                 new Callback<StateOperation, Observable[]>() {
                     @Override
@@ -64,11 +75,56 @@ public class DeploymentTarget extends NamedNode {
         statesWithoutOperations = FXCollections.observableArrayList();
         initStatesWithoutOperations();
     }
+   
+    public DeploymentTarget getParent(){
+        return DTparent;
+    }
+    
+    private void cleanup(){
+        var connections = innerConnections.values();
+        for(var connection : connections){
+            connection.cleanup();
+            allElements.removeConnection(connection.getObjectInfo().getID());
+        }
+    }
+
+    public void cleanupRecursive(){
+        for(var item : innerNodes.values()){
+            if(item instanceof DeploymentTarget){
+                var removedDeploymentTarget = (DeploymentTarget) item;
+                removedDeploymentTarget.cleanupRecursive();
+            }
+            allElements.removeNode(item.getObjectInfo().getID());
+        }
+        
+        cleanup();
+    }
+    
+    public boolean removeInnerNode(int objectID){
+        var removed = innerNodes.remove(objectID);
+        return removed != null;
+    }
 
     public void addInnerNodesChangeListener(MapChangeListener listener){
         innerNodes.addListener(listener);
     }
+
+    public void addInnerNode(NamedNode newInnerNode){
+        innerNodes.put(newInnerNode.getObjectInfo().getID(), newInnerNode);
+    }
     
+    public void removeConnection(CommunicationLink removedConnection){
+        innerConnections.remove(removedConnection.getObjectInfo().getID());
+    }
+    
+    public void addInnerConnectionsChangeListener(MapChangeListener listener){
+        innerConnections.addListener(listener);
+    }
+
+    public void addInnerConnection(CommunicationLink newConnection){
+        innerConnections.put(newConnection.getObjectInfo().getID(), newConnection);
+    }
+
     public void addStatesChangeListener(ListChangeListener listener){
         states.addListener(listener);
     }
@@ -79,54 +135,6 @@ public class DeploymentTarget extends NamedNode {
     
     public void addStateOperationsChangeListener(ListChangeListener listener){
         stateOperations.addListener(listener);
-    }
-
-    public Artifact createArtifact(){
-        var newArtifact = new Artifact("New artifact");
-        addInnerNode(newArtifact);
-        return newArtifact;
-    }
-
-    public DeploymentTarget createDeploymentTarget(){
-        var newDT = new DeploymentTarget("New deployment target");
-        addInnerNode(newDT);
-        return newDT;
-    }
-    
-    public void addInnerNode(NamedNode newInnerNode){
-        innerNodes.put(newInnerNode.getObjectInfo().getID(), newInnerNode);
-    }
-    
-    public boolean deleteInnerNodeRecursive(int objectID){
-        if(innerNodes.containsKey(objectID)){
-            innerNodes.remove(objectID);
-            return true;
-        }
-        for(var item : innerNodes.values()){
-            if(item instanceof DeploymentTarget){
-                if(((DeploymentTarget) item).deleteInnerNodeRecursive(objectID))
-                    return true;
-            }
-        }
-        return false;
-    }
-    
-    public NamedNode getInnerNode(int objectID){
-        return innerNodes.get(objectID);
-    }
-
-    public NamedNode getInnerNodeRecursive(int objectID){
-        var node = getInnerNode(objectID);
-        if(node != null)
-            return node;
-        for(var item : innerNodes.values()){
-            if(item instanceof DeploymentTarget){
-                var innerNode = ((DeploymentTarget) item).getInnerNodeRecursive(objectID);
-                if(innerNode != null)
-                    return innerNode;
-            }
-        }
-        return null;
     }
     
     public void addState(State newState){

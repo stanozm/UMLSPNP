@@ -27,4 +27,11 @@ public class CommunicationLink extends BasicNode {
     public DeploymentTarget getSecond(){
         return target2;
     }
+    
+    public void cleanup(){
+        if(target1 != null)
+            target1.removeConnection(this);
+        if(target2 != null)
+            target2.removeConnection(this);
+    }
 }

@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views.common;
 
+import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -61,5 +62,9 @@ public class NamedRectangle extends BasicRectangle{
     
     public void bindLabelTo(StringProperty name){
         this.nameLabel.textProperty().bind(name);
+    }
+    
+    public DeploymentTargetView getParentDeploymentTargetview(){
+        return (DeploymentTargetView) this.getParent();
     }
 }
