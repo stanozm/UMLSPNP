@@ -5,7 +5,9 @@
  */
 package com.mycompany.umlspnp.common;
 
+import javafx.geometry.Point2D;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.text.Text;
 
@@ -33,5 +35,17 @@ public class Utils {
             shortenedString = text.substring(0, maxLength).concat("...");
         }
         return shortenedString;
+    }
+    
+    public static Point2D getPositionRelativeTo(Node child, Node parent, Point2D coordinates){
+        Point2D finalPosition = coordinates;
+        var currentNode = child;
+        while(currentNode.getParent() != null){
+            finalPosition = currentNode.localToParent(finalPosition);
+            currentNode = currentNode.getParent();
+            if(currentNode.equals(parent))
+                return finalPosition;
+        }
+        return null;
     }
 }

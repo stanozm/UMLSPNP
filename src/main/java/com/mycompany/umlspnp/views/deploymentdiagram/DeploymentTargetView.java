@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Group;
 import javafx.scene.paint.Color;
 
 /**
@@ -27,20 +28,21 @@ public class DeploymentTargetView extends Box{
     private final Annotation stateTransitionsAnnotation;
     private final Annotation stateOperationsAnnotation;
 
-    public DeploymentTargetView(double x, double y, double width, double height, double zOffset, int modelObjectID) {
+    public DeploymentTargetView(double x, double y, double width, double height, double zOffset, Group diagramRoot, int modelObjectID) {
         super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
         
         statesAnnotation = new Annotation(250, 10, this.getCenterX(), this.getCenterY(), "States");
         statesAnnotation.setFill(Color.LIGHTCYAN);
-        lockMovement(statesAnnotation);
         
         stateTransitionsAnnotation = new Annotation(250, 125, this.getCenterX(), this.getCenterY(), "State Transitions");
         stateTransitionsAnnotation.setFill(Color.LIGHTPINK);
-        lockMovement(stateTransitionsAnnotation);
         
         stateOperationsAnnotation = new Annotation(250, 250, this.getCenterX(), this.getCenterY(), "Supported Operations");
         stateOperationsAnnotation.setFill(Color.OLDLACE);
-        lockMovement(stateOperationsAnnotation);
+        
+        annotationInit(statesAnnotation, diagramRoot);
+        annotationInit(stateTransitionsAnnotation, diagramRoot);
+        annotationInit(stateOperationsAnnotation, diagramRoot);
     }
 
     public void addInnerNode(NamedRectangle child){
@@ -123,5 +125,23 @@ public class DeploymentTargetView extends Box{
         this.slots.forEach(slot -> {
             slot.refreshPosition();
         });
+    }
+    
+    private void annotationInit(Annotation newAnnotation, Group diagramRoot){
+        rect.boundsInLocalProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                var line = newAnnotation.getLine();
+
+                line.setEndX(getWidth() / 2);
+                line.setEndY(getHeight() / 2);
+            }
+        });
+
+        getChildren().add(newAnnotation);
+        getChildren().add(newAnnotation.getLine());
+        newAnnotation.getLine().toBack();
+        
+        newAnnotation.setRestrictionsInParent(diagramRoot);
     }
 }

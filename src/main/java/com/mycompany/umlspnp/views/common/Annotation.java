@@ -13,6 +13,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
+import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.paint.Color;
@@ -32,7 +33,6 @@ public class Annotation extends NamedRectangle {
     public Annotation(double x, double y, DoubleExpression targetX, DoubleExpression targetY, String name) {
         super(x, y, 0, 0, name, -1);
 
-        this.setRestrictionsInParent(null);
         this.setBoldHeader(true);
         this.setResizable(false);
 
@@ -40,10 +40,7 @@ public class Annotation extends NamedRectangle {
         
         line.startXProperty().bind(this.translateXProperty().add(this.widthProperty().divide(2)));
         line.startYProperty().bind(this.translateYProperty().add(this.heightProperty().divide(2)));
-
-        line.endXProperty().bind(targetX);
-        line.endYProperty().bind(targetY);
-
+        
         items.setTranslateX(5);
         items.setTranslateY(20);
         this.getChildren().add(items);

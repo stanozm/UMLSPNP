@@ -5,17 +5,21 @@
  */
 package com.mycompany.umlspnp.views.common;
 
+import com.mycompany.umlspnp.common.Utils;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
+import javafx.scene.Group;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.transform.Transform;
 
 /**
  *
@@ -163,6 +167,52 @@ public class BasicRectangle extends BasicElement{
         this.getChildren().addAll(resizeBottom, resizeRight);
     }
     
+    private void commonRestrictionInParent(){
+        this.widthProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if((double) newValue < 30){
+                    changeDimensions((double) oldValue, getHeight());
+                }
+            }
+        });
+        
+        this.heightProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if((double) newValue < 30){
+                    changeDimensions(getWidth(), (double) oldValue);
+                }
+            }
+        });
+    }
+    
+    public void setRestrictionsInParent(Group parent){
+        commonRestrictionInParent();
+        
+        var thisReference = this;
+        
+        this.localToSceneTransformProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                Point2D minVal = Utils.getPositionRelativeTo(thisReference, parent, Point2D.ZERO);
+                if(minVal == null)
+                    return;
+                
+                if(minVal.getX() < 0 || minVal.getY() < 0){
+                    var oldValueTransform = (Transform) oldValue;
+                    Point2D oldValueInParent = localToParent(sceneToLocal(new Point2D(oldValueTransform.getTx(), oldValueTransform.getTy())));               
+                    
+                    if(minVal.getX() < 0)
+                        setTranslateX(oldValueInParent.getX());
+                
+                    if(minVal.getY() < 0)
+                        setTranslateY(oldValueInParent.getY());
+                }
+            }
+        });
+    }
+    
     public void setRestrictionsInParent(BasicRectangle parent){
         this.widthProperty().addListener(new ChangeListener(){
             @Override
@@ -175,25 +225,17 @@ public class BasicRectangle extends BasicElement{
                         }
                     }
                 }
-                else if((double) newValue < 30){
-                    changeDimensions((double) oldValue, getHeight());
-                }
             }
         });
 
         this.heightProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if((double) newValue > (double) oldValue){
-                    if(parent != null){
-                        double newParentHeight = (double) newValue + getTranslateY() + parent.borderOffset.getValue();
-                        if(newParentHeight > parent.getHeight()){
-                            parent.changeDimensions(parent.getWidth(), newParentHeight);
-                        }
+                if((double) newValue > (double) oldValue && parent != null){
+                    double newParentHeight = (double) newValue + getTranslateY() + parent.borderOffset.getValue();
+                    if(newParentHeight > parent.getHeight()){
+                        parent.changeDimensions(parent.getWidth(), newParentHeight);
                     }
-                }
-                else if((double) newValue < 30){
-                   changeDimensions(getWidth(), (double) oldValue);
                 }
             }
         });
@@ -217,7 +259,7 @@ public class BasicRectangle extends BasicElement{
                 }
             }
         });
-
+        
         this.translateYProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
@@ -232,6 +274,7 @@ public class BasicRectangle extends BasicElement{
                     minVal = parent.borderOffset.getValue();
                 else
                     minVal = 0;
+
                 if((double) newValue < minVal){
                     setTranslateY(minVal);
                 }

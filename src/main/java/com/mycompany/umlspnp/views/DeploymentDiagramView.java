@@ -50,12 +50,12 @@ public class DeploymentDiagramView extends DiagramView {
     }
     
     public DeploymentTargetView createDeploymentTargetView(DeploymentTargetView parentNode, int modelObjectID){
-        var dt = new DeploymentTargetView(0, 10, 0, 0, 10, modelObjectID);
+        var dt = new DeploymentTargetView(0, 10, 0, 0, 10, root, modelObjectID);
         allElements.addNode(dt, modelObjectID);
         registerNodeToSelect(dt);
         
         if(parentNode == null){
-            dt.setRestrictionsInParent(null);
+            dt.setRestrictionsInParent(root);
             root.getChildren().add(dt);
         }
         else{
@@ -63,26 +63,9 @@ public class DeploymentDiagramView extends DiagramView {
         }
         
         dt.changeDimensions(150, 150);
-        addAnnotations(dt);
         return dt;
     }
-    
-    private void addAnnotations(DeploymentTargetView dt){
-        Annotation states = dt.getStatesAnnotation();
-        Annotation stateTransitions = dt.getStateTransitionsAnnotation();
-        Annotation stateOperations = dt.getStateOperationsAnnotation();
         
-        root.getChildren().add(states);
-        root.getChildren().add(states.getLine());
-        states.getLine().toBack();
-        root.getChildren().add(stateTransitions);
-        root.getChildren().add(stateTransitions.getLine());
-        stateTransitions.getLine().toBack();
-        root.getChildren().add(stateOperations);
-        root.getChildren().add(stateOperations.getLine());
-        stateOperations.getLine().toBack();
-    }
-    
     public ArtifactView CreateArtifact(DeploymentTargetView parentNode, int modelObjectID){
         var newArtifact = new ArtifactView(0, 0, 0, 0, modelObjectID);
         allElements.addNode(newArtifact, modelObjectID);
