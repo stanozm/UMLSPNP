@@ -126,12 +126,4 @@ public class ConnectionSlot extends Circle{
         Point2D p = new Point2D(this.getTranslateX(), this.getTranslateY());
         this.moveOnEdge(p);
     }
-
-    public NumberBinding getBindingPosX(){
-        return Bindings.add(this.translateXProperty(), offsetX);
-    }
-    
-    public NumberBinding getBindingPosY(){
-        return Bindings.add(this.translateYProperty(), offsetY);
-    }
 }

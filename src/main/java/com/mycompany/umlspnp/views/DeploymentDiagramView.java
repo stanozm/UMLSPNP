@@ -142,7 +142,7 @@ public class DeploymentDiagramView extends DiagramView {
     }
     
     public Connection createConnection(DeploymentTargetView source, DeploymentTargetView destination, int connectionModelID){
-        var newConnection = new Connection(connectionModelID, source.getEmptySlot(), destination.getEmptySlot());
+        var newConnection = new Connection(connectionModelID, source.getEmptySlot(), destination.getEmptySlot(), root);
 
         allElements.addConnection(newConnection, connectionModelID);
         root.getChildren().add(newConnection);
