@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.*;
+import java.util.ArrayList;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -81,7 +82,8 @@ public class DeploymentTarget extends NamedNode {
     }
     
     private void cleanup(){
-        var connections = innerConnections.values();
+        var connections = new ArrayList<CommunicationLink>(innerConnections.values());
+        
         for(var connection : connections){
             connection.cleanup();
             allElements.removeConnection(connection.getObjectInfo().getID());
