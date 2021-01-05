@@ -146,6 +146,7 @@ public class DeploymentDiagramView extends DiagramView {
 
         allElements.addConnection(newConnection, connectionModelID);
         root.getChildren().add(newConnection);
+        newConnection.refreshLinePosition();
         return newConnection;
     }
     
