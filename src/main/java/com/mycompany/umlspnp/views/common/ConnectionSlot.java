@@ -21,9 +21,6 @@ import javafx.scene.shape.Circle;
  * @author 10ondr
  */
 public class ConnectionSlot extends Circle{
-    private final ReadOnlyDoubleProperty offsetX;
-    private final ReadOnlyDoubleProperty offsetY;
-
     private final ReadOnlyDoubleProperty parentWidth;
     private final ReadOnlyDoubleProperty parentHeight;
     
@@ -34,16 +31,11 @@ public class ConnectionSlot extends Circle{
     
     public ConnectionSlot(  double radius,
                             ReadOnlyDoubleProperty zOffset, 
-                            ReadOnlyDoubleProperty offsetX,
-                            ReadOnlyDoubleProperty offsetY, 
                             ReadOnlyDoubleProperty parentWidth,
                             ReadOnlyDoubleProperty parentHeight){
         this.deletedProperty.setValue(false);
 
         this.defaultRadius = radius;
-        
-        this.offsetX = offsetX;
-        this.offsetY = offsetY;
         
         this.zOffset = zOffset;
 

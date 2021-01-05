@@ -86,7 +86,7 @@ public class DeploymentTargetView extends Box{
     }
     
     public ConnectionSlot getEmptySlot(){
-        var cs = new ConnectionSlot(4.0, this.getZOffset(), this.translateXProperty(), this.translateYProperty(), this.widthProperty(), this.heightProperty());
+        var cs = new ConnectionSlot(4.0, this.getZOffset(), this.widthProperty(), this.heightProperty());
         cs.deletedProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
