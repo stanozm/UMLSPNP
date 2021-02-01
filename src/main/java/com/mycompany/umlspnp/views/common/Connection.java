@@ -19,12 +19,12 @@ import javafx.scene.transform.Transform;
  * @author 10ondr
  */
 public class Connection extends BasicElement {
-    private final ConnectionSlot source;
-    private final ConnectionSlot destination;
-    private final Line line;
+    protected final ConnectionSlot source;
+    protected final ConnectionSlot destination;
+    protected final Line line;
     
-    private final Group diagramRoot;
-    
+    protected final Group diagramRoot;
+
     public Connection(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
         super(modelObjectID);
         
@@ -48,10 +48,10 @@ public class Connection extends BasicElement {
                 refreshLineEndPosition();
             }
         });
-
+        
         this.getChildren().add(line);
     }
-
+    
     private Point2D calculatePosition(Node relativeTo, Transform newPositionTransform){
         var newLocalPosition = sceneToLocal(new Point2D(newPositionTransform.getTx(), newPositionTransform.getTy()));
         return Utils.getPositionRelativeTo(this, relativeTo, newLocalPosition);

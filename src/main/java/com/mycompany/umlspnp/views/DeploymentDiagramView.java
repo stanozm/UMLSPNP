@@ -8,7 +8,7 @@ package com.mycompany.umlspnp.views;
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.BasicRectangle;
-import com.mycompany.umlspnp.views.common.Connection;
+import com.mycompany.umlspnp.views.deploymentdiagram.CommunicationLinkView;
 import com.mycompany.umlspnp.views.common.ConnectionContainer;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
@@ -133,16 +133,16 @@ public class DeploymentDiagramView extends DiagramView {
         connectionContainer.setFirstElement(startingNode);
     }
     
-    public Connection getConnection(int objectID){
+    public CommunicationLinkView getConnection(int objectID){
         var connection = allElements.getConnection(objectID);
 
-        if(connection instanceof Connection)
-            return (Connection) connection;
+        if(connection instanceof CommunicationLinkView)
+            return (CommunicationLinkView) connection;
         return null;
     }
     
-    public Connection createConnection(DeploymentTargetView source, DeploymentTargetView destination, int connectionModelID){
-        var newConnection = new Connection(connectionModelID, source.getEmptySlot(), destination.getEmptySlot(), root);
+    public CommunicationLinkView createConnection(DeploymentTargetView source, DeploymentTargetView destination, int connectionModelID){
+        var newConnection = new CommunicationLinkView(connectionModelID, source.getEmptySlot(), destination.getEmptySlot(), root);
 
         allElements.addConnection(newConnection, connectionModelID);
         root.getChildren().add(newConnection);
@@ -150,7 +150,7 @@ public class DeploymentDiagramView extends DiagramView {
         return newConnection;
     }
     
-    public Connection createConnection(int sourceID, int destinationID, int connectionModelID){
+    public CommunicationLinkView createConnection(int sourceID, int destinationID, int connectionModelID){
         var source = getDeploymentTargetView(sourceID);
         var destination = getDeploymentTargetView(destinationID);
         return createConnection(source, destination, connectionModelID);

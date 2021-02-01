@@ -83,6 +83,9 @@ public class MainController {
                         var firstID = newConnection.getFirst().getObjectInfo().getID();
                         var secondID = newConnection.getSecond().getObjectInfo().getID();
                         deploymentDiagramView.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
+                        
+                        communicationLinkAnnotationsInit(newConnection);
+                        createSampleAnnotations(newConnection);
                     }
                 }
                 if(change.wasRemoved()){
@@ -169,6 +172,13 @@ public class MainController {
         DT.addStateOperation(operationsDown);
     }
     
+    private void createSampleAnnotations(CommunicationLink communicationLink){
+        communicationLink.setLinkType(new LinkType("LTE", 3));
+        
+        communicationLink.addLinkFailure(new LinkFailure("PacketLost", 0.02));
+        communicationLink.addLinkFailure(new LinkFailure("ConnectionDropped", 0.001));
+    }
+    
     private void deploymentTargetAnnotationsInit(DeploymentTarget DT){
         var deploymentDiagramView = view.getDeploymentDiagramView();
         var DTView = deploymentDiagramView.getDeploymentTargetView(DT.getObjectInfo().getID());
@@ -176,6 +186,14 @@ public class MainController {
         DTView.getStatesAnnotation().setItems(DT.getStates());
         DTView.getStateTransitionsAnnotation().setItems(DT.getStateTransitions());
         DTView.getStateOperationsAnnotation().setItems(DT.getStateOperations());
+    }
+    
+    private void communicationLinkAnnotationsInit(CommunicationLink communicationLink){
+        var deploymentDiagramView = view.getDeploymentDiagramView();
+        var connectionView = deploymentDiagramView.getConnection(communicationLink.getObjectInfo().getID());
+        
+        connectionView.getLinkTypeAnnotation().setItems(communicationLink.getLinkType());
+        connectionView.getLinkFailuresAnnotation().setItems(communicationLink.getLinkFailures());
     }
     
     private void deploymentTargetMenuInit(DeploymentTargetView deploymentTargetView){
