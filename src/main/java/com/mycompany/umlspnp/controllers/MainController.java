@@ -218,6 +218,21 @@ public class MainController {
         });
         deploymentTargetView.addMenuItem(menuItemRename);
 
+        
+        String hideAnnotationsString = "Hide annotations";
+        String showAnnotationsString = "Show annotations";
+        MenuItem menuItemToggleAnnotations = new MenuItem(hideAnnotationsString);
+        menuItemToggleAnnotations.setOnAction((e) -> {
+            deploymentTargetView.setAnnotationsDisplayed(!deploymentTargetView.areAnnotationsDisplayed());
+            if(deploymentTargetView.areAnnotationsDisplayed()){
+                menuItemToggleAnnotations.setText(hideAnnotationsString);
+            }
+            else{
+                menuItemToggleAnnotations.setText(showAnnotationsString);
+            }
+        });
+        deploymentTargetView.addMenuItem(menuItemToggleAnnotations);
+        
 
         MenuItem menuItemAddArtifact = new MenuItem("Add artifact");
 

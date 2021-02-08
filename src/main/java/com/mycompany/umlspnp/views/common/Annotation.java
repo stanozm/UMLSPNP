@@ -28,6 +28,8 @@ public class Annotation extends NamedRectangle {
     private double cellHeight = 25;
     private final ListView<Object> items = new ListView();
     
+    private boolean isDisplayed = true;
+    
     private final Line line = new Line();
     
     public Annotation(double x, double y, DoubleExpression targetX, DoubleExpression targetY, String name) {
@@ -56,13 +58,7 @@ public class Annotation extends NamedRectangle {
         this.items.boundsInParentProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if(items.getItems().size() < 1){
-                    setEmpty(true);
-                }
-                else{
-                    setEmpty(false);
-                    resizeByContent();
-                }
+                refreshDisplayed();
             }
         });
         
@@ -111,7 +107,7 @@ public class Annotation extends NamedRectangle {
 
         this.items.prefHeightProperty().bind(Bindings.size(items.getItems()).multiply(cellHeight).add(cellHeight + 5));
     }
-    
+
     @Override
     public void setFill(Color newColor){
         super.setFill(newColor);
@@ -130,6 +126,16 @@ public class Annotation extends NamedRectangle {
             this.line.setVisible(!value);
     }
     
+    private void refreshDisplayed(){
+        if(isDisplayed && items.getItems().size() > 0){
+            setEmpty(false);
+            resizeByContent();
+        }
+        else{
+            setEmpty(true);
+        }
+    }
+    
     private void resizeByContent(){
         Bounds newBounds = this.items.getBoundsInParent();
         double newWidth = 10.0 + Math.max(nameLabel.getWidth(), newBounds.getWidth());
@@ -146,5 +152,10 @@ public class Annotation extends NamedRectangle {
         }
         
         items.setPrefWidth(Utils.getStringWidth(longest) + 30);
+    }
+    
+    public void setDisplayed(boolean value){
+        isDisplayed = value;
+        refreshDisplayed();
     }
 }

@@ -27,6 +27,8 @@ public class DeploymentTargetView extends Box{
     private final Annotation statesAnnotation;
     private final Annotation stateTransitionsAnnotation;
     private final Annotation stateOperationsAnnotation;
+    
+    private boolean annotationsDisplayed = true;
 
     public DeploymentTargetView(double x, double y, double width, double height, double zOffset, Group diagramRoot, int modelObjectID) {
         super(x, y, width, height, zOffset, "New deployment target", modelObjectID);
@@ -143,5 +145,19 @@ public class DeploymentTargetView extends Box{
         newAnnotation.getLine().toBack();
         
         newAnnotation.setRestrictionsInParent(diagramRoot);
+    }
+    
+    public void setAnnotationsDisplayed(boolean value){
+        if(annotationsDisplayed != value){
+            annotationsDisplayed = value;
+
+            statesAnnotation.setDisplayed(value);
+            stateTransitionsAnnotation.setDisplayed(value);
+            stateOperationsAnnotation.setDisplayed(value);
+        }
+    }
+    
+    public boolean areAnnotationsDisplayed(){
+        return annotationsDisplayed;
     }
 }
