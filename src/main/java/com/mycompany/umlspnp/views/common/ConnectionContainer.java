@@ -5,7 +5,6 @@
  */
 package com.mycompany.umlspnp.views.common;
 
-import com.mycompany.umlspnp.common.ObjectInfo;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.util.Pair;
@@ -64,5 +63,6 @@ public class ConnectionContainer {
     public void clear(){
         first = null;
         second = null;
+        connectionProperty.setValue(new Pair(null, null));
     }
 }
