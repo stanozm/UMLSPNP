@@ -8,7 +8,11 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.NamedNode;
+import javafx.beans.Observable;
+import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
+import javafx.util.Callback;
 
 /**
  *
@@ -16,8 +20,20 @@ import javafx.collections.MapChangeListener;
  */
 public class DeploymentDiagram {
     private final ElementContainer allElements = ElementContainer.getInstanceModel();
+    private final ObservableList<LinkType> allLinkTypes;
     
     public DeploymentDiagram(){
+        allLinkTypes = FXCollections.observableArrayList(
+                new Callback<LinkType, Observable[]>() {
+                    @Override
+                    public Observable[] call(LinkType param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
+        
+        allLinkTypes.add(new LinkType("Default", 1.0));
     }
     
     public void addAllNodesChangeListener(MapChangeListener listener){
@@ -79,7 +95,7 @@ public class DeploymentDiagram {
     }
     
     public CommunicationLink createCommunicationLink(DeploymentTarget source, DeploymentTarget destination){
-        var commLink = new CommunicationLink(source, destination);
+        var commLink = new CommunicationLink(source, destination, allLinkTypes);
         
         allElements.addConnection(commLink, commLink.getObjectInfo().getID());
         
@@ -87,5 +103,33 @@ public class DeploymentDiagram {
         destination.addInnerConnection(commLink);
         
         return commLink;
+    }
+    
+    public boolean removeCommunicationLink(int objectID){
+        return allElements.removeConnection(objectID);
+    }
+    
+    public CommunicationLink getCommunicationLink(int objectID){
+        var connection = allElements.getConnection(objectID);
+        if(connection instanceof CommunicationLink)
+            return (CommunicationLink) connection;
+        return null;
+    }
+    
+    public LinkType createLinkType(String name, Double rate){
+        var newLinkType = new LinkType(name, rate); 
+        allLinkTypes.add(newLinkType);
+        
+        return newLinkType;
+    }
+    
+    public boolean removeLinkType(LinkType linkType){
+        if(allLinkTypes.size() > 1) // One default link type must remain
+            return allLinkTypes.remove(linkType);
+        return false;
+    }
+
+    public ObservableList getAllLinkTypes(){
+        return allLinkTypes;
     }
 }

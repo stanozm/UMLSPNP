@@ -15,6 +15,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 /**
@@ -38,6 +40,10 @@ public class CommunicationLinkView extends Connection {
         this.setOnMouseExited((e) -> {
             this.line.setStrokeWidth(1);
             e.consume();
+        });
+        
+        this.setOnMousePressed((e) -> {
+            actionElementClicked(e);
         });
         
         DoubleProperty lineCenterX = new SimpleDoubleProperty();
@@ -92,5 +98,17 @@ public class CommunicationLinkView extends Connection {
         newAnnotation.getLine().toBack();
         
         newAnnotation.setRestrictionsInParent(diagramRoot);
+    }
+    
+    private void actionElementClicked(MouseEvent e){
+        if(e.getButton() == MouseButton.PRIMARY){
+            if(contextMenu.isShowing()){
+                contextMenu.hide();
+            }
+        }
+        else if(e.getButton() == MouseButton.SECONDARY){
+            contextMenu.show(this, e.getScreenX(), e.getScreenY());
+        }
+        this.toFront();
     }
 }
