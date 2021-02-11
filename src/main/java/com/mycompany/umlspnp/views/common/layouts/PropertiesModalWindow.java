@@ -3,10 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.umlspnp.views.deploymentdiagram;
+package com.mycompany.umlspnp.views.common.layouts;
 
-import com.mycompany.umlspnp.views.common.layouts.EditableListView;
-import com.mycompany.umlspnp.views.common.layouts.ModalWindow;
 import java.util.ArrayList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -17,10 +15,10 @@ import javafx.stage.Stage;
  *
  * @author 10ondr
  */
-public class DTPropertiesModalWindow extends ModalWindow{
+public class PropertiesModalWindow extends ModalWindow{
     private final Button closeButton;
     
-    public DTPropertiesModalWindow(Stage parentStage, String windowName, ArrayList<EditableListView> sections) {
+    public PropertiesModalWindow(Stage parentStage, String windowName, ArrayList<EditableListView> sections) {
         super(parentStage, windowName);
 
         this.closeButton = new Button("Close");

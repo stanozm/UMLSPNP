@@ -5,15 +5,13 @@
  */
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
-import com.mycompany.umlspnp.views.common.layouts.ModalWindow;
+import com.mycompany.umlspnp.views.common.layouts.NameRateModalWindow;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -24,7 +22,7 @@ import javafx.stage.Stage;
  *
  * @author 10ondr
  */
-public class EditTransitionModalWindow extends ModalWindow {
+public class EditTransitionModalWindow extends NameRateModalWindow {
     private final ComboBox fromStateInput;
     private final ComboBox toStateInput;
     private final TextField nameInput;
@@ -85,6 +83,10 @@ public class EditTransitionModalWindow extends ModalWindow {
     }
     
     private boolean checkInputs(){
+        return checkNameRateInputs(nameInput.textProperty(), rateInput.textProperty()) && checkStatesInput();
+    }
+    
+    private boolean checkStatesInput(){
         String errorMessage = null;
         if(this.fromStateInput.getSelectionModel().getSelectedItem() == this.toStateInput.getSelectionModel().getSelectedItem()){
             errorMessage = "States \"From\" and \"To\" must differ.";
@@ -96,26 +98,8 @@ public class EditTransitionModalWindow extends ModalWindow {
             errorMessage = "State \"To\" is not valid.";
         }
         
-        if(this.nameInput.textProperty().isEmpty().getValue()){
-            errorMessage = "Name is not valid.";
-        }
-        
-        try {
-            double rate = parseRate();
-            if(rate > 1.0 || rate < 0.0){
-                errorMessage = "Rate is out of range (0.0 to 1.0).";
-            }
-        }
-        catch(Exception e) {
-            errorMessage = "Error while parsing rate value.";
-        }
-        
         if(errorMessage != null){
-            Alert errorDialog = new Alert(AlertType.ERROR);
-            errorDialog.setTitle("Input error");
-            errorDialog.setHeaderText("Incorrect values!");
-            errorDialog.setContentText(errorMessage);
-            errorDialog.showAndWait();
+            showAlert(errorMessage);
             return false;
         }
         return true;
