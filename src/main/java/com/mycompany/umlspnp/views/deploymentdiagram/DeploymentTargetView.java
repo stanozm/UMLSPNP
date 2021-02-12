@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.views.common.Annotation;
+import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.Box;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
@@ -20,7 +21,7 @@ import javafx.scene.paint.Color;
  *
  * @author 10ondr
  */
-public class DeploymentTargetView extends Box{
+public class DeploymentTargetView extends Box implements AnnotationOwner {
     private final ArrayList<ConnectionSlot> slots = new ArrayList<>();
     private final HashMap<Number, NamedRectangle> innerNodes = new HashMap();
     
@@ -147,6 +148,7 @@ public class DeploymentTargetView extends Box{
         newAnnotation.setRestrictionsInParent(diagramRoot);
     }
     
+    @Override
     public void setAnnotationsDisplayed(boolean value){
         if(annotationsDisplayed != value){
             annotationsDisplayed = value;
@@ -157,6 +159,7 @@ public class DeploymentTargetView extends Box{
         }
     }
     
+    @Override
     public boolean areAnnotationsDisplayed(){
         return annotationsDisplayed;
     }

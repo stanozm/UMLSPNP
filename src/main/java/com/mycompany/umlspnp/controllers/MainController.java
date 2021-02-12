@@ -10,6 +10,7 @@ import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.common.NamedNode;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
+import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
@@ -221,18 +222,7 @@ public class MainController {
         deploymentTargetView.addMenuItem(menuItemRename);
 
         
-        String hideAnnotationsString = "Hide annotations";
-        String showAnnotationsString = "Show annotations";
-        MenuItem menuItemToggleAnnotations = new MenuItem(hideAnnotationsString);
-        menuItemToggleAnnotations.setOnAction((e) -> {
-            deploymentTargetView.setAnnotationsDisplayed(!deploymentTargetView.areAnnotationsDisplayed());
-            if(deploymentTargetView.areAnnotationsDisplayed()){
-                menuItemToggleAnnotations.setText(hideAnnotationsString);
-            }
-            else{
-                menuItemToggleAnnotations.setText(showAnnotationsString);
-            }
-        });
+        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(deploymentTargetView);
         deploymentTargetView.addMenuItem(menuItemToggleAnnotations);
         
 
@@ -295,6 +285,10 @@ public class MainController {
         });
         communicationLinkView.addMenuItem(menuItemDelete);    
 
+
+        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(communicationLinkView);
+        communicationLinkView.addMenuItem(menuItemToggleAnnotations);
+        
         SeparatorMenuItem separator = new SeparatorMenuItem();
         communicationLinkView.addMenuItem(separator);
         
@@ -320,6 +314,22 @@ public class MainController {
             this.model.getDeploymentDiagram().removeNode(artifactView.getObjectInfo().getID());
         });
         artifactView.addMenuItem(menuItemDelete);
+    }
+    
+    private MenuItem createToggleAnnotationsMenuItem(AnnotationOwner view){
+        String hideAnnotationsString = "Hide annotations";
+        String showAnnotationsString = "Show annotations";
+        MenuItem menuItemToggleAnnotations = new MenuItem(hideAnnotationsString);
+        menuItemToggleAnnotations.setOnAction((e) -> {
+            view.setAnnotationsDisplayed(!view.areAnnotationsDisplayed());
+            if(view.areAnnotationsDisplayed()){
+                menuItemToggleAnnotations.setText(hideAnnotationsString);
+            }
+            else{
+                menuItemToggleAnnotations.setText(showAnnotationsString);
+            }
+        });
+        return menuItemToggleAnnotations;
     }
 
     private EditableListView createLinkTypeProperties(CommunicationLink communicationLink){

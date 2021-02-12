@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.views.common.Annotation;
+import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.Connection;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import javafx.beans.property.DoubleProperty;
@@ -23,10 +24,12 @@ import javafx.scene.paint.Color;
  *
  * @author 10ondr
  */
-public class CommunicationLinkView extends Connection {
+public class CommunicationLinkView extends Connection implements AnnotationOwner {
     private final Annotation linkTypeAnnotation;
     private final Annotation linkFailuresAnnotation;
     
+    private boolean annotationsDisplayed = true;
+
     public CommunicationLinkView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
         super(modelObjectID, source, destination, diagramRoot);
 
@@ -110,5 +113,20 @@ public class CommunicationLinkView extends Connection {
             contextMenu.show(this, e.getScreenX(), e.getScreenY());
         }
         this.toFront();
+    }
+    
+    @Override
+    public void setAnnotationsDisplayed(boolean value){
+        if(annotationsDisplayed != value){
+            annotationsDisplayed = value;
+
+            linkTypeAnnotation.setDisplayed(value);
+            linkFailuresAnnotation.setDisplayed(value);
+        }
+    }
+
+    @Override
+    public boolean areAnnotationsDisplayed(){
+        return annotationsDisplayed;
     }
 }
