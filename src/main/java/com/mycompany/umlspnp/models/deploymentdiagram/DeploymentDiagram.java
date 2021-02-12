@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 
 import com.mycompany.umlspnp.common.ElementContainer;
+import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.common.NamedNode;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -49,6 +50,8 @@ public class DeploymentDiagram {
         addNode(newDT);
         if(parent != null)
             parent.addInnerNode(newDT);
+        else
+            newDT.getObjectInfo().setGroupID(Utils.generateGroupID());
         return newDT;
     }
     
@@ -131,5 +134,30 @@ public class DeploymentDiagram {
 
     public ObservableList getAllLinkTypes(){
         return allLinkTypes;
+    }
+    
+    public boolean areNodesInGroup(DeploymentTarget first, DeploymentTarget second){
+        return first.getObjectInfo().getGroupID() == second.getObjectInfo().getGroupID();
+    }
+    
+    public boolean areNodesConnected(DeploymentTarget first, DeploymentTarget second){
+        if(areNodesInGroup(first, second))
+            return true;
+        
+        // TODO: What is the expected behavior of nodes being connected (multiple connections,...?)
+        boolean connected = false;
+        for(var obj : allElements.getConnections().values()){
+            var link = (CommunicationLink) obj;
+            var linkFirst = link.getFirst();
+            var linkSecond = link.getSecond();
+
+            if( (linkFirst.equals(first) || linkSecond.equals(first)) &&
+                (linkFirst.equals(second) || linkSecond.equals(second))){
+                connected = true;
+                break;
+            }
+        }
+
+        return connected;
     }
 }

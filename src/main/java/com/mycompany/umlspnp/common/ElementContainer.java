@@ -70,4 +70,8 @@ public class ElementContainer<T1, T2> {
     public void addAllConnectionsChangeListener(MapChangeListener listener){
         allConnections.addListener(listener);
     }
+    
+    public ObservableMap<Number, T2> getConnections(){
+        return allConnections;
+    }
 }

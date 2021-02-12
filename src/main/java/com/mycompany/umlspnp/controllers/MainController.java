@@ -69,8 +69,13 @@ public class MainController {
                     if(connectionContainer.getFirstElement() instanceof DeploymentTargetView){
                         var firstDT = deployment.getDeploymentTarget(firstElementID.intValue());
                         var secondDT = deployment.getDeploymentTarget(secondElementID.intValue());
-
-                        deployment.createCommunicationLink(firstDT, secondDT);
+                        if(deployment.areNodesConnected(firstDT, secondDT)){
+                            System.err.println("Error: Nodes \"" + firstDT.getNameProperty().getValue() + "\" and \"" + 
+                                     firstDT.getNameProperty().getValue() + "\" are already connected!");
+                        }
+                        else{
+                            deployment.createCommunicationLink(firstDT, secondDT);
+                        }
                     }
                     connectionContainer.clear();
                 }

@@ -113,6 +113,7 @@ public class DeploymentTarget extends NamedNode {
 
     public void addInnerNode(NamedNode newInnerNode){
         innerNodes.put(newInnerNode.getObjectInfo().getID(), newInnerNode);
+        newInnerNode.getObjectInfo().setGroupID(this.getObjectInfo().getGroupID());
     }
     
     public void removeConnection(CommunicationLink removedConnection){

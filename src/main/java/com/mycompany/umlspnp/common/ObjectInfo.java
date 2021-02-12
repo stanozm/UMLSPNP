@@ -11,6 +11,7 @@ package com.mycompany.umlspnp.common;
  */
 public class ObjectInfo {
     private final int objectID;
+    private int groupID = -1;
     
     public ObjectInfo(int objectID){
         this.objectID = objectID;
@@ -18,5 +19,13 @@ public class ObjectInfo {
     
     public int getID(){
         return this.objectID;
+    }
+    
+    public void setGroupID(int id){
+        groupID = id;
+    }
+    
+    public int getGroupID(){
+        return this.groupID;
     }
 }
