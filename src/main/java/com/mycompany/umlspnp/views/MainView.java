@@ -5,6 +5,8 @@
  */
 package com.mycompany.umlspnp.views;
 
+import com.mycompany.umlspnp.views.sequencediagram.SequenceDiagramView;
+import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentDiagramView;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.PropertiesModalWindow;
 import java.io.PrintStream;

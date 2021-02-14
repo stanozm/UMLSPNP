@@ -38,11 +38,11 @@ import javafx.stage.Stage;
  *
  * @author 10ondr
  */
-public class MainController {
+public class DeploymentDiagramController {
     private final MainModel model;
     private final MainView view;
     
-    public MainController(MainModel mainModel, MainView mainView){
+    public DeploymentDiagramController(MainModel mainModel, MainView mainView){
         this.model = mainModel;
         this.view = mainView;
         

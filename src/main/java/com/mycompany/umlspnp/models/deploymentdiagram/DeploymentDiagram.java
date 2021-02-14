@@ -20,7 +20,7 @@ import javafx.util.Callback;
  * @author 10ondr
  */
 public class DeploymentDiagram {
-    private final ElementContainer allElements = ElementContainer.getInstanceModel();
+    private static final ElementContainer allElements = new ElementContainer<NamedNode, CommunicationLink>();
     private final ObservableList<LinkType> allLinkTypes;
     
     public DeploymentDiagram(){
@@ -35,6 +35,10 @@ public class DeploymentDiagram {
                 });
         
         allLinkTypes.add(new LinkType("Default", 1.0));
+    }
+    
+    public static ElementContainer getElementContainer(){
+        return allElements;
     }
     
     public void addAllNodesChangeListener(MapChangeListener listener){

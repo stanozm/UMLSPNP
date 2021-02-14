@@ -17,26 +17,9 @@ public class ElementContainer<T1, T2> {
     private final ObservableMap<Number, T1> allNodes = FXCollections.observableHashMap();
     private final ObservableMap<Number, T2> allConnections = FXCollections.observableHashMap();
     
-    private static ElementContainer mInstanceModel = null;
-    private static ElementContainer mInstanceView = null;
-    
-    private ElementContainer(){
+    public ElementContainer(){
     }
-    
-    public static ElementContainer getInstanceModel(){
-        if(mInstanceModel == null)
-            mInstanceModel = new ElementContainer();
-        
-        return mInstanceModel;
-    }
-    
-    public static ElementContainer getInstanceView(){
-        if(mInstanceView == null)
-            mInstanceView = new ElementContainer();
-        
-        return mInstanceView;
-    }
-    
+
     public T1 getNode(int objectID){
         return allNodes.get(objectID);
     }

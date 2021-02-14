@@ -13,7 +13,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
-import javafx.scene.Node;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.paint.Color;
@@ -36,7 +35,7 @@ public class Annotation extends NamedRectangle {
         super(x, y, 0, 0, name, -1);
 
         this.setBoldHeader(true);
-        this.setResizable(false);
+        this.setResizable(false, false);
 
         line.getStrokeDashArray().addAll(5.0, 5.0);
         

@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views;
 
+import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
@@ -31,6 +32,10 @@ public class DiagramView extends GridPane{
 
         this.getChildren().addAll(diagramMenu, diagramPane);
         diagramMenu.toFront();
+    }
+    
+    public void addMenu(Menu newMenu){
+        diagramMenu.getMenus().add(newMenu);
     }
     
     public void setActive(boolean value){

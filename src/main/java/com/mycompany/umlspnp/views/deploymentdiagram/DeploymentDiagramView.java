@@ -3,18 +3,15 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.umlspnp.views;
+package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
+import com.mycompany.umlspnp.views.DiagramView;
 import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.BasicRectangle;
-import com.mycompany.umlspnp.views.deploymentdiagram.CommunicationLinkView;
 import com.mycompany.umlspnp.views.common.ConnectionContainer;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
-import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
-import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import javafx.scene.Group;
-import javafx.scene.control.Menu;
 import javafx.scene.input.MouseEvent;
 
 /**
@@ -24,7 +21,7 @@ import javafx.scene.input.MouseEvent;
 public class DeploymentDiagramView extends DiagramView {
     private final Group root;
     
-    private final ElementContainer allElements = ElementContainer.getInstanceView();
+    private static final ElementContainer allElements = new ElementContainer<NamedRectangle, CommunicationLinkView>();
     
     private final ConnectionContainer connectionContainer = new ConnectionContainer();
     
@@ -34,8 +31,8 @@ public class DeploymentDiagramView extends DiagramView {
         diagramPane.getChildren().add(root);
     }
 
-    public void addMenu(Menu newMenu){
-        diagramMenu.getMenus().add(newMenu);
+    public static ElementContainer getElementContainer(){
+        return allElements;
     }
     
     public NamedRectangle getNode(int objectID){

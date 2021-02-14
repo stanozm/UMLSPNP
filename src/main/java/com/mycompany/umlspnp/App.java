@@ -13,15 +13,21 @@ import javafx.stage.Stage;
  * JavaFX App
  */
 public class App extends Application {
-
+    private DeploymentDiagramController deploymentDiagramController;
+    private SequenceDiagramController sequenceDiagramController;
+    
     @Override
     public void start(Stage stage) {
         var javaVersion = SystemInfo.javaVersion();
         var javafxVersion = SystemInfo.javafxVersion();
 
-        var mainController = new MainController(new MainModel(), new MainView(stage));
+        var mainModel = new MainModel();
+        var mainView = new MainView(stage);
+        
+        deploymentDiagramController = new DeploymentDiagramController(mainModel, mainView);
+        sequenceDiagramController = new SequenceDiagramController(mainModel, mainView);
 
-        var scene = new Scene(mainController.getView(), 640, 480);
+        var scene = new Scene(deploymentDiagramController.getView(), 640, 480);
         stage.setTitle("UML2SPNP");
         stage.setScene(scene);
         stage.setMinWidth(640);

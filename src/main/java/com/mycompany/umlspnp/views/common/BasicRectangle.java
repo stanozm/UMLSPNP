@@ -37,6 +37,8 @@ public class BasicRectangle extends BasicElement{
     protected Rectangle resizeBottom;
     protected Rectangle resizeRight;
 
+    private boolean isDraggable = true;
+    
     public BasicRectangle(int modelObjectID, double x, double y, double width, double height) {
         super(modelObjectID);
         
@@ -59,7 +61,7 @@ public class BasicRectangle extends BasicElement{
         });
 
         this.setOnMouseDragged((e) -> {
-            if(e.getButton() == MouseButton.PRIMARY){
+            if(isDraggable && e.getButton() == MouseButton.PRIMARY){
                 moveInGrid(e.getSceneX(), e.getSceneY());
             }
             e.consume();
@@ -167,28 +169,31 @@ public class BasicRectangle extends BasicElement{
         this.getChildren().addAll(resizeBottom, resizeRight);
     }
     
-    private void commonRestrictionInParent(){
-        this.widthProperty().addListener(new ChangeListener(){
-            @Override
-            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if((double) newValue < 30){
-                    changeDimensions((double) oldValue, getHeight());
-                }
-            }
-        });
-        
+    public void setMinHeight(double minHeight){
         this.heightProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if((double) newValue < 30){
+                if((double) newValue < minHeight){
                     changeDimensions(getWidth(), (double) oldValue);
                 }
             }
         });
     }
     
+    public void setMinWidth(double minWidth){
+        this.widthProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if((double) newValue < minWidth){
+                    changeDimensions((double) oldValue, getHeight());
+                }
+            }
+        });
+    }
+    
     public void setRestrictionsInParent(Group parent){
-        commonRestrictionInParent();
+        setMinHeight(30);
+        setMinWidth(30);
         
         var thisReference = this;
         
@@ -282,9 +287,13 @@ public class BasicRectangle extends BasicElement{
         });
     }
     
-    public void setResizable(boolean value){
-        resizeBottom.setDisable(!value);
-        resizeRight.setDisable(!value);
+    public void setResizable(boolean vertical, boolean horizontal){
+        resizeBottom.setDisable(!vertical);
+        resizeRight.setDisable(!horizontal);
+    }
+    
+    public void setDraggable(boolean value){
+        isDraggable = value;
     }
     
     public void changeDimensions(double newWidth, double newHeight){

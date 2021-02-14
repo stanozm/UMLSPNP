@@ -20,14 +20,11 @@ import javafx.util.Callback;
  *
  * @author 10ondr
  */
-public class DeploymentTarget extends NamedNode {
-    private final ElementContainer allElements = ElementContainer.getInstanceModel();
+public class DeploymentTarget extends Artifact {
+    private final ElementContainer allElements = DeploymentDiagram.getElementContainer();
     
     private final ObservableMap<Number, NamedNode> innerNodes;
     private final ObservableMap<Number, CommunicationLink> innerConnections;
-    
-    private final DeploymentTarget DTparent;
-    
     
     // Annotations
     private final ObservableList<State> states;
@@ -37,11 +34,10 @@ public class DeploymentTarget extends NamedNode {
     private final ObservableList<State> statesWithoutOperations;
     
     public DeploymentTarget(String name, DeploymentTarget parent){
-        super(name);
+        super(name, parent);
         
         innerNodes = FXCollections.observableHashMap();
         innerConnections = FXCollections.observableHashMap();
-        this.DTparent = parent;
         
         states = FXCollections.observableArrayList(
                 new Callback<State, Observable[]>() {
@@ -75,10 +71,6 @@ public class DeploymentTarget extends NamedNode {
         
         statesWithoutOperations = FXCollections.observableArrayList();
         initStatesWithoutOperations();
-    }
-   
-    public DeploymentTarget getParent(){
-        return DTparent;
     }
     
     private void cleanup(){
