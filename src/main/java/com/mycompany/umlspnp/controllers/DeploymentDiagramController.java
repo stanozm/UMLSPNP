@@ -71,7 +71,7 @@ public class DeploymentDiagramController {
                         var secondDT = deployment.getDeploymentTarget(secondElementID.intValue());
                         if(deployment.areNodesConnected(firstDT, secondDT)){
                             System.err.println("Error: Nodes \"" + firstDT.getNameProperty().getValue() + "\" and \"" + 
-                                     firstDT.getNameProperty().getValue() + "\" are already connected!");
+                                     secondDT.getNameProperty().getValue() + "\" are already connected!");
                         }
                         else{
                             deployment.createCommunicationLink(firstDT, secondDT);
