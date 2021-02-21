@@ -17,16 +17,11 @@ import javafx.scene.text.Text;
  */
 public class Utils {
     private static int objectIDCounter = 0;
-    private static int groupIDCounter = 0;
     
     public static int generateObjectID(){
         return ++objectIDCounter;
     }
-    
-    public static int generateGroupID(){
-        return ++groupIDCounter;
-    }
-    
+
     public static double getStringWidth(String text){
         final Text t = new Text(text);
         new Scene(new Group(t));

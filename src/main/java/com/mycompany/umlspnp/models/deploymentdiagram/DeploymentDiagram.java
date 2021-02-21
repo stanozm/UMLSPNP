@@ -7,7 +7,6 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 
 import com.mycompany.umlspnp.common.ElementContainer;
-import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.common.NamedNode;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -35,6 +34,22 @@ public class DeploymentDiagram {
                 });
         
         allLinkTypes.add(new LinkType("Default", 1.0));
+        
+        initAllElements();
+    }
+    
+    private void initAllElements(){
+        var connections = allElements.getConnections();
+        connections.addListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasRemoved()){
+                    var removedConnection = (CommunicationLink) change.getValueRemoved();
+                    removedConnection.cleanup();
+                }
+            }
+        
+        });
     }
     
     public static ElementContainer getElementContainer(){
@@ -55,7 +70,7 @@ public class DeploymentDiagram {
         if(parent != null)
             parent.addInnerNode(newDT);
         else
-            newDT.getObjectInfo().setGroupID(Utils.generateGroupID());
+            newDT.getObjectInfo().setTier(0);
         return newDT;
     }
     
@@ -140,28 +155,28 @@ public class DeploymentDiagram {
         return allLinkTypes;
     }
     
-    public boolean areNodesInGroup(DeploymentTarget first, DeploymentTarget second){
-        return first.getObjectInfo().getGroupID() == second.getObjectInfo().getGroupID();
-    }
-    
-    public boolean areNodesConnected(DeploymentTarget first, DeploymentTarget second){
-        if(areNodesInGroup(first, second))
-            return true;
+    public boolean areNodesConnected(Artifact first, Artifact second){
+        System.err.println("areNodesConnected()");
+        Artifact higherInHierarchy;
+        Artifact lowerInHierarchy;
         
-        // TODO: What is the expected behavior of nodes being connected (multiple connections,...?)
-        boolean connected = false;
-        for(var obj : allElements.getConnections().values()){
-            var link = (CommunicationLink) obj;
-            var linkFirst = link.getFirst();
-            var linkSecond = link.getSecond();
-
-            if( (linkFirst.equals(first) || linkSecond.equals(first)) &&
-                (linkFirst.equals(second) || linkSecond.equals(second))){
-                connected = true;
-                break;
-            }
+        if(first.getObjectInfo().getTier() > second.getObjectInfo().getTier()){
+            higherInHierarchy = first;
+            lowerInHierarchy = second;
         }
-
-        return connected;
+        else{
+            higherInHierarchy = second;
+            lowerInHierarchy = first;
+        }
+        
+        var connectedNodes = higherInHierarchy.getConnectedNodes();
+        
+        System.err.println(higherInHierarchy.getNameProperty().getValue() + " connected nodes:");
+        for(var node : connectedNodes){
+            System.err.println(node.getNameProperty().getValue());
+        }
+        System.err.println(String.format("%n%n"));
+        
+        return connectedNodes.contains(lowerInHierarchy);
     }
 }

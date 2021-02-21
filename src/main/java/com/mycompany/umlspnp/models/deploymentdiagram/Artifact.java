@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.*;
+import java.util.HashSet;
 
 /**
  *
@@ -22,5 +23,16 @@ public class Artifact extends NamedNode{
     
     public DeploymentTarget getParent(){
         return DTparent;
+    }
+    
+    public HashSet<Artifact> getConnectedNodes(){
+        System.err.println("Artifact getConnectedNodes()");
+        var connectedNodes = new HashSet();
+        if(this.DTparent != null){
+            connectedNodes.add(this.DTparent);
+            connectedNodes.addAll(this.DTparent.getConnectedNodes());
+        }
+        
+        return connectedNodes;
     }
 }

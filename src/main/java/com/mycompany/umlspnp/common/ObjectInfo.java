@@ -11,7 +11,8 @@ package com.mycompany.umlspnp.common;
  */
 public class ObjectInfo {
     private final int objectID;
-    private int groupID = -1;
+    private int tier = -1;  // indicates how high in the parent-child hierarchy a node is
+                            // root node has a tier 0
     
     public ObjectInfo(int objectID){
         this.objectID = objectID;
@@ -21,11 +22,11 @@ public class ObjectInfo {
         return this.objectID;
     }
     
-    public void setGroupID(int id){
-        groupID = id;
+    public void setTier(int id){
+        tier = id;
     }
     
-    public int getGroupID(){
-        return this.groupID;
+    public int getTier(){
+        return this.tier;
     }
 }

@@ -8,6 +8,7 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -105,11 +106,12 @@ public class DeploymentTarget extends Artifact {
 
     public void addInnerNode(NamedNode newInnerNode){
         innerNodes.put(newInnerNode.getObjectInfo().getID(), newInnerNode);
-        newInnerNode.getObjectInfo().setGroupID(this.getObjectInfo().getGroupID());
+        newInnerNode.getObjectInfo().setTier(this.getObjectInfo().getTier() + 1);
     }
     
     public void removeConnection(CommunicationLink removedConnection){
-        innerConnections.remove(removedConnection.getObjectInfo().getID());
+        var s = innerConnections.remove(removedConnection.getObjectInfo().getID());
+        System.err.println("removeConnection() success " + s);
     }
     
     public void addInnerConnectionsChangeListener(MapChangeListener listener){
@@ -215,5 +217,19 @@ public class DeploymentTarget extends Artifact {
                 refilterStatesWithoutOperations();
             }
         });
+    }
+    
+    @Override
+    public HashSet<Artifact> getConnectedNodes(){
+        System.err.println("DT getConnectedNodes()");
+        var connectedNodes = new HashSet<Artifact>();
+        for (var connection : innerConnections.values()){
+            connectedNodes.add(connection.getOther(this));
+        }
+
+        if(this.getParent() != null){
+            connectedNodes.addAll(super.getConnectedNodes());
+        }
+        return connectedNodes;
     }
 }

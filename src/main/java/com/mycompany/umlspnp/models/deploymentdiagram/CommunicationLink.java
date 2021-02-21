@@ -78,6 +78,12 @@ public class CommunicationLink extends BasicNode {
         return target2;
     }
     
+    public DeploymentTarget getOther(DeploymentTarget first){
+        if(target1.equals(first))
+            return target2;
+        return target1;
+    }
+    
     public ObservableList<LinkType> getLinkTypeList(){
         return linkType;
     }
