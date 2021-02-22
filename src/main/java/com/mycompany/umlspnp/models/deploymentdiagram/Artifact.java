@@ -26,7 +26,6 @@ public class Artifact extends NamedNode{
     }
     
     public HashSet<Artifact> getConnectedNodes(){
-        System.err.println("Artifact getConnectedNodes()");
         var connectedNodes = new HashSet();
         if(this.DTparent != null){
             connectedNodes.add(this.DTparent);

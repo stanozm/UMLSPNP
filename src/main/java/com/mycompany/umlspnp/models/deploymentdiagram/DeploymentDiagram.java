@@ -109,6 +109,10 @@ public class DeploymentDiagram {
         return true;
     }
     
+    public NamedNode getNode(int objectID){
+        return (NamedNode) allElements.getNode(objectID);
+    }
+    
     public DeploymentTarget getDeploymentTarget(int objectID){
         var node = allElements.getNode(objectID);
         if(node instanceof DeploymentTarget)
@@ -156,7 +160,6 @@ public class DeploymentDiagram {
     }
     
     public boolean areNodesConnected(Artifact first, Artifact second){
-        System.err.println("areNodesConnected()");
         Artifact higherInHierarchy;
         Artifact lowerInHierarchy;
         
@@ -170,13 +173,6 @@ public class DeploymentDiagram {
         }
         
         var connectedNodes = higherInHierarchy.getConnectedNodes();
-        
-        System.err.println(higherInHierarchy.getNameProperty().getValue() + " connected nodes:");
-        for(var node : connectedNodes){
-            System.err.println(node.getNameProperty().getValue());
-        }
-        System.err.println(String.format("%n%n"));
-        
         return connectedNodes.contains(lowerInHierarchy);
     }
 }

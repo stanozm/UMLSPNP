@@ -20,6 +20,10 @@ public class Lifeline extends BasicNode {
         this.artifact = linkedArtifact;
     }
     
+    public Artifact getArtifact(){
+        return this.artifact;
+    }
+    
     public StringProperty nameProperty(){
         return this.artifact.getNameProperty();
     }

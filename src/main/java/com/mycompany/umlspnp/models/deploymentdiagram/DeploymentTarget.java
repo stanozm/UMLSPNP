@@ -110,8 +110,7 @@ public class DeploymentTarget extends Artifact {
     }
     
     public void removeConnection(CommunicationLink removedConnection){
-        var s = innerConnections.remove(removedConnection.getObjectInfo().getID());
-        System.err.println("removeConnection() success " + s);
+        innerConnections.remove(removedConnection.getObjectInfo().getID());
     }
     
     public void addInnerConnectionsChangeListener(MapChangeListener listener){
@@ -221,7 +220,6 @@ public class DeploymentTarget extends Artifact {
     
     @Override
     public HashSet<Artifact> getConnectedNodes(){
-        System.err.println("DT getConnectedNodes()");
         var connectedNodes = new HashSet<Artifact>();
         for (var connection : innerConnections.values()){
             connectedNodes.add(connection.getOther(this));

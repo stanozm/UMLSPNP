@@ -124,16 +124,46 @@ public class SequenceDiagramController {
                     var newNode = (Artifact) change.getValueAdded();
                     var newMenuItem = createLifelineSubmenu(sequence, newNode);
                     lifelineSubmenus.put(newNode, newMenuItem);
-                    lifelineMenu.getItems().add(newMenuItem);
                 }
                 else if(change.wasRemoved()){
                     var removedNode = (Artifact) change.getValueRemoved();
-                    var removedMenuItem = lifelineSubmenus.remove(removedNode);
-                    lifelineMenu.getItems().remove(removedMenuItem);
+                    lifelineSubmenus.remove(removedNode);
                 }
             }
         });
         
+        sequence.addAllNodesChangeListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newLifeline = (Lifeline) change.getValueAdded();
+                    lifelineSubmenus.remove(newLifeline.getArtifact());
+                }
+                else if(change.wasRemoved()){
+                    var removedLifeline = (Lifeline) change.getValueRemoved();
+                    var removedNodeArtifact = removedLifeline.getArtifact();
+                    if(deployment.getNode(removedNodeArtifact.getObjectInfo().getID()) != null){
+                        var newMenuItem = createLifelineSubmenu(sequence, removedNodeArtifact);
+                        lifelineSubmenus.put(removedNodeArtifact, newMenuItem);
+                    }
+                }
+            }
+        });
+
+        lifelineSubmenus.addListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newItem = (MenuItem) change.getValueAdded();
+                    lifelineMenu.getItems().add(newItem);
+                }
+                else if(change.wasRemoved()){
+                    var removedItem = (MenuItem) change.getValueRemoved();
+                    lifelineMenu.getItems().remove(removedItem);
+                }
+            }
+        
+        });
         
         lifelineMenu.disableProperty().bind(Bindings.isEmpty(lifelineSubmenus));
 
