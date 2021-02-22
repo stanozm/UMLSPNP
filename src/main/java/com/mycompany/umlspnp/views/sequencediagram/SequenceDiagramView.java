@@ -25,8 +25,7 @@ public class SequenceDiagramView extends DiagramView{
     }
     
     public LifelineView createLifelineView(int modelObjectID){
-        var newLifelineView = new LifelineView(modelObjectID, 0, 10, 0, 0);
-        
+        var newLifelineView = new LifelineView(0, 0, 10, 0, modelObjectID);
         allElements.addNode(newLifelineView, modelObjectID);
         //registerNodeToSelect(newLifelineView);
         
