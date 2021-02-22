@@ -41,11 +41,11 @@ public class SequenceDiagramView extends DiagramView{
     }
     
     public boolean removeLifelineView(int modelObjectID){
+        var removedLifline = getLifelineView(modelObjectID);
         boolean success = allElements.removeNode(modelObjectID);
         if(!success)
             return false;
-        
-        var removedLifline = getLifelineView(modelObjectID);
+
         return root.getChildren().remove(removedLifline);
     }
 }
