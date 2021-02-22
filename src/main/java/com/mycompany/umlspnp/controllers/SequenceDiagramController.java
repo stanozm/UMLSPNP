@@ -10,6 +10,7 @@ import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
+import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -100,7 +101,7 @@ public class SequenceDiagramController {
 
                         var newLifelineView = sequenceDiagramView.createLifelineView(newLifeline.getObjectInfo().getID());
                         newLifelineView.getNameProperty().bind(newLifeline.nameProperty());
-                        //deploymentTargetMenuInit(newDTView);
+                        lifelineMenuInit(newLifelineView);
                         //deploymentTargetAnnotationsInit(newDT);
                     }
                 }
@@ -186,5 +187,17 @@ public class SequenceDiagramController {
         submenu.setOnAction(submenuEventHandler);
         
         return submenu;
+    }
+    
+    private void lifelineMenuInit(LifelineView lifelineView){
+        var sequenceDiagram = this.model.getSequenceDiagram();
+        var lifelineObjectID = lifelineView.getObjectInfo().getID();
+        var lifeline = sequenceDiagram.getLifeline(lifelineObjectID);
+        
+        MenuItem menuItemDelete = new MenuItem("Delete");
+        menuItemDelete.setOnAction((e) -> {
+            sequenceDiagram.removeLifeline(lifelineObjectID);
+        });
+        lifelineView.addMenuItem(menuItemDelete);
     }
 }

@@ -35,5 +35,14 @@ public class SequenceDiagram {
         return newLifeline;
     }
     
-
+    public boolean removeLifeline(int objectID){
+        return allElements.removeNode(objectID);
+    }
+    
+    public Lifeline getLifeline(int objectID){
+        var lifeline = allElements.getNode(objectID);
+        if(lifeline instanceof Lifeline)
+            return (Lifeline) lifeline;
+        return null;
+    }
 }
