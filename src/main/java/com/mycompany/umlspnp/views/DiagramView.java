@@ -61,17 +61,5 @@ public class DiagramView extends GridPane{
     
     public void registerNodeToSelect(BasicRectangle node, EventHandler eh){
         node.addEventHandler(MouseEvent.MOUSE_PRESSED, eh);
-//        super.registerNodeToSelect(node, (e) -> {
-//            var startElement = connectionContainer.getFirstElement();
-//            if(startElement != null){
-//                if(startElement != node && startElement.getClass().equals(node.getClass())){
-//                    connectionContainer.setSecondElement(node);
-//                }
-//                else{
-//                    System.err.println("Unable to create connection. Select suitable destination node.");
-//                    connectionContainer.clear();
-//                }
-//            }
-//        });
     }
 }
