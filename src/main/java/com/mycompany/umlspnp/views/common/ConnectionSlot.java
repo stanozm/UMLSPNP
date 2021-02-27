@@ -23,12 +23,12 @@ public class ConnectionSlot extends Circle{
     private final ReadOnlyDoubleProperty parentHeight;
     
     private double defaultRadius;
-    private final ReadOnlyDoubleProperty zOffset;
+    private final double zOffset;
     
     private final BooleanProperty deletedProperty = new SimpleBooleanProperty();
     
     public ConnectionSlot(  double radius,
-                            ReadOnlyDoubleProperty zOffset, 
+                            double zOffset, 
                             ReadOnlyDoubleProperty parentWidth,
                             ReadOnlyDoubleProperty parentHeight){
         this.deletedProperty.setValue(false);
@@ -72,7 +72,7 @@ public class ConnectionSlot extends Circle{
         double mouseX = mousePosition.getX();
         double mouseY = mousePosition.getY();
 
-        double z = this.zOffset.doubleValue();
+        double z = this.zOffset;
 
         // Is the value above first and/or second diagonal line of the rectangle
         boolean aboveFirst = isPointAboveLine(0, -z, this.parentWidth.getValue() + z, this.parentHeight.getValue(), mouseX, mouseY);

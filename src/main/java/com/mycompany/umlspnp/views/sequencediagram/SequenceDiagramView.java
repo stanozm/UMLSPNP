@@ -16,7 +16,7 @@ import javafx.scene.Group;
 public class SequenceDiagramView extends DiagramView{
     private final Group root;
     
-    private static final ElementContainer allElements = new ElementContainer<LifelineView, MessageView>();
+    private static final ElementContainer<LifelineView, MessageView> allElements = new ElementContainer<>();
     
     public SequenceDiagramView(){
         this.root = new Group();
@@ -48,4 +48,36 @@ public class SequenceDiagramView extends DiagramView{
 
         return root.getChildren().remove(removedLifline);
     }
+    
+    public MessageView createMessage(LifelineView source, LifelineView destination, int messageModelID){
+        var newMessageView = new MessageView(messageModelID, source.getSpanBox().getEmptySlot(), destination.getSpanBox().getEmptySlot(), root);
+
+        allElements.addConnection(newMessageView, messageModelID);
+        root.getChildren().add(newMessageView);
+        newMessageView.refreshLinePosition();
+        return newMessageView;
+    }
+    
+    public MessageView createMessage(int sourceID, int destinationID, int connectionModelID){
+        var source = getLifelineView(sourceID);
+        var destination = getLifelineView(destinationID);
+        return createMessage(source, destination, connectionModelID);
+    }
+    
+    public boolean removeMessage(int messageModelID){
+        var message = getConnection(messageModelID);
+
+        if(message == null)
+            return false;
+
+        message.removeSlots();
+        allElements.removeConnection(messageModelID);
+        root.getChildren().remove(message);
+        return true;
+    }
+    
+    public MessageView getConnection(int objectID){
+        return allElements.getConnection(objectID);
+    }
+    
 }

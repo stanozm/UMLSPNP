@@ -50,4 +50,8 @@ public class LifelineView extends NamedRectangle {
         spanLine.endXProperty().bind(spanLine.startXProperty());
         spanLine.endYProperty().bind(spanBox.translateYProperty());
     }
+    
+    public BasicRectangle getSpanBox() {
+        return this.spanBox;
+    }
 }

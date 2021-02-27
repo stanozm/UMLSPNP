@@ -8,6 +8,7 @@ package com.mycompany.umlspnp.controllers;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
+import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
@@ -64,34 +65,30 @@ public class SequenceDiagramController {
                 }
             }
         });
+        */
         
-        
-        deployment.addCommunicationLinksChangeListener(new MapChangeListener(){
+        sequence.addMessagesListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
                 if(change.wasAdded()){
-                    if(change.getValueAdded() instanceof CommunicationLink) {
-                        var newConnection = (CommunicationLink) change.getValueAdded();
-                        var firstID = newConnection.getFirst().getObjectInfo().getID();
-                        var secondID = newConnection.getSecond().getObjectInfo().getID();
-                        var newConnectionView = deploymentDiagramView.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
-                        
-                        communicationTargetMenuInit(newConnectionView);
-                        communicationLinkAnnotationsInit(newConnection);
-                        createSampleAnnotations(newConnection);
-                    }
+                    var newMessage = (Message) change.getValueAdded();
+                    var firstID = newMessage.getFirst().getObjectInfo().getID();
+                    var secondID = newMessage.getSecond().getObjectInfo().getID();
+                    var newConnectionView = sequenceDiagramView.createMessage(firstID, secondID, newMessage.getObjectInfo().getID());
+
+//                    communicationTargetMenuInit(newConnectionView);
+//                    communicationLinkAnnotationsInit(newConnection);
+//                    createSampleAnnotations(newConnection);
                 }
                 if(change.wasRemoved()){
-                    if(change.getValueRemoved() instanceof CommunicationLink) {
-                        var removedConnection = (CommunicationLink) change.getValueRemoved();
-                        deploymentDiagramView.removeConnection(removedConnection.getObjectInfo().getID());
-                    }
+                    var removedMessage = (Message) change.getValueRemoved();
+                    sequenceDiagramView.removeMessage(removedMessage.getObjectInfo().getID());
                 }
             }
         });
-        */
         
-        sequence.addAllNodesChangeListener(new MapChangeListener(){
+        
+        sequence.addLifelinesListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
                 if(change.wasAdded()){
@@ -133,7 +130,7 @@ public class SequenceDiagramController {
             }
         });
         
-        sequence.addAllNodesChangeListener(new MapChangeListener(){
+        sequence.addLifelinesListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
                 if(change.wasAdded()){
@@ -254,13 +251,13 @@ public class SequenceDiagramController {
                     subitems.remove(removedLifeline);
                     if(removedLifeline.equals(lifeline)){
                         subitems.removeListener(subitemsListener);
-                        sequenceDiagram.removeAllNodesChangeListener(this);
+                        sequenceDiagram.removeLifelinesListener(this);
                     }
                 }
             }
         };
         
-        sequenceDiagram.addAllNodesChangeListener(lifelinesListener);
+        sequenceDiagram.addLifelinesListener(lifelinesListener);
         
         return messagesMenu;
     }

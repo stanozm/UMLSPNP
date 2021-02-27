@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.views.common;
 
 import com.mycompany.umlspnp.common.Utils;
+import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.DoubleProperty;
@@ -38,6 +39,8 @@ public class BasicRectangle extends BasicElement{
     protected Rectangle resizeRight;
 
     private boolean isDraggable = true;
+    
+    protected final ArrayList<ConnectionSlot> slots = new ArrayList<>();
     
     public BasicRectangle(int modelObjectID, double x, double y, double width, double height) {
         super(modelObjectID);
@@ -285,6 +288,22 @@ public class BasicRectangle extends BasicElement{
                 }
             }
         });
+    }
+    
+    public ConnectionSlot getEmptySlot(){
+        var cs = new ConnectionSlot(4.0, 0, this.widthProperty(), this.heightProperty());
+        cs.deletedProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if((boolean) newValue){
+                    slots.remove(cs);
+                    getChildren().remove(cs);
+                }
+            }
+        });
+        slots.add(cs);
+        this.getChildren().add(cs);
+        return cs;
     }
     
     public void setResizable(boolean vertical, boolean horizontal){

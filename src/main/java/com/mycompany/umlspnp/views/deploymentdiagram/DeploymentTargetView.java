@@ -8,9 +8,7 @@ package com.mycompany.umlspnp.views.deploymentdiagram;
 import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.Box;
-import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
-import java.util.ArrayList;
 import java.util.HashMap;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -22,7 +20,6 @@ import javafx.scene.paint.Color;
  * @author 10ondr
  */
 public class DeploymentTargetView extends Box implements AnnotationOwner {
-    private final ArrayList<ConnectionSlot> slots = new ArrayList<>();
     private final HashMap<Number, NamedRectangle> innerNodes = new HashMap();
     
     private final Annotation statesAnnotation;
@@ -86,22 +83,6 @@ public class DeploymentTargetView extends Box implements AnnotationOwner {
     
     public Annotation getStateOperationsAnnotation(){
         return stateOperationsAnnotation;
-    }
-    
-    public ConnectionSlot getEmptySlot(){
-        var cs = new ConnectionSlot(4.0, this.getZOffset(), this.widthProperty(), this.heightProperty());
-        cs.deletedProperty().addListener(new ChangeListener(){
-            @Override
-            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if((boolean) newValue){
-                    slots.remove(cs);
-                    getChildren().remove(cs);
-                }
-            }
-        });
-        slots.add(cs);
-        this.getChildren().add(cs);
-        return cs;
     }
 
     @Override

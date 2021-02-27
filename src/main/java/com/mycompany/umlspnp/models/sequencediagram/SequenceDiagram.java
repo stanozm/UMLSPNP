@@ -20,12 +20,20 @@ public class SequenceDiagram {
     
     }
     
-    public void addAllNodesChangeListener(MapChangeListener listener){
+    public void addLifelinesListener(MapChangeListener listener){
         allElements.addAllNodesChangeListener(listener);
     }
     
-    public void removeAllNodesChangeListener(MapChangeListener listener){
+    public void removeLifelinesListener(MapChangeListener listener){
         allElements.removeAllNodesChangeListener(listener);
+    }
+    
+    public void addMessagesListener(MapChangeListener listener){
+        allElements.addAllConnectionsChangeListener(listener);
+    }
+    
+    public void removeMessagesListener(MapChangeListener listener){
+        allElements.removeAllConnectionsChangeListener(listener);
     }
     
     public static ElementContainer getElementContainer(){
