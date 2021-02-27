@@ -25,6 +25,7 @@ public class ConnectionContainer {
     
     public void setFirstElement(BasicElement element){
         this.first = element;
+        connectionProperty.setValue(new Pair(first, second));
     }
     
     public BasicElement getFirstElement(){

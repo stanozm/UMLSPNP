@@ -114,19 +114,25 @@ public class DeploymentDiagramController {
                 
                 var firstElementID = connectionContainer.getFirstElementID();
                 var secondElementID = connectionContainer.getSecondElementID();
-                if(firstElementID != null && secondElementID != null){
-                    if(connectionContainer.getFirstElement() instanceof DeploymentTargetView){
-                        var firstDT = deployment.getDeploymentTarget(firstElementID.intValue());
-                        var secondDT = deployment.getDeploymentTarget(secondElementID.intValue());
-                        if(deployment.areNodesConnected(firstDT, secondDT)){
-                            System.err.println("Error: Nodes \"" + firstDT.getNameProperty().getValue() + "\" and \"" + 
-                                     secondDT.getNameProperty().getValue() + "\" are already connected!");
+                if(firstElementID != null){
+                    var firstDTView = deploymentDiagramView.getDeploymentTargetView(firstElementID.intValue());
+                    firstDTView.setSelected(true);
+                    
+                    if(secondElementID != null){
+                        if(connectionContainer.getFirstElement() instanceof DeploymentTargetView){
+                            var firstDT = deployment.getDeploymentTarget(firstElementID.intValue());
+                            var secondDT = deployment.getDeploymentTarget(secondElementID.intValue());
+                            if(deployment.areNodesConnected(firstDT, secondDT)){
+                                System.err.println("Error: Nodes \"" + firstDT.getNameProperty().getValue() + "\" and \"" + 
+                                         secondDT.getNameProperty().getValue() + "\" are already connected!");
+                            }
+                            else{
+                                deployment.createCommunicationLink(firstDT, secondDT);
+                            }
                         }
-                        else{
-                            deployment.createCommunicationLink(firstDT, secondDT);
-                        }
+                        firstDTView.setSelected(false);
+                        connectionContainer.clear();
                     }
-                    connectionContainer.clear();
                 }
             }
         });

@@ -13,7 +13,6 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.Group;
@@ -40,6 +39,8 @@ public class BasicRectangle extends BasicElement{
     protected Rectangle resizeRight;
 
     private boolean isDraggable = true;
+    
+    private boolean isSelected = false;
     
     protected final ArrayList<ConnectionSlot> slots = new ArrayList<>();
     
@@ -305,6 +306,19 @@ public class BasicRectangle extends BasicElement{
         slots.add(cs);
         this.getChildren().add(cs);
         return cs;
+    }
+    
+    public void setSelected(boolean value){
+        isSelected = value;
+        
+        if(value)
+            this.rect.setStroke(Color.RED);
+        else
+            this.rect.setStroke(Color.BLACK);
+    }
+    
+    public boolean getSelected(){
+        return isSelected;
     }
     
     public void setResizable(boolean vertical, boolean horizontal){

@@ -49,13 +49,14 @@ public class DeploymentDiagramView extends DiagramView {
         allElements.addNode(dt, modelObjectID);
         
         registerNodeToSelect(dt, (e) -> {
-            var startElement = connectionContainer.getFirstElement();
+            var startElement = (BasicRectangle) connectionContainer.getFirstElement();
             if(startElement != null){
                 if(startElement != dt && startElement.getClass().equals(dt.getClass())){
                     connectionContainer.setSecondElement(dt);
                 }
                 else{
                     System.err.println("Unable to create connection. Select suitable destination node.");
+                    startElement.setSelected(false);
                     connectionContainer.clear();
                 }
             }

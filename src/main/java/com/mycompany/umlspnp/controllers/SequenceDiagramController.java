@@ -50,13 +50,19 @@ public class SequenceDiagramController {
                 
                 var firstElementID = connectionContainer.getFirstElementID();
                 var secondElementID = connectionContainer.getSecondElementID();
-                if(firstElementID != null && secondElementID != null){
-                    if(connectionContainer.getFirstElement() instanceof LifelineView){
-                        var firstLifeline = sequence.getLifeline(firstElementID.intValue());
-                        var secondLifeline = sequence.getLifeline(secondElementID.intValue());
-                        sequence.createMessage(firstLifeline, secondLifeline);
+                if(firstElementID != null){
+                    var firstLifelineView = sequenceDiagramView.getLifelineView(firstElementID.intValue());
+                    firstLifelineView.setSelected(true);
+                    
+                    if(secondElementID != null){
+                        if(connectionContainer.getFirstElement() instanceof LifelineView){
+                            var firstLifeline = sequence.getLifeline(firstElementID.intValue());
+                            var secondLifeline = sequence.getLifeline(secondElementID.intValue());
+                            sequence.createMessage(firstLifeline, secondLifeline);
+                        }
+                        firstLifelineView.setSelected(false);
+                        connectionContainer.clear();
                     }
-                    connectionContainer.clear();
                 }
             }
         });
@@ -207,6 +213,7 @@ public class SequenceDiagramController {
                 else{
                     System.err.println("Unable to create connection. Select suitable destination node.");
                 }
+                startElement.setSelected(false);
                 connectionContainer.clear();
             }
         });
