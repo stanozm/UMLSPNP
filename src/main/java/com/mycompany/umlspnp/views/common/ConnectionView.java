@@ -18,14 +18,14 @@ import javafx.scene.transform.Transform;
  *
  * @author 10ondr
  */
-public class Connection extends BasicElement {
+public class ConnectionView extends BasicElement {
     protected final ConnectionSlot source;
     protected final ConnectionSlot destination;
     protected final Line line;
     
     protected final Group diagramRoot;
 
-    public Connection(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
+    public ConnectionView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
         super(modelObjectID);
         
         this.source = source;

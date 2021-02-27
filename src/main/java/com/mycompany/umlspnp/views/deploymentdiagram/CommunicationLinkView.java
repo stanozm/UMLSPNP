@@ -7,7 +7,7 @@ package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
-import com.mycompany.umlspnp.views.common.Connection;
+import com.mycompany.umlspnp.views.common.ConnectionView;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -24,7 +24,7 @@ import javafx.scene.paint.Color;
  *
  * @author 10ondr
  */
-public class CommunicationLinkView extends Connection implements AnnotationOwner {
+public class CommunicationLinkView extends ConnectionView implements AnnotationOwner {
     private final Annotation linkTypeAnnotation;
     private final Annotation linkFailuresAnnotation;
     

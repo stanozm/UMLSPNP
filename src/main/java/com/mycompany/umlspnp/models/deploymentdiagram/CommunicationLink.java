@@ -5,7 +5,7 @@
  */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.BasicNode;
+import com.mycompany.umlspnp.models.common.Connection;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -16,10 +16,7 @@ import javafx.util.Callback;
  *
  * @author 10ondr
  */
-public class CommunicationLink extends BasicNode {
-    private final DeploymentTarget target1;
-    private final DeploymentTarget target2;
-    
+public class CommunicationLink extends Connection<DeploymentTarget> {
     private final ObservableList<LinkType> allLinkTypes;
     
     // Annotations
@@ -27,8 +24,7 @@ public class CommunicationLink extends BasicNode {
     private final ObservableList<LinkFailure> linkFailures;
     
     public CommunicationLink(DeploymentTarget target1, DeploymentTarget target2, ObservableList<LinkType> allLinkTypes){
-        this.target1 = target1;
-        this.target2 = target2;
+        super(target1, target2);
         
         this.allLinkTypes = allLinkTypes;
         
@@ -69,21 +65,7 @@ public class CommunicationLink extends BasicNode {
         
         setDefaultLinkType();
     }
-    
-    public DeploymentTarget getFirst(){
-        return target1;
-    }
-    
-    public DeploymentTarget getSecond(){
-        return target2;
-    }
-    
-    public DeploymentTarget getOther(DeploymentTarget first){
-        if(target1.equals(first))
-            return target2;
-        return target1;
-    }
-    
+ 
     public ObservableList<LinkType> getLinkTypeList(){
         return linkType;
     }

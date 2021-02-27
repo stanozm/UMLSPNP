@@ -14,7 +14,7 @@ import javafx.collections.MapChangeListener;
  * @author 10ondr
  */
 public class SequenceDiagram {
-    private static final ElementContainer allElements = new ElementContainer<Lifeline, Message>();
+    private static final ElementContainer<Lifeline, Message> allElements = new ElementContainer<>();
     
     public SequenceDiagram(){
     
@@ -22,6 +22,10 @@ public class SequenceDiagram {
     
     public void addAllNodesChangeListener(MapChangeListener listener){
         allElements.addAllNodesChangeListener(listener);
+    }
+    
+    public void removeAllNodesChangeListener(MapChangeListener listener){
+        allElements.removeAllNodesChangeListener(listener);
     }
     
     public static ElementContainer getElementContainer(){
@@ -39,10 +43,30 @@ public class SequenceDiagram {
         return allElements.removeNode(objectID);
     }
     
+    public Lifeline getLifeline(Artifact artifact) {
+        for (var lifeline : this.allElements.getNodes().values()){
+            if(lifeline.getArtifact().equals(artifact)){
+                return lifeline;
+            }
+        }
+        return null;
+    }
+    
     public Lifeline getLifeline(int objectID){
         var lifeline = allElements.getNode(objectID);
         if(lifeline instanceof Lifeline)
             return (Lifeline) lifeline;
         return null;
+    }
+    
+    public Message createMessage(Lifeline source, Lifeline destination){
+        var message = new Message(source, destination);
+        
+        allElements.addConnection(message, message.getObjectInfo().getID());
+        
+        source.addMessage(message);
+        destination.addMessage(message);
+        
+        return message;
     }
 }

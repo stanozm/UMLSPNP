@@ -50,11 +50,23 @@ public class ElementContainer<T1, T2> {
         allNodes.addListener(listener);
     }
     
+    public void removeAllNodesChangeListener(MapChangeListener listener){
+        allNodes.removeListener(listener);
+    }
+    
     public void addAllConnectionsChangeListener(MapChangeListener listener){
         allConnections.addListener(listener);
     }
     
+    public void removeAllConnectionsChangeListener(MapChangeListener listener){
+        allConnections.removeListener(listener);
+    }
+    
     public ObservableMap<Number, T2> getConnections(){
         return allConnections;
+    }
+    
+    public ObservableMap<Number, T1> getNodes(){
+        return allNodes;
     }
 }

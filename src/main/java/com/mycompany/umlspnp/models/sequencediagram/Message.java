@@ -5,10 +5,23 @@
  */
 package com.mycompany.umlspnp.models.sequencediagram;
 
+import com.mycompany.umlspnp.models.common.Connection;
+
 /**
  *
  * @author 10ondr
  */
-public class Message {
+public class Message extends Connection<Lifeline> {
     
+    public Message(Lifeline from, Lifeline to) {
+        super(from, to);
+    }
+    
+    public Lifeline getFrom() {
+        return this.getFirst();
+    }
+    
+    public Lifeline getTo() {
+        return this.getSecond();
+    }
 }

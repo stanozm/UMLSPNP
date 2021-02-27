@@ -199,5 +199,83 @@ public class SequenceDiagramController {
             sequenceDiagram.removeLifeline(lifelineObjectID);
         });
         lifelineView.addMenuItem(menuItemDelete);
+
+        
+        var menuAddMessage = createAddMessageMenu(lifeline);
+        lifelineView.addMenuItem(menuAddMessage);
+    }
+    
+    private Menu createAddMessageMenu(Lifeline lifeline) {
+        var deploymentDiagram = this.model.getDeploymentDiagram();
+        var sequenceDiagram = this.model.getSequenceDiagram();
+        
+        Menu messagesMenu = new Menu("Add message");
+
+        // TODO: What connections (messages) should be possible to make?
+        ObservableMap<Lifeline, MenuItem> subitems = FXCollections.observableHashMap();
+
+        var subitemsListener = new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newItem = (MenuItem) change.getValueAdded();
+                    messagesMenu.getItems().add(newItem);
+                }
+                else if(change.wasRemoved()){
+                    var removedItem = (MenuItem) change.getValueRemoved();
+                    messagesMenu.getItems().remove(removedItem);
+                }
+            }
+        };
+        
+        subitems.addListener(subitemsListener);
+        
+        messagesMenu.disableProperty().bind(Bindings.isEmpty(subitems));
+
+        for(var connectedArtifact : lifeline.getArtifact().getConnectedNodes()){
+            Lifeline connectedLifeline = sequenceDiagram.getLifeline(connectedArtifact);
+            if(connectedLifeline != null) {
+                subitems.put(connectedLifeline, createAddMessageSubitem(lifeline, connectedLifeline));
+            }
+        }
+        
+        var lifelinesListener = new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newLifeline = (Lifeline) change.getValueAdded();
+                    if(deploymentDiagram.areNodesConnected(lifeline.getArtifact(), newLifeline.getArtifact())) {
+//                        System.err.println(lifeline.nameProperty().getValue() + " is connected to " + newLifeline.nameProperty().getValue());
+                        subitems.put(newLifeline, createAddMessageSubitem(lifeline, newLifeline));
+                    }
+                }
+                else if(change.wasRemoved()){
+                    var removedLifeline = (Lifeline) change.getValueRemoved();
+                    subitems.remove(removedLifeline);
+                    if(removedLifeline.equals(lifeline)){
+                        subitems.removeListener(subitemsListener);
+                        sequenceDiagram.removeAllNodesChangeListener(this);
+                    }
+                }
+            }
+        };
+        
+        sequenceDiagram.addAllNodesChangeListener(lifelinesListener);
+        
+        return messagesMenu;
+    }
+    
+    private MenuItem createAddMessageSubitem(Lifeline originalLifeline, Lifeline newLifeline) {
+        var sequenceDiagram = this.model.getSequenceDiagram();
+        
+        var nameProperty = newLifeline.nameProperty();
+        var subitem = new MenuItem(nameProperty.getValue());
+        subitem.textProperty().bind(nameProperty);
+        
+        subitem.setOnAction((e) -> {
+            sequenceDiagram.createMessage(originalLifeline, newLifeline);
+        });
+        
+        return subitem;
     }
 }

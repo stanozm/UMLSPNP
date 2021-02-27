@@ -49,6 +49,55 @@ public class DeploymentDiagramController {
         deploymentDiagramInit(this.model.getDeploymentDiagram());
     }
 
+    
+    /***  ONLY FOR TESTING  ***/
+    private void createSampleAnnotations(DeploymentTarget DT){
+        State stateUp = new State("UP");
+        State stateDown = new State("DOWN");
+        DT.addState(stateUp);
+        DT.addState(stateDown);
+        DT.setDefaultState(stateUp);
+       
+        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.5);
+        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.2);
+        DT.addStateTransition(upDownTransition);
+        DT.addStateTransition(downUpTransition);
+        
+        StateOperation operationsUp = new StateOperation(stateUp);
+        operationsUp.addOperationEntry("ReadDeviceData", null);
+        operationsUp.addOperationEntry("WriteDeviceData", null);
+        StateOperation operationsDown = new StateOperation(stateDown);
+        operationsDown.addOperationEntry("ReadDeviceData", 50);
+        DT.addStateOperation(operationsUp);
+        DT.addStateOperation(operationsDown);
+    }
+    
+    /***  ONLY FOR TESTING  ***/
+    private void createSampleAnnotations(CommunicationLink communicationLink){
+        communicationLink.addLinkFailure(new LinkFailure("PacketLost", 0.02));
+        communicationLink.addLinkFailure(new LinkFailure("ConnectionDropped", 0.001));
+    }
+    
+    /***  ONLY FOR TESTING  ***/
+    public void createSampleNodes() {
+        var deployment = model.getDeploymentDiagram();
+        
+        var A = deployment.createDeploymentTarget(null);
+        A.getNameProperty().setValue("A");
+        var AA = deployment.createDeploymentTarget(A);
+        AA.getNameProperty().setValue("AA");
+        var AAA = deployment.createDeploymentTarget(AA);
+        AAA.getNameProperty().setValue("AAA");
+        
+        var B = deployment.createDeploymentTarget(null);
+        B.getNameProperty().setValue("B");
+        var BB = deployment.createDeploymentTarget(B);
+        BB.getNameProperty().setValue("BB");
+        var BBB = deployment.createDeploymentTarget(BB);
+        BBB.getNameProperty().setValue("BBB");
+    }
+    
+    
     public MainView getView(){
         return view;
     }
@@ -160,33 +209,7 @@ public class DeploymentDiagramController {
         
         deploymentDiagramView.addMenu(addNodeMenu);
     }
-    
-    private void createSampleAnnotations(DeploymentTarget DT){
-        State stateUp = new State("UP");
-        State stateDown = new State("DOWN");
-        DT.addState(stateUp);
-        DT.addState(stateDown);
-        DT.setDefaultState(stateUp);
-       
-        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.5);
-        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.2);
-        DT.addStateTransition(upDownTransition);
-        DT.addStateTransition(downUpTransition);
-        
-        StateOperation operationsUp = new StateOperation(stateUp);
-        operationsUp.addOperationEntry("ReadDeviceData", null);
-        operationsUp.addOperationEntry("WriteDeviceData", null);
-        StateOperation operationsDown = new StateOperation(stateDown);
-        operationsDown.addOperationEntry("ReadDeviceData", 50);
-        DT.addStateOperation(operationsUp);
-        DT.addStateOperation(operationsDown);
-    }
-    
-    private void createSampleAnnotations(CommunicationLink communicationLink){
-        communicationLink.addLinkFailure(new LinkFailure("PacketLost", 0.02));
-        communicationLink.addLinkFailure(new LinkFailure("ConnectionDropped", 0.001));
-    }
-    
+
     private void deploymentTargetAnnotationsInit(DeploymentTarget DT){
         var deploymentDiagramView = view.getDeploymentDiagramView();
         var DTView = deploymentDiagramView.getDeploymentTargetView(DT.getObjectInfo().getID());
