@@ -9,8 +9,8 @@ import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.DiagramView;
 import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.BasicRectangle;
-import com.mycompany.umlspnp.views.common.ConnectionContainer;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.input.MouseEvent;
 
@@ -22,9 +22,7 @@ public class DeploymentDiagramView extends DiagramView {
     private final Group root;
     
     private static final ElementContainer<NamedRectangle, CommunicationLinkView> allElements = new ElementContainer<>();
-    
-    private final ConnectionContainer connectionContainer = new ConnectionContainer();
-    
+
     public DeploymentDiagramView(){
         this.root = new Group();
         
@@ -49,7 +47,19 @@ public class DeploymentDiagramView extends DiagramView {
     public DeploymentTargetView createDeploymentTargetView(DeploymentTargetView parentNode, int modelObjectID){
         var dt = new DeploymentTargetView(0, 10, 0, 0, 10, root, modelObjectID);
         allElements.addNode(dt, modelObjectID);
-        registerNodeToSelect(dt);
+        
+        registerNodeToSelect(dt, (e) -> {
+            var startElement = connectionContainer.getFirstElement();
+            if(startElement != null){
+                if(startElement != dt && startElement.getClass().equals(dt.getClass())){
+                    connectionContainer.setSecondElement(dt);
+                }
+                else{
+                    System.err.println("Unable to create connection. Select suitable destination node.");
+                    connectionContainer.clear();
+                }
+            }
+        });
         
         if(parentNode == null){
             dt.setRestrictionsInParent(root);
@@ -70,22 +80,7 @@ public class DeploymentDiagramView extends DiagramView {
         newArtifact.changeDimensions(150, 150);
         return newArtifact;
     }
-    
-    private void registerNodeToSelect(BasicRectangle node){
-        node.addEventHandler(MouseEvent.MOUSE_PRESSED, (e) -> {
-            var startElement = connectionContainer.getFirstElement();
-            if(startElement != null){
-                if(startElement != node && startElement.getClass().equals(node.getClass())){
-                    connectionContainer.setSecondElement(node);
-                }
-                else{
-                    System.err.println("Unable to create connection. Select suitable destination node.");
-                    connectionContainer.clear();
-                }
-            }
-        });
-    }
-    
+        
     private boolean removeInnerNode(NamedRectangle removedNode){
         var parent = removedNode.getParentDeploymentTargetview();
         if(parent != null)
@@ -119,15 +114,6 @@ public class DeploymentDiagramView extends DiagramView {
             }
         }
         return result;
-    }
-
-    public ConnectionContainer getConnectionContainer(){
-        return connectionContainer;
-    }
-    
-    public void startConnection(DeploymentTargetView startingNode){
-        connectionContainer.clear();
-        connectionContainer.setFirstElement(startingNode);
     }
     
     public CommunicationLinkView getConnection(int objectID){

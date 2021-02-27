@@ -7,6 +7,9 @@ package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.DiagramView;
+import com.mycompany.umlspnp.views.common.BasicRectangle;
+import com.mycompany.umlspnp.views.common.ConnectionContainer;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 
 /**
@@ -17,6 +20,8 @@ public class SequenceDiagramView extends DiagramView{
     private final Group root;
     
     private static final ElementContainer<LifelineView, MessageView> allElements = new ElementContainer<>();
+    
+    private final ConnectionContainer connectionContainer = new ConnectionContainer();
     
     public SequenceDiagramView(){
         this.root = new Group();
@@ -80,4 +85,13 @@ public class SequenceDiagramView extends DiagramView{
         return allElements.getConnection(objectID);
     }
     
+
+    public ConnectionContainer getConnectionContainer(){
+        return connectionContainer;
+    }
+    
+    public void startConnection(LifelineView startingNode){
+        connectionContainer.clear();
+        connectionContainer.setFirstElement(startingNode);
+    }
 }
