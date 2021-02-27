@@ -19,7 +19,7 @@ import javafx.util.Callback;
  * @author 10ondr
  */
 public class DeploymentDiagram {
-    private static final ElementContainer allElements = new ElementContainer<NamedNode, CommunicationLink>();
+    private static final ElementContainer<NamedNode, CommunicationLink> allElements = new ElementContainer<>();
     private final ObservableList<LinkType> allLinkTypes;
     
     public DeploymentDiagram(){
@@ -136,10 +136,7 @@ public class DeploymentDiagram {
     }
     
     public CommunicationLink getCommunicationLink(int objectID){
-        var connection = allElements.getConnection(objectID);
-        if(connection instanceof CommunicationLink)
-            return (CommunicationLink) connection;
-        return null;
+        return allElements.getConnection(objectID);
     }
     
     public LinkType createLinkType(String name, Double rate){

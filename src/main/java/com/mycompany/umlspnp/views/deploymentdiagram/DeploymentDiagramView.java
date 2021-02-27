@@ -21,7 +21,7 @@ import javafx.scene.input.MouseEvent;
 public class DeploymentDiagramView extends DiagramView {
     private final Group root;
     
-    private static final ElementContainer allElements = new ElementContainer<NamedRectangle, CommunicationLinkView>();
+    private static final ElementContainer<NamedRectangle, CommunicationLinkView> allElements = new ElementContainer<>();
     
     private final ConnectionContainer connectionContainer = new ConnectionContainer();
     
@@ -131,11 +131,7 @@ public class DeploymentDiagramView extends DiagramView {
     }
     
     public CommunicationLinkView getConnection(int objectID){
-        var connection = allElements.getConnection(objectID);
-
-        if(connection instanceof CommunicationLinkView)
-            return (CommunicationLinkView) connection;
-        return null;
+        return allElements.getConnection(objectID);
     }
     
     public CommunicationLinkView createConnection(DeploymentTargetView source, DeploymentTargetView destination, int connectionModelID){
