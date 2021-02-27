@@ -142,7 +142,7 @@ public class DeploymentDiagramController {
                         var secondID = newConnection.getSecond().getObjectInfo().getID();
                         var newConnectionView = deploymentDiagramView.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
                         
-                        communicationTargetMenuInit(newConnectionView);
+                        communicationLinkMenuInit(newConnectionView);
                         communicationLinkAnnotationsInit(newConnection);
                         createSampleAnnotations(newConnection);
                     }
@@ -297,7 +297,7 @@ public class DeploymentDiagramController {
 
     }
     
-    private void communicationTargetMenuInit(CommunicationLinkView communicationLinkView){
+    private void communicationLinkMenuInit(CommunicationLinkView communicationLinkView){
         var deploymentDiagram = this.model.getDeploymentDiagram();
         var communicationLinkObjectID = communicationLinkView.getObjectInfo().getID();
         var communicationLink = deploymentDiagram.getCommunicationLink(communicationLinkObjectID);
