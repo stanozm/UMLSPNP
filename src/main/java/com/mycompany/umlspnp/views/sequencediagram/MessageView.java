@@ -15,9 +15,9 @@ import javafx.scene.Group;
  * @author 10ondr
  */
 public class MessageView extends ConnectionView implements AnnotationOwner{
-
+    
     public MessageView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot) {
-        super(modelObjectID, source, destination, diagramRoot);
+        super(modelObjectID, source, destination, diagramRoot, true);
     }
 
     @Override

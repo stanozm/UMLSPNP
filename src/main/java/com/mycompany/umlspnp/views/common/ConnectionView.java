@@ -11,7 +11,6 @@ import javafx.beans.value.ObservableValue;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.shape.Line;
 import javafx.scene.transform.Transform;
 
 /**
@@ -21,11 +20,11 @@ import javafx.scene.transform.Transform;
 public class ConnectionView extends BasicElement {
     protected final ConnectionSlot source;
     protected final ConnectionSlot destination;
-    protected final Line line;
+    protected final Arrow arrow;
     
     protected final Group diagramRoot;
 
-    public ConnectionView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
+    public ConnectionView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot, boolean hasArrow){
         super(modelObjectID);
         
         this.source = source;
@@ -33,7 +32,7 @@ public class ConnectionView extends BasicElement {
 
         this.diagramRoot = diagramRoot;
         
-        this.line = new Line();
+        this.arrow = new Arrow(hasArrow);
         
         this.source.localToSceneTransformProperty().addListener(new ChangeListener(){
             @Override
@@ -49,7 +48,7 @@ public class ConnectionView extends BasicElement {
             }
         });
         
-        this.getChildren().add(line);
+        this.getChildren().add(arrow);
     }
     
     private Point2D calculatePosition(Node relativeTo, Transform newPositionTransform){
@@ -59,12 +58,14 @@ public class ConnectionView extends BasicElement {
     
     private void refreshLineStartPosition(){
         var startPosition = calculatePosition(diagramRoot, (Transform) source.localToSceneTransformProperty().getValue());
+        var line = arrow.getLine();
         line.startXProperty().setValue(startPosition.getX());
         line.startYProperty().setValue(startPosition.getY());
     }
     
     private void refreshLineEndPosition(){
         var endPosition = calculatePosition(diagramRoot, (Transform) destination.localToSceneTransformProperty().getValue());
+        var line = arrow.getLine();
         line.endXProperty().setValue(endPosition.getX());
         line.endYProperty().setValue(endPosition.getY());
     }
@@ -77,5 +78,9 @@ public class ConnectionView extends BasicElement {
     public void removeSlots(){
         this.source.setDeleted(true);
         this.destination.setDeleted(true);
+    }
+    
+    public Arrow getArrow(){
+        return arrow;
     }
 }

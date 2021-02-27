@@ -31,17 +31,17 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
     private boolean annotationsDisplayed = true;
 
     public CommunicationLinkView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
-        super(modelObjectID, source, destination, diagramRoot);
+        super(modelObjectID, source, destination, diagramRoot, false);
 
-        this.line.setCursor(Cursor.HAND);
+        this.arrow.setCursor(Cursor.HAND);
 
         this.setOnMouseEntered((e) -> {
-            this.line.setStrokeWidth(4);
+            this.arrow.setStrokeWidth(4);
             e.consume();
         });
         
         this.setOnMouseExited((e) -> {
-            this.line.setStrokeWidth(1);
+            this.arrow.setStrokeWidth(1);
             e.consume();
         });
         
@@ -52,7 +52,7 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
         DoubleProperty lineCenterX = new SimpleDoubleProperty();
         DoubleProperty lineCenterY = new SimpleDoubleProperty();
         
-        line.layoutBoundsProperty().addListener(new ChangeListener(){
+        arrow.getLine().layoutBoundsProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
                 var newLineCenter = (Bounds) newValue;
@@ -80,7 +80,7 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
     }
     
     private void annotationInit(Annotation newAnnotation){
-        line.layoutBoundsProperty().addListener(new ChangeListener(){
+        arrow.getLine().layoutBoundsProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
                 var annotationLine = newAnnotation.getLine();
