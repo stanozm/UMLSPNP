@@ -80,4 +80,11 @@ public class Box extends NamedRectangle{
         zOffset.set(value);
         setBoxZDimensions();
     }
+    
+    @Override
+    public void setStroke(Color newColor) {
+        super.setStroke(newColor);
+        polygonTop.setStroke(newColor);
+        polygonRight.setStroke(newColor);
+    }
 }

@@ -312,9 +312,9 @@ public class BasicRectangle extends BasicElement{
         isSelected = value;
         
         if(value)
-            this.rect.setStroke(Color.RED);
+            this.setStroke(Color.RED);
         else
-            this.rect.setStroke(Color.BLACK);
+            this.setStroke(Color.BLACK);
     }
     
     public boolean getSelected(){
@@ -349,6 +349,10 @@ public class BasicRectangle extends BasicElement{
 
     public DoubleProperty heightProperty(){
         return rect.heightProperty();
+    }
+    
+    public void setStroke(Color newColor) {
+        rect.setStroke(newColor);
     }
     
     public void setFill(Color newColor){
