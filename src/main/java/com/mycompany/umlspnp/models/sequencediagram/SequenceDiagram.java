@@ -77,4 +77,12 @@ public class SequenceDiagram {
         
         return message;
     }
+    
+    public boolean removeMessage(int objectID){
+        return allElements.removeConnection(objectID);
+    }
+    
+    public Message getMessage(int objectID){
+        return allElements.getConnection(objectID);
+    }
 }

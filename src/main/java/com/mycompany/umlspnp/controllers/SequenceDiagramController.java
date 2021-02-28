@@ -12,6 +12,7 @@ import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
+import com.mycompany.umlspnp.views.sequencediagram.MessageView;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -22,6 +23,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 
 /**
  *
@@ -74,9 +76,9 @@ public class SequenceDiagramController {
                     var newMessage = (Message) change.getValueAdded();
                     var firstID = newMessage.getFirst().getObjectInfo().getID();
                     var secondID = newMessage.getSecond().getObjectInfo().getID();
-                    var newConnectionView = sequenceDiagramView.createMessage(firstID, secondID, newMessage.getObjectInfo().getID());
+                    var newMessageView = sequenceDiagramView.createMessage(firstID, secondID, newMessage.getObjectInfo().getID());
 
-//                    communicationTargetMenuInit(newConnectionView);
+                    messageMenuInit(newMessageView);
 //                    communicationLinkAnnotationsInit(newConnection);
 //                    createSampleAnnotations(newConnection);
                 }
@@ -235,5 +237,45 @@ public class SequenceDiagramController {
             this.view.getSequenceDiagramView().startConnection(lifelineView);
         });
         lifelineView.addMenuItem(menuItemConnect);
+    }
+    
+    
+    private void messageMenuInit(MessageView messageView){
+        var sequenceDiagram = this.model.getSequenceDiagram();
+        var messageObjectID = messageView.getObjectInfo().getID();
+        var message = sequenceDiagram.getMessage(messageObjectID);
+        
+        if(message == null){
+            System.err.println("Message with id " + messageObjectID + " was not found!");
+            return;
+        }
+        
+        MenuItem menuItemDelete = new MenuItem("Delete message");
+        menuItemDelete.setOnAction((e) -> {
+            sequenceDiagram.removeMessage(messageObjectID);
+        });
+        messageView.addMenuItem(menuItemDelete);    
+
+
+//        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(messageView);
+//        messageView.addMenuItem(menuItemToggleAnnotations);
+        
+        SeparatorMenuItem separator = new SeparatorMenuItem();
+        messageView.addMenuItem(separator);
+        
+        MenuItem menuProperties = new MenuItem("Properties");
+        menuProperties.setOnAction((e) -> {
+//            var linkTypesView = createLinkTypeProperties(communicationLink);
+//            var failuresView = createFailureTypesProperties(communicationLink);
+//
+//            ArrayList<EditableListView> sections = new ArrayList();
+//            sections.add(failuresView);
+//            sections.add(linkTypesView);
+//
+//            this.view.createPropertiesModalWindow("[" + communicationLink.getFirst().getNameProperty().getValue() + 
+//                    " > " + communicationLink.getSecond().getNameProperty().getValue() +  "] properties", sections);
+
+        });
+        messageView.addMenuItem(menuProperties);
     }
 }
