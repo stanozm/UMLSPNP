@@ -26,6 +26,8 @@ public class ConnectionView extends BasicElement {
     protected final Arrow arrow;
     
     protected final Group diagramRoot;
+    
+    private boolean isHovered = false;
 
     public ConnectionView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot, boolean hasArrow){
         super(modelObjectID);
@@ -54,6 +56,7 @@ public class ConnectionView extends BasicElement {
         });
         
         this.setOnMouseEntered((e) -> {
+            isHovered = true;
             this.arrow.setStrokeWidth(4);
             e.consume();
         });
@@ -61,6 +64,7 @@ public class ConnectionView extends BasicElement {
         this.setOnMouseExited((e) -> {
             this.arrow.setStrokeWidth(1);
             e.consume();
+            isHovered = false;
         });
         
         this.setOnMousePressed((e) -> {
@@ -113,5 +117,9 @@ public class ConnectionView extends BasicElement {
             contextMenu.show(this, e.getScreenX(), e.getScreenY());
         }
         this.toFront();
+    }
+    
+    public boolean getHovered(){
+        return isHovered;
     }
 }

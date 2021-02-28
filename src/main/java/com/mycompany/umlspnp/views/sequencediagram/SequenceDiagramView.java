@@ -61,6 +61,18 @@ public class SequenceDiagramView extends DiagramView{
     public MessageView createMessage(LifelineView source, LifelineView destination, int messageModelID){
         var newMessageView = new MessageView(messageModelID, source.getSpanBox().getEmptySlot(), destination.getSpanBox().getEmptySlot(), root);
 
+        newMessageView.getArrow().getLine().boundsInLocalProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object t, Object t1) {
+                if(!newMessageView.getHovered()) {
+                    for(var loopView : loopViews.values()){
+                        if(processMessageLoopIntersect(newMessageView, loopView))
+                            break;
+                    }
+                }
+            }
+        });
+        
         allElements.addConnection(newMessageView, messageModelID);
         root.getChildren().add(newMessageView);
         newMessageView.refreshLinePosition();
@@ -96,13 +108,7 @@ public class SequenceDiagramView extends DiagramView{
             @Override
             public void changed(ObservableValue ov, Object t, Object t1) {
                 for(var message : allElements.getConnections().values()){
-                    var shape = (Path) Shape.intersect(message.getArrow().getLine(), loop.getRectangle());
-                    if(shape.getElements().size() > 0){
-                        message.setInLoop(true);
-                    }
-                    else{
-                        message.setInLoop(false);
-                    }
+                    processMessageLoopIntersect(message, loop);
                 }
             }
         });
@@ -119,5 +125,23 @@ public class SequenceDiagramView extends DiagramView{
 
         root.getChildren().remove(removedLoop);
         return loopViews.remove(objectID) != null;
+    }
+    
+    private boolean isMessageLoopIntersection(MessageView messageView, LoopView loopView){
+        var shape = (Path) Shape.intersect(messageView.getArrow().getLine(), loopView.getRectangle());
+        if(shape.getElements().size() > 0)
+            return true;
+        return false;
+    }
+    
+    private boolean processMessageLoopIntersect(MessageView messageView, LoopView loopView){
+        if(isMessageLoopIntersection(messageView, loopView)){
+            messageView.setInLoop(true);
+            return true;
+        }
+        else{
+            messageView.setInLoop(false);
+            return false;
+        }
     }
 }
