@@ -73,7 +73,7 @@ public class Message extends Connection<Lifeline> {
         return name;
     }
     
-    public final void setExecutionTime(double newTime){
+    public final void setExecutionTime(int newTime){
         if(executionTime.size() > 0){
             executionTime.get(0).setValue(newTime);
         }

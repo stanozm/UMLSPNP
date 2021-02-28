@@ -17,9 +17,9 @@ import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
-import com.mycompany.umlspnp.views.common.layouts.DoubleModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
+import com.mycompany.umlspnp.views.common.layouts.IntegerModalWindow;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
 import com.mycompany.umlspnp.views.sequencediagram.MessageView;
 import java.util.ArrayList;
@@ -329,10 +329,10 @@ public class SequenceDiagramController {
             public void handle(ActionEvent e) {
                 var selected = (ExecutionTime) executionTimeView.getSelected();
                 if(selected != null){
-                    var editWindow = new DoubleModalWindow(   (Stage) executionTimeView.getScene().getWindow(),
+                    var editWindow = new IntegerModalWindow(   (Stage) executionTimeView.getScene().getWindow(),
                                                                                             "Edit execution time",
                                                                                             "Execution time",
-                                                                                            0.0,
+                                                                                            0,
                                                                                             null,
                                                                                             selected.executionTimeProperty());
                     editWindow.showAndWait();

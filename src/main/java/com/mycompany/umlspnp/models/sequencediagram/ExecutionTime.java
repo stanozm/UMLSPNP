@@ -6,8 +6,8 @@
 package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.models.common.ObservableString;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
@@ -16,9 +16,9 @@ import javafx.beans.value.ObservableValue;
  * @author 10ondr
  */
 public class ExecutionTime extends ObservableString{
-    private final DoubleProperty executionTime = new SimpleDoubleProperty();
+    private final IntegerProperty executionTime = new SimpleIntegerProperty();
     
-    public ExecutionTime(double value){
+    public ExecutionTime(int value){
         executionTime.set(value);
         
         var stringChangeListener = new ChangeListener(){
@@ -31,11 +31,11 @@ public class ExecutionTime extends ObservableString{
         executionTime.addListener(stringChangeListener);
     }
 
-    public void setValue(double newValue){
+    public void setValue(int newValue){
         executionTime.set(newValue);
     }
     
-    public DoubleProperty executionTimeProperty(){
+    public IntegerProperty executionTimeProperty(){
         return executionTime;
     }
     
