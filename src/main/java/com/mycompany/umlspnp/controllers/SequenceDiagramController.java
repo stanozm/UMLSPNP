@@ -250,6 +250,12 @@ public class SequenceDiagramController {
             return;
         }
         
+        MenuItem menuItemRename = new MenuItem("Rename");
+        menuItemRename.setOnAction((e) -> {
+            this.view.createStringModalWindow("Rename", "New name", messageView.nameProperty());
+        });
+        messageView.addMenuItem(menuItemRename);
+        
         MenuItem menuItemDelete = new MenuItem("Delete message");
         menuItemDelete.setOnAction((e) -> {
             sequenceDiagram.removeMessage(messageObjectID);
