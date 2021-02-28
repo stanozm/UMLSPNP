@@ -24,6 +24,7 @@ public class Message extends Connection<Lifeline> {
     private final StringProperty name = new SimpleStringProperty();
     
     private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
+    private final ObservableList<MessageSize> messageSize; // Exactly 1 item
     private final ObservableList<ConnectionFailure> messageFailures;
     
     private OperationEntry operationType;
@@ -39,6 +40,16 @@ public class Message extends Connection<Lifeline> {
                 new Callback<ExecutionTime, Observable[]>() {
                     @Override
                     public Observable[] call(ExecutionTime param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
+        
+        messageSize = FXCollections.observableArrayList(
+                new Callback<MessageSize, Observable[]>() {
+                    @Override
+                    public Observable[] call(MessageSize param) {
                         return new Observable[]{
                             param.getStringRepresentation()
                         };
@@ -92,6 +103,27 @@ public class Message extends Connection<Lifeline> {
     
     public ObservableList getExecutionTimeList(){
         return executionTime;
+    }
+    
+    public final void setMessageSize(int newMessageSize){
+        if(messageSize.size() > 0){
+            messageSize.get(0).setValue(newMessageSize);
+        }
+        else{
+            messageSize.add(new MessageSize(newMessageSize));
+        }
+    }
+    
+    public MessageSize getMessageSize(){
+        return messageSize.get(0);
+    }
+    
+    public void removeMessageSize(){
+        messageSize.remove(0);
+    }
+    
+    public ObservableList getMessageSizeList(){
+        return messageSize;
     }
     
     public ObservableList getMessageFailures(){

@@ -13,6 +13,7 @@ import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
+import com.mycompany.umlspnp.models.sequencediagram.MessageSize;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
@@ -284,11 +285,13 @@ public class SequenceDiagramController {
         MenuItem menuProperties = new MenuItem("Properties");
         menuProperties.setOnAction((e) -> {
             var executionTimeView = createExecutionTimeProperties(message);
+            var messageSizeView = createMessageSizeProperties(message);
             var operationTypeView = createOperationTypeProperties(message);
             var failureTypesView = createMessageFailureTypesProperties(message);
             
             ArrayList<EditableListView> sections = new ArrayList();
             sections.add(executionTimeView);
+            sections.add(messageSizeView);
             sections.add(operationTypeView);
             sections.add(failureTypesView);
             
@@ -302,6 +305,7 @@ public class SequenceDiagramController {
         messageView.getExecutionTimeAnnotation().setItems(message.getExecutionTimeList());
         messageView.getOperationTypeAnnotation().setItems(message.getOperationTypeList());
         messageView.getFailureTypesAnnotation().setItems(message.getMessageFailures());
+        messageView.getMessageSizeAnnotation().setItems(message.getMessageSizeList());
     }
     
     private MenuItem createToggleAnnotationsMenuItem(AnnotationOwner view){
@@ -344,6 +348,58 @@ public class SequenceDiagramController {
         executionTimeView.createButton("Edit", editBtnHandler, true);
         
         return executionTimeView;
+    }
+    
+    private EditableListView createMessageSizeProperties(Message message){
+        var messageSizeList = message.getMessageSizeList();
+        var messageSizeView = new EditableListView("Message size:", messageSizeList);
+
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                message.setMessageSize(0);
+            }
+        };
+
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                BooleanModalWindow confirmWindow = 
+                        new BooleanModalWindow((Stage) messageSizeView.getScene().getWindow(), 
+                        "Confirm", "The message size will be deleted. Proceed?");
+                confirmWindow.showAndWait();
+                if(confirmWindow.getResult()){
+                    message.removeMessageSize();
+                }
+            }
+        };
+        
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (MessageSize) messageSizeView.getSelected();
+                if(selected != null){
+                    var editWindow = new IntegerModalWindow(   (Stage) messageSizeView.getScene().getWindow(),
+                                                                                            "Edit message size",
+                                                                                            "Message size",
+                                                                                            0,
+                                                                                            null,
+                                                                                            selected.messageSizeProperty());
+                    editWindow.showAndWait();
+                    messageSizeView.refresh();
+                }
+            }
+        };
+
+        var addBtn = messageSizeView.createButton("Add", addBtnHandler, false);
+        addBtn.disableProperty().bind(Bindings.size(message.getMessageSizeList()).greaterThan(0));
+
+        var removeBtn = messageSizeView.createButton("Remove", removeBtnHandler, false);
+        removeBtn.disableProperty().bind(Bindings.size(message.getMessageSizeList()).lessThan(1));
+        
+        messageSizeView.createButton("Edit", editBtnHandler, true);
+        
+        return messageSizeView;
     }
     
     // TODO duplicate in deployment controller

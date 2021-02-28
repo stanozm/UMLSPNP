@@ -25,6 +25,7 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     private final Label messageLabel;
     
     private final Annotation executionTimeAnnotation;
+    private final Annotation messageSizeAnnotation;
     private final Annotation operationTypeAnnotation;
     private final Annotation failureTypesAnnotation;
     
@@ -49,9 +50,13 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         failureTypesAnnotation = new Annotation(0, 100, this.arrow.getCenterX(), this.arrow.getCenterY(), "Failure Types");
         failureTypesAnnotation.setFill(Color.PINK);
         
+        messageSizeAnnotation = new Annotation(100, 100, this.arrow.getCenterX(), this.arrow.getCenterY(), "Message Size");
+        messageSizeAnnotation.setFill(Color.LIGHTBLUE);
+        
         annotationInit(executionTimeAnnotation);
         annotationInit(operationTypeAnnotation);
         annotationInit(failureTypesAnnotation);
+        annotationInit(messageSizeAnnotation);
     }
     
     public StringProperty nameProperty(){
@@ -72,6 +77,10 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     
     public Annotation getFailureTypesAnnotation(){
         return failureTypesAnnotation;
+    }
+    
+    public Annotation getMessageSizeAnnotation(){
+        return messageSizeAnnotation;
     }
     
     private void annotationInit(Annotation newAnnotation){
