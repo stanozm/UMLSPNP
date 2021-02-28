@@ -12,6 +12,7 @@ import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
+import com.mycompany.umlspnp.models.sequencediagram.Loop;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.MessageSize;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
@@ -22,6 +23,7 @@ import com.mycompany.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.IntegerModalWindow;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
+import com.mycompany.umlspnp.views.sequencediagram.LoopView;
 import com.mycompany.umlspnp.views.sequencediagram.MessageView;
 import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
@@ -179,8 +181,63 @@ public class SequenceDiagramController {
         
         lifelineMenu.disableProperty().bind(Bindings.isEmpty(lifelineSubmenus));
 
-        addNodeMenu.getItems().addAll(lifelineMenu);
+
+        var loopMenuItem = new MenuItem("Add loop");
+
+        loopMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent tt) {
+                if(tt.getSource().equals(loopMenuItem)){
+                    sequence.createLoop();
+                }
+            }
+        });
+        
+        var loopChangeListener = new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newLoop = (Loop) change.getValueAdded();
+                    var newLoopView = sequenceDiagramView.createLoop(newLoop.getObjectInfo().getID());
+
+                    loopInit(newLoop, newLoopView);
+                }
+                if(change.wasRemoved()){
+                    var removedLoop = (Loop) change.getValueRemoved();
+                    sequenceDiagramView.removeLoop(removedLoop.getObjectInfo().getID());
+                }
+            }
+        };
+        sequence.addLoopsChangeListener(loopChangeListener);
+        
+        addNodeMenu.getItems().addAll(lifelineMenu, loopMenuItem);
         sequenceDiagramView.addMenu(addNodeMenu);
+    }
+    
+    private void loopInit(Loop loop, LoopView loopView){
+        var sequence = this.model.getSequenceDiagram();
+        var loopObjectID = loop.getObjectInfo().getID();
+        
+        loopView.getNameProperty().bind(loop.nameProperty());
+        
+        MenuItem menuItemDelete = new MenuItem("Delete");
+        menuItemDelete.setOnAction((e) -> {
+            sequence.removeLoop(loopObjectID);
+        });
+        loopView.addMenuItem(menuItemDelete);
+
+        
+        MenuItem menuItemIterations = new MenuItem("Change iterations");
+        menuItemIterations.setOnAction((e) -> {
+            var iterationsWindow = new IntegerModalWindow(   (Stage) loopView.getScene().getWindow(),
+                                                                                    "Edit loop iterations",
+                                                                                    "Iterations",
+                                                                                    2,
+                                                                                    null,
+                                                                                    loop.iterationsProperty());
+            iterationsWindow.showAndWait();
+        });
+        loopView.addMenuItem(menuItemIterations);
     }
     
     private MenuItem createLifelineSubmenu(SequenceDiagram sequence, Artifact artifact){

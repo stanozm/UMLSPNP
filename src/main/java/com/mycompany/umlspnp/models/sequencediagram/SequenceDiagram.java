@@ -7,7 +7,9 @@ package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableMap;
 
 /**
  *
@@ -15,9 +17,10 @@ import javafx.collections.MapChangeListener;
  */
 public class SequenceDiagram {
     private static final ElementContainer<Lifeline, Message> allElements = new ElementContainer<>();
+    private final ObservableMap<Number, Loop> loops;
     
     public SequenceDiagram(){
-    
+        loops = FXCollections.observableHashMap();
     }
     
     public void addLifelinesListener(MapChangeListener listener){
@@ -84,5 +87,24 @@ public class SequenceDiagram {
     
     public Message getMessage(int objectID){
         return allElements.getConnection(objectID);
+    }
+    
+    public Loop createLoop(){
+        var loop = new Loop();
+        
+        loops.put(loop.getObjectInfo().getID(), loop);
+        return loop;
+    }
+    
+    public boolean removeLoop(int objectID){
+        return loops.remove(objectID) != null;
+    }
+    
+    public Loop getLoop(int objectID){
+        return loops.get(objectID);
+    }
+    
+    public void addLoopsChangeListener(MapChangeListener listener){
+        loops.addListener(listener);
     }
 }

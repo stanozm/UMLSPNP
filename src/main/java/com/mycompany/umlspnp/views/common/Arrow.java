@@ -11,6 +11,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
 /**
@@ -113,6 +114,12 @@ public class Arrow extends Group {
         line.setStrokeWidth(width);
         vertical.setStrokeWidth(width);
         horizontal.setStrokeWidth(width);
+    }
+    
+    public void setStroke(Color newColor){
+        line.setStroke(newColor);
+        vertical.setStroke(newColor);
+        horizontal.setStroke(newColor);
     }
     
     public void setArrowAtEnd(boolean value){

@@ -120,4 +120,13 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     public boolean areAnnotationsDisplayed(){
         return annotationsDisplayed;
     }
+    
+    public void setInLoop(boolean value){
+        if(value){
+            this.arrow.setStroke(Color.RED);
+        }
+        else{
+            this.arrow.setStroke(Color.BLACK);
+        }
+    }
 }

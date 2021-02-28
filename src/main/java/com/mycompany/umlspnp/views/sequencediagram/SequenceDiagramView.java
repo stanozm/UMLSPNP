@@ -7,8 +7,13 @@ package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.DiagramView;
-import com.mycompany.umlspnp.views.common.ConnectionContainer;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableMap;
 import javafx.scene.Group;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.Shape;
 
 /**
  *
@@ -19,8 +24,12 @@ public class SequenceDiagramView extends DiagramView{
     
     private static final ElementContainer<LifelineView, MessageView> allElements = new ElementContainer<>();
     
+    private final ObservableMap<Number, LoopView> loopViews;
+    
     public SequenceDiagramView(){
         this.root = new Group();
+        
+        loopViews = FXCollections.observableHashMap();
         
         diagramPane.getChildren().add(root);
     }
@@ -78,5 +87,37 @@ public class SequenceDiagramView extends DiagramView{
     
     public MessageView getConnection(int objectID){
         return allElements.getConnection(objectID);
+    }
+    
+    public LoopView createLoop(int objectID){
+        var loop = new LoopView(10, 10, 200, 50, "Loop", objectID);
+
+        loop.addChangeListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object t, Object t1) {
+                for(var message : allElements.getConnections().values()){
+                    var shape = (Path) Shape.intersect(message.getArrow().getLine(), loop.getRectangle());
+                    if(shape.getElements().size() > 0){
+                        message.setInLoop(true);
+                    }
+                    else{
+                        message.setInLoop(false);
+                    }
+                }
+            }
+        });
+        
+        loopViews.put(objectID, loop);
+        root.getChildren().add(loop);
+        return loop;
+    }
+    
+    public boolean removeLoop(int objectID){
+        var removedLoop = loopViews.get(objectID);
+        if(removedLoop == null)
+            return false;
+
+        root.getChildren().remove(removedLoop);
+        return loopViews.remove(objectID) != null;
     }
 }

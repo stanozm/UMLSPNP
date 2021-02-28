@@ -60,6 +60,9 @@ public class BasicRectangle extends BasicElement{
         
         createResizeAreas(5);
         
+        setMinHeight(30);
+        setMinWidth(30);
+        
         this.setOnMousePressed((e) -> {
             actionElementClicked(e);
             e.consume();
@@ -174,7 +177,7 @@ public class BasicRectangle extends BasicElement{
         this.getChildren().addAll(resizeBottom, resizeRight);
     }
     
-    public void setMinHeight(double minHeight){
+    public final void setMinHeight(double minHeight){
         this.heightProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
@@ -185,7 +188,7 @@ public class BasicRectangle extends BasicElement{
         });
     }
     
-    public void setMinWidth(double minWidth){
+    public final void setMinWidth(double minWidth){
         this.widthProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
@@ -197,9 +200,6 @@ public class BasicRectangle extends BasicElement{
     }
     
     public void setRestrictionsInParent(Group parent){
-        setMinHeight(30);
-        setMinWidth(30);
-        
         var thisReference = this;
         
         this.localToSceneTransformProperty().addListener(new ChangeListener(){
