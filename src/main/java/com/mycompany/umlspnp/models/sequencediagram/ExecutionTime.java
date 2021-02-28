@@ -41,6 +41,6 @@ public class ExecutionTime extends ObservableString{
     
     @Override
     public String toString() {
-        return executionTime.getValue().toString() + "s";
+        return executionTime.getValue().toString();
     }
 }
