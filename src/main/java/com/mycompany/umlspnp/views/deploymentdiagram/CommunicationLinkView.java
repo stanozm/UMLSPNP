@@ -14,10 +14,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
-import javafx.scene.Cursor;
 import javafx.scene.Group;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
 /**
@@ -33,22 +30,6 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
     public CommunicationLinkView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
         super(modelObjectID, source, destination, diagramRoot, false);
 
-        this.arrow.setCursor(Cursor.HAND);
-
-        this.setOnMouseEntered((e) -> {
-            this.arrow.setStrokeWidth(4);
-            e.consume();
-        });
-        
-        this.setOnMouseExited((e) -> {
-            this.arrow.setStrokeWidth(1);
-            e.consume();
-        });
-        
-        this.setOnMousePressed((e) -> {
-            actionElementClicked(e);
-        });
-        
         DoubleProperty lineCenterX = new SimpleDoubleProperty();
         DoubleProperty lineCenterY = new SimpleDoubleProperty();
         
@@ -101,18 +82,6 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
         newAnnotation.getLine().toBack();
         
         newAnnotation.setRestrictionsInParent(diagramRoot);
-    }
-    
-    private void actionElementClicked(MouseEvent e){
-        if(e.getButton() == MouseButton.PRIMARY){
-            if(contextMenu.isShowing()){
-                contextMenu.hide();
-            }
-        }
-        else if(e.getButton() == MouseButton.SECONDARY){
-            contextMenu.show(this, e.getScreenX(), e.getScreenY());
-        }
-        this.toFront();
     }
     
     @Override

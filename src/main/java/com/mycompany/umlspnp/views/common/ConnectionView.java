@@ -9,8 +9,11 @@ import com.mycompany.umlspnp.common.Utils;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Point2D;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.Node;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.transform.Transform;
 
 /**
@@ -34,6 +37,8 @@ public class ConnectionView extends BasicElement {
         
         this.arrow = new Arrow(hasArrow);
         
+        this.arrow.setCursor(Cursor.HAND);
+        
         this.source.localToSceneTransformProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
@@ -46,6 +51,20 @@ public class ConnectionView extends BasicElement {
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
                 refreshLineEndPosition();
             }
+        });
+        
+        this.setOnMouseEntered((e) -> {
+            this.arrow.setStrokeWidth(4);
+            e.consume();
+        });
+        
+        this.setOnMouseExited((e) -> {
+            this.arrow.setStrokeWidth(1);
+            e.consume();
+        });
+        
+        this.setOnMousePressed((e) -> {
+            actionElementClicked(e);
         });
         
         this.getChildren().add(arrow);
@@ -82,5 +101,17 @@ public class ConnectionView extends BasicElement {
     
     public Arrow getArrow(){
         return arrow;
+    }
+    
+    private void actionElementClicked(MouseEvent e){
+        if(e.getButton() == MouseButton.PRIMARY){
+            if(contextMenu.isShowing()){
+                contextMenu.hide();
+            }
+        }
+        else if(e.getButton() == MouseButton.SECONDARY){
+            contextMenu.show(this, e.getScreenX(), e.getScreenY());
+        }
+        this.toFront();
     }
 }
