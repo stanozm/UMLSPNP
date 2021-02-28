@@ -9,8 +9,6 @@ import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.ConnectionView;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Bounds;
@@ -30,22 +28,10 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
     public CommunicationLinkView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
         super(modelObjectID, source, destination, diagramRoot, false);
 
-        DoubleProperty lineCenterX = new SimpleDoubleProperty();
-        DoubleProperty lineCenterY = new SimpleDoubleProperty();
-        
-        arrow.getLine().layoutBoundsProperty().addListener(new ChangeListener(){
-            @Override
-            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                var newLineCenter = (Bounds) newValue;
-                lineCenterX.set(newLineCenter.getCenterX());
-                lineCenterY.set(newLineCenter.getCenterY());
-            }
-        });
-        
-        linkTypeAnnotation = new Annotation(250, 10, lineCenterX, lineCenterY, "Communication Link");
+        linkTypeAnnotation = new Annotation(250, 10, this.arrow.getCenterX(), this.arrow.getCenterY(), "Communication Link");
         linkTypeAnnotation.setFill(Color.LIGHTGREEN);
         
-        linkFailuresAnnotation = new Annotation(250, 100, lineCenterX, lineCenterY, "Failure Types");
+        linkFailuresAnnotation = new Annotation(250, 100, this.arrow.getCenterX(), this.arrow.getCenterY(), "Failure Types");
         linkFailuresAnnotation.setFill(Color.LIGHTCORAL);
         
         annotationInit(linkTypeAnnotation);

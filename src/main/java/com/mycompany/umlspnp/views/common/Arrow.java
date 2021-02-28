@@ -5,8 +5,11 @@
  */
 package com.mycompany.umlspnp.views.common;
 
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.shape.Line;
 
@@ -22,6 +25,9 @@ public class Arrow extends Group {
     
     private boolean arrowAtEnd = true;
     
+    private final DoubleProperty lineCenterX = new SimpleDoubleProperty();
+    private final DoubleProperty lineCenterY = new SimpleDoubleProperty();
+    
     public Arrow(boolean hasArrowHead){
         line = new Line();
         
@@ -29,6 +35,15 @@ public class Arrow extends Group {
         horizontal = new Line();
         
         this.getChildren().addAll(line);
+        
+        this.line.layoutBoundsProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                var newLineCenter = (Bounds) newValue;
+                lineCenterX.set(newLineCenter.getCenterX());
+                lineCenterY.set(newLineCenter.getCenterY());
+            }
+        });
         
         if(!hasArrowHead)
             return;
@@ -102,5 +117,13 @@ public class Arrow extends Group {
     
     public void setArrowAtEnd(boolean value){
         arrowAtEnd = value;
+    }
+    
+    public DoubleProperty getCenterX(){
+        return lineCenterX;
+    }
+    
+    public DoubleProperty getCenterY(){
+        return lineCenterY;
     }
 }
