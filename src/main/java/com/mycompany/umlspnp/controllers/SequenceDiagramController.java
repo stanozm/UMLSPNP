@@ -5,14 +5,21 @@
  */
 package com.mycompany.umlspnp.controllers;
 
+import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
+import com.mycompany.umlspnp.views.common.AnnotationOwner;
+import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
+import com.mycompany.umlspnp.views.common.layouts.DoubleModalWindow;
+import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
 import com.mycompany.umlspnp.views.sequencediagram.MessageView;
+import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -24,6 +31,7 @@ import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
+import javafx.stage.Stage;
 
 /**
  *
@@ -79,7 +87,7 @@ public class SequenceDiagramController {
                     var newMessageView = sequenceDiagramView.createMessage(firstID, secondID, newMessage.getObjectInfo().getID());
 
                     messageMenuInit(newMessageView);
-//                    communicationLinkAnnotationsInit(newConnection);
+                    messageAnnotationsInit(newMessage, newMessageView);
 //                    createSampleAnnotations(newConnection);
                 }
                 if(change.wasRemoved()){
@@ -252,8 +260,9 @@ public class SequenceDiagramController {
         
         MenuItem menuItemRename = new MenuItem("Rename");
         menuItemRename.setOnAction((e) -> {
-            this.view.createStringModalWindow("Rename", "New name", messageView.nameProperty());
+            this.view.createStringModalWindow("Rename", "New name", message.nameProperty());
         });
+        messageView.nameProperty().bind(message.nameProperty());
         messageView.addMenuItem(menuItemRename);
         
         MenuItem menuItemDelete = new MenuItem("Delete message");
@@ -262,26 +271,99 @@ public class SequenceDiagramController {
         });
         messageView.addMenuItem(menuItemDelete);    
 
-
-//        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(messageView);
-//        messageView.addMenuItem(menuItemToggleAnnotations);
+        // TODO dupliace with code in deployment controller
+        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(messageView);
+        messageView.addMenuItem(menuItemToggleAnnotations);
         
         SeparatorMenuItem separator = new SeparatorMenuItem();
         messageView.addMenuItem(separator);
         
         MenuItem menuProperties = new MenuItem("Properties");
         menuProperties.setOnAction((e) -> {
-//            var linkTypesView = createLinkTypeProperties(communicationLink);
-//            var failuresView = createFailureTypesProperties(communicationLink);
-//
-//            ArrayList<EditableListView> sections = new ArrayList();
-//            sections.add(failuresView);
-//            sections.add(linkTypesView);
-//
-//            this.view.createPropertiesModalWindow("[" + communicationLink.getFirst().getNameProperty().getValue() + 
-//                    " > " + communicationLink.getSecond().getNameProperty().getValue() +  "] properties", sections);
+            var executionTimeView = createExecutionTimeProperties(message);
+
+            ArrayList<EditableListView> sections = new ArrayList();
+            sections.add(executionTimeView);
+
+            this.view.createPropertiesModalWindow("\"" + message.nameProperty().getValue() + "\" properties", sections);
 
         });
         messageView.addMenuItem(menuProperties);
+    }
+    
+    private void messageAnnotationsInit(Message message, MessageView messageView){
+        messageView.getExecutionTimeAnnotation().setItems(message.getExecutionTimeList());
+    }
+    
+    private MenuItem createToggleAnnotationsMenuItem(AnnotationOwner view){
+        String hideAnnotationsString = "Hide annotations";
+        String showAnnotationsString = "Show annotations";
+        MenuItem menuItemToggleAnnotations = new MenuItem(hideAnnotationsString);
+        menuItemToggleAnnotations.setOnAction((e) -> {
+            view.setAnnotationsDisplayed(!view.areAnnotationsDisplayed());
+            if(view.areAnnotationsDisplayed()){
+                menuItemToggleAnnotations.setText(hideAnnotationsString);
+            }
+            else{
+                menuItemToggleAnnotations.setText(showAnnotationsString);
+            }
+        });
+        return menuItemToggleAnnotations;
+    }
+    
+    private EditableListView createExecutionTimeProperties(Message message){
+        var executionTimeList = message.getExecutionTimeList();
+        var executionTimeView = new EditableListView("Execution time:", executionTimeList);
+
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                message.setExecutionTime(1);
+            }
+        };
+
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (ExecutionTime) executionTimeView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) executionTimeView.getScene().getWindow(), 
+                            "Confirm", "The execution time \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        message.removeExecutionTime();
+                    }
+                }
+            }
+        };
+
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (ExecutionTime) executionTimeView.getSelected();
+                if(selected != null){
+                    var editWindow = new DoubleModalWindow(   (Stage) executionTimeView.getScene().getWindow(),
+                                                                                            "Edit execution time",
+                                                                                            "Execution time",
+                                                                                            0.0,
+                                                                                            null,
+                                                                                            selected.executionTimeProperty());
+                    editWindow.showAndWait();
+                    executionTimeView.refresh();
+                }
+            }
+        };
+
+
+        var addButton = executionTimeView.createButton("Add", addBtnHandler, false);
+        addButton.disableProperty().bind(Bindings.size(executionTimeList).greaterThan(0));
+        
+        var removeButton = executionTimeView.createButton("Remove", removeBtnHandler, false);
+        removeButton.disableProperty().bind(Bindings.size(executionTimeList).lessThan(1));
+        
+        executionTimeView.createButton("Edit", editBtnHandler, true);
+        
+        return executionTimeView;
     }
 }

@@ -9,6 +9,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
@@ -65,4 +66,16 @@ public class ModalWindow extends Stage{
    public Stage getParentStage(){
        return this.parentStage;
    }
+   
+    protected void showAlert(String title, String header, String errorMessage){
+        Alert errorDialog = new Alert(Alert.AlertType.ERROR);
+        errorDialog.setTitle(title);
+        errorDialog.setHeaderText(header);
+        errorDialog.setContentText(errorMessage);
+        errorDialog.showAndWait();
+    }
+    
+    protected void showAlert(String errorMessage){
+        showAlert("Input error", "Incorrect values!", errorMessage);
+    }
 }

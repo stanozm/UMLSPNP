@@ -22,15 +22,7 @@ public class NameRateModalWindow extends ModalWindow {
     protected boolean checkNameRateInputs(StringProperty nameProperty, StringProperty rateProperty){
         return checkNameInput(nameProperty) && checkRateInput(rateProperty);
     }
-    
-    protected void showAlert(String errorMessage){
-        Alert errorDialog = new Alert(Alert.AlertType.ERROR);
-        errorDialog.setTitle("Input error");
-        errorDialog.setHeaderText("Incorrect values!");
-        errorDialog.setContentText(errorMessage);
-        errorDialog.showAndWait();
-    }
-    
+
     private boolean checkNameInput(StringProperty nameProperty){        
         if(nameProperty.isEmpty().getValue()){
             showAlert("Name is not valid.");
