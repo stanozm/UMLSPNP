@@ -36,6 +36,8 @@ public class Message extends Connection<Lifeline> {
                         };
                     }
                 });
+        
+        setExecutionTime(1);
     }
     
     public Lifeline getFrom() {
@@ -50,7 +52,7 @@ public class Message extends Connection<Lifeline> {
         return name;
     }
     
-    public void setExecutionTime(double newTime){
+    public final void setExecutionTime(double newTime){
         if(executionTime.size() > 0){
             executionTime.get(0).setValue(newTime);
         }

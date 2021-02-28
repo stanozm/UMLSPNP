@@ -315,29 +315,6 @@ public class SequenceDiagramController {
         var executionTimeList = message.getExecutionTimeList();
         var executionTimeView = new EditableListView("Execution time:", executionTimeList);
 
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                message.setExecutionTime(1);
-            }
-        };
-
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (ExecutionTime) executionTimeView.getSelected();
-                if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) executionTimeView.getScene().getWindow(), 
-                            "Confirm", "The execution time \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        message.removeExecutionTime();
-                    }
-                }
-            }
-        };
-
         var editBtnHandler = new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e) {
@@ -355,13 +332,6 @@ public class SequenceDiagramController {
             }
         };
 
-
-        var addButton = executionTimeView.createButton("Add", addBtnHandler, false);
-        addButton.disableProperty().bind(Bindings.size(executionTimeList).greaterThan(0));
-        
-        var removeButton = executionTimeView.createButton("Remove", removeBtnHandler, false);
-        removeButton.disableProperty().bind(Bindings.size(executionTimeList).lessThan(1));
-        
         executionTimeView.createButton("Edit", editBtnHandler, true);
         
         return executionTimeView;
