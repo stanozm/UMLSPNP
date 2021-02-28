@@ -25,6 +25,7 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     private final Label messageLabel;
     
     private final Annotation executionTimeAnnotation;
+    private final Annotation operationTypeAnnotation;
     
     private boolean annotationsDisplayed = true;
     
@@ -38,10 +39,14 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         
         this.getChildren().add(messageLabel);
         
-        executionTimeAnnotation = new Annotation(20, 50, this.arrow.getCenterX(), this.arrow.getCenterY(), "Execution time");
+        executionTimeAnnotation = new Annotation(0, 50, this.arrow.getCenterX(), this.arrow.getCenterY(), "Execution time");
         executionTimeAnnotation.setFill(Color.LIGHTYELLOW);
         
+        operationTypeAnnotation = new Annotation(100, 50, this.arrow.getCenterX(), this.arrow.getCenterY(), "Operation type");
+        operationTypeAnnotation.setFill(Color.ORANGE);
+        
         annotationInit(executionTimeAnnotation);
+        annotationInit(operationTypeAnnotation);
     }
     
     public StringProperty nameProperty(){
@@ -54,6 +59,10 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     
     public Annotation getExecutionTimeAnnotation(){
         return executionTimeAnnotation;
+    }
+    
+    public Annotation getOperationTypeAnnotation(){
+        return operationTypeAnnotation;
     }
     
     private void annotationInit(Annotation newAnnotation){

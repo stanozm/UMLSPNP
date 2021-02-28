@@ -6,10 +6,13 @@
 package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.models.common.BasicNode;
+import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
@@ -44,5 +47,13 @@ public class Lifeline extends BasicNode {
     
     public void addMessagesChangeListener(MapChangeListener listener){
         messages.addListener(listener);
+    }
+    
+    public ObservableList<OperationEntry> getOperationEntries(){
+        if(this.artifact instanceof DeploymentTarget){
+            var dt = (DeploymentTarget) this.artifact;
+            return dt.getAllOperationEntries();
+        }
+        return null;
     }
 }

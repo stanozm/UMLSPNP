@@ -5,8 +5,8 @@
  */
 package com.mycompany.umlspnp.controllers;
 
-import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
+import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
@@ -14,7 +14,6 @@ import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
-import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.DoubleModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
@@ -281,9 +280,11 @@ public class SequenceDiagramController {
         MenuItem menuProperties = new MenuItem("Properties");
         menuProperties.setOnAction((e) -> {
             var executionTimeView = createExecutionTimeProperties(message);
+            var operationTypeView = createOperationTypeProperties(message);
 
             ArrayList<EditableListView> sections = new ArrayList();
             sections.add(executionTimeView);
+            sections.add(operationTypeView);
 
             this.view.createPropertiesModalWindow("\"" + message.nameProperty().getValue() + "\" properties", sections);
 
@@ -293,6 +294,7 @@ public class SequenceDiagramController {
     
     private void messageAnnotationsInit(Message message, MessageView messageView){
         messageView.getExecutionTimeAnnotation().setItems(message.getExecutionTimeList());
+        messageView.getOperationTypeAnnotation().setItems(message.getOperationTypeList());
     }
     
     private MenuItem createToggleAnnotationsMenuItem(AnnotationOwner view){
@@ -335,5 +337,34 @@ public class SequenceDiagramController {
         executionTimeView.createButton("Edit", editBtnHandler, true);
         
         return executionTimeView;
+    }
+    
+    private EditableListView createOperationTypeProperties(Message message){
+        var operationEntriesList = message.getOperationEntries();
+        var operationEntriesView = new EditableListView("Operation type:", operationEntriesList);
+
+        var selectBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (OperationEntry) operationEntriesView.getSelected();
+                if(selected != null){
+                    message.setOperationType(selected);
+                }
+            }
+        };
+        
+        var clearBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                message.removeOperationType();
+            }
+        };
+
+        operationEntriesView.createButton("Select", selectBtnHandler, true);
+        
+        var clearBtn = operationEntriesView.createButton("Clear", clearBtnHandler, false);
+        clearBtn.disableProperty().bind(Bindings.size(message.getOperationTypeList()).lessThan(1));
+        
+        return operationEntriesView;
     }
 }

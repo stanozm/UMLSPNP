@@ -6,11 +6,13 @@
 package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.models.common.Connection;
+import com.mycompany.umlspnp.models.common.OperationEntry;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.util.Callback;
 
 /**
@@ -20,7 +22,9 @@ import javafx.util.Callback;
 public class Message extends Connection<Lifeline> {
     private final StringProperty name = new SimpleStringProperty();
     
-    private final ObservableList<ExecutionTime> executionTime;
+    private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
+    private OperationEntry operationType;
+    private final FilteredList<OperationEntry> operationTypeList; // At most 1 item
     
     public Message(Lifeline from, Lifeline to) {
         super(from, to);
@@ -37,6 +41,9 @@ public class Message extends Connection<Lifeline> {
                     }
                 });
         
+        operationTypeList = new FilteredList<>(from.getOperationEntries(),
+                                               item -> item.equals(operationType));
+
         setExecutionTime(1);
     }
     
@@ -71,5 +78,26 @@ public class Message extends Connection<Lifeline> {
     
     public ObservableList getExecutionTimeList(){
         return executionTime;
+    }
+    
+    public ObservableList getOperationEntries(){
+        return getFirst().getOperationEntries();
+    }
+    
+    public void setOperationType(OperationEntry newEntry){
+        operationType = newEntry;
+        operationTypeList.setPredicate(item -> item.equals(operationType)); // Refresh filtered list
+    }
+    
+    public OperationEntry getOperationType(){
+        return operationTypeList.get(0);
+    }
+    
+    public void removeOperationType(){
+        setOperationType(null);
+    }
+    
+    public FilteredList<OperationEntry> getOperationTypeList(){
+        return operationTypeList;
     }
 }

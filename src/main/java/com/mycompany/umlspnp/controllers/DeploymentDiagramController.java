@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.controllers;
 
+import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
@@ -618,7 +619,7 @@ public class DeploymentDiagramController {
                             "Confirm", "The operation \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
                     confirmWindow.showAndWait();
                     if(confirmWindow.getResult()){
-                        operations.remove(selected);
+                        deploymentTarget.removeStateOperation(selected);
                     }
                 }
             }

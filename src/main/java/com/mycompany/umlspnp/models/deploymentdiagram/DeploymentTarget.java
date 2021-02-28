@@ -8,7 +8,9 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -32,7 +34,12 @@ public class DeploymentTarget extends Artifact {
     private final ObservableList<StateTransition> stateTransitions;
     private final ObservableList<StateOperation> stateOperations;
     
+    // Listeners
+    private final Map<StateOperation, ListChangeListener> OperationEntriesListeners = new HashMap();
+    
+    // Shortcuts
     private final ObservableList<State> statesWithoutOperations;
+    private final ObservableList<OperationEntry> allOperationEntries;
     
     public DeploymentTarget(String name, DeploymentTarget parent){
         super(name, parent);
@@ -64,6 +71,16 @@ public class DeploymentTarget extends Artifact {
                 new Callback<StateOperation, Observable[]>() {
                     @Override
                     public Observable[] call(StateOperation param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
+
+        allOperationEntries = FXCollections.observableArrayList(
+                new Callback<OperationEntry, Observable[]>() {
+                    @Override
+                    public Observable[] call(OperationEntry param) {
                         return new Observable[]{
                             param.getStringRepresentation()
                         };
@@ -147,6 +164,39 @@ public class DeploymentTarget extends Artifact {
     
     public void addStateOperation(StateOperation newOperation){
         stateOperations.add(newOperation);
+        
+        var ll = new ListChangeListener(){
+                @Override
+                public void onChanged(ListChangeListener.Change change) {
+                    while (change.next()) {
+                        if(change.wasAdded()){
+                            for(var addedObject : change.getAddedSubList()){
+                                var addedEntry = (OperationEntry) addedObject;
+                                allOperationEntries.add(addedEntry);
+                            }
+                        }
+                        else if(change.wasRemoved()){
+                            for(var removedObject : change.getRemoved()){
+                                var removedEntry = (OperationEntry) removedObject;
+                                allOperationEntries.remove(removedEntry);
+                            }
+                        }
+                    }
+                }
+            };
+        newOperation.getOperationEntries().addListener(ll);
+        OperationEntriesListeners.put(newOperation, ll);
+    }
+    
+    public boolean removeStateOperation(StateOperation removedOperation){
+        var listener = OperationEntriesListeners.get(removedOperation);
+        removedOperation.getOperationEntries().removeListener(listener);
+        OperationEntriesListeners.remove(removedOperation);
+        return stateOperations.remove(removedOperation);
+    }
+    
+    public ObservableList<OperationEntry> getAllOperationEntries(){
+        return allOperationEntries;
     }
 
     public ObservableList<State> getStates() {

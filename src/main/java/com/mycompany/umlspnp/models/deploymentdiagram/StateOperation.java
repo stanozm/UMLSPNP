@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
+import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.common.ObservableString;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;

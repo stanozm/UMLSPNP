@@ -3,9 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.umlspnp.models.deploymentdiagram;
+package com.mycompany.umlspnp.models.common;
 
-import com.mycompany.umlspnp.models.common.ObservableString;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
