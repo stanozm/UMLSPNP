@@ -5,7 +5,9 @@
  */
 package com.mycompany.umlspnp.controllers;
 
+import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
+import com.mycompany.umlspnp.models.common.ConnectionFailure;
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
@@ -14,7 +16,9 @@ import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
+import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.DoubleModalWindow;
+import com.mycompany.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
 import com.mycompany.umlspnp.views.sequencediagram.MessageView;
@@ -281,11 +285,13 @@ public class SequenceDiagramController {
         menuProperties.setOnAction((e) -> {
             var executionTimeView = createExecutionTimeProperties(message);
             var operationTypeView = createOperationTypeProperties(message);
-
+            var failureTypesView = createMessageFailureTypesProperties(message);
+            
             ArrayList<EditableListView> sections = new ArrayList();
             sections.add(executionTimeView);
             sections.add(operationTypeView);
-
+            sections.add(failureTypesView);
+            
             this.view.createPropertiesModalWindow("\"" + message.nameProperty().getValue() + "\" properties", sections);
 
         });
@@ -295,6 +301,7 @@ public class SequenceDiagramController {
     private void messageAnnotationsInit(Message message, MessageView messageView){
         messageView.getExecutionTimeAnnotation().setItems(message.getExecutionTimeList());
         messageView.getOperationTypeAnnotation().setItems(message.getOperationTypeList());
+        messageView.getFailureTypesAnnotation().setItems(message.getMessageFailures());
     }
     
     private MenuItem createToggleAnnotationsMenuItem(AnnotationOwner view){
@@ -337,6 +344,56 @@ public class SequenceDiagramController {
         executionTimeView.createButton("Edit", editBtnHandler, true);
         
         return executionTimeView;
+    }
+    
+    // TODO duplicate in deployment controller
+    private EditableListView createMessageFailureTypesProperties(Message message){
+        var failures = message.getMessageFailures();
+        var failuresView = new EditableListView("Failure types:", failures);
+        
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                message.addMessageFailure(new ConnectionFailure("New failure", 0.01));
+            }
+        };
+
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (ConnectionFailure) failuresView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) failuresView.getScene().getWindow(), 
+                            "Confirm", "The failure type \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        failures.remove(selected);
+                    }
+                }
+            }
+        };
+
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (ConnectionFailure) failuresView.getSelected();
+                if(selected != null){
+                    var editWindow = new EditFailureTypeModalWindow(   (Stage) failuresView.getScene().getWindow(),
+                                                                                            "Edit failure type",
+                                                                                            selected.nameProperty(),
+                                                                                            selected.rateProperty());
+                    editWindow.showAndWait();
+                    failuresView.refresh();
+                }
+            }
+        };
+
+        failuresView.createButton("Add", addBtnHandler, false);
+        failuresView.createButton("Remove", removeBtnHandler, true);
+        failuresView.createButton("Edit", editBtnHandler, true);
+        
+        return failuresView;
     }
     
     private EditableListView createOperationTypeProperties(Message message){

@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.controllers;
 
+import com.mycompany.umlspnp.models.common.ConnectionFailure;
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
@@ -19,7 +20,7 @@ import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.CommunicationLinkView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditAllLinkTypesModalWindow;
-import com.mycompany.umlspnp.views.deploymentdiagram.EditFailureTypeModalWindow;
+import com.mycompany.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationEntryModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditTransitionModalWindow;
@@ -75,8 +76,8 @@ public class DeploymentDiagramController {
     
     /***  ONLY FOR TESTING  ***/
     private void createSampleAnnotations(CommunicationLink communicationLink){
-        communicationLink.addLinkFailure(new LinkFailure("PacketLost", 0.02));
-        communicationLink.addLinkFailure(new LinkFailure("ConnectionDropped", 0.001));
+        communicationLink.addLinkFailure(new ConnectionFailure("PacketLost", 0.02));
+        communicationLink.addLinkFailure(new ConnectionFailure("ConnectionDropped", 0.001));
     }
     
     /***  ONLY FOR TESTING  ***/
@@ -438,14 +439,14 @@ public class DeploymentDiagramController {
         var addBtnHandler = new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e) {
-                communicationLink.addLinkFailure(new LinkFailure("New failure", 0.01));
+                communicationLink.addLinkFailure(new ConnectionFailure("New failure", 0.01));
             }
         };
 
         var removeBtnHandler = new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e) {
-                var selected = (LinkFailure) failuresView.getSelected();
+                var selected = (ConnectionFailure) failuresView.getSelected();
                 if(selected != null){
                     BooleanModalWindow confirmWindow = 
                             new BooleanModalWindow((Stage) failuresView.getScene().getWindow(), 
@@ -461,7 +462,7 @@ public class DeploymentDiagramController {
         var editBtnHandler = new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e) {
-                var selected = (LinkFailure) failuresView.getSelected();
+                var selected = (ConnectionFailure) failuresView.getSelected();
                 if(selected != null){
                     var editWindow = new EditFailureTypeModalWindow(   (Stage) failuresView.getScene().getWindow(),
                                                                                             "Edit failure type",

@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
+import com.mycompany.umlspnp.models.common.ConnectionFailure;
 import com.mycompany.umlspnp.models.common.Connection;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
@@ -21,7 +22,7 @@ public class CommunicationLink extends Connection<DeploymentTarget> {
     
     // Annotations
     private final ObservableList<LinkType> linkType; // NOTE: This list will always contain exactly one item
-    private final ObservableList<LinkFailure> linkFailures;
+    private final ObservableList<ConnectionFailure> linkFailures;
     
     public CommunicationLink(DeploymentTarget target1, DeploymentTarget target2, ObservableList<LinkType> allLinkTypes){
         super(target1, target2);
@@ -54,9 +55,9 @@ public class CommunicationLink extends Connection<DeploymentTarget> {
                 });
         
         linkFailures = FXCollections.observableArrayList(
-                new Callback<LinkFailure, Observable[]>() {
+                new Callback<ConnectionFailure, Observable[]>() {
                     @Override
-                    public Observable[] call(LinkFailure param) {
+                    public Observable[] call(ConnectionFailure param) {
                         return new Observable[]{
                             param.getStringRepresentation()
                         };
@@ -96,7 +97,7 @@ public class CommunicationLink extends Connection<DeploymentTarget> {
         return linkFailures;
     }
     
-    public void addLinkFailure(LinkFailure newLinkFailure){
+    public void addLinkFailure(ConnectionFailure newLinkFailure){
         linkFailures.add(newLinkFailure);
     }
     

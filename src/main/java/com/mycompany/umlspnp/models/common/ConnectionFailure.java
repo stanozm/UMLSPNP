@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.mycompany.umlspnp.models.deploymentdiagram;
+package com.mycompany.umlspnp.models.common;
 
 import com.mycompany.umlspnp.models.common.ObservableString;
 import javafx.beans.property.DoubleProperty;
@@ -17,11 +17,11 @@ import javafx.beans.value.ObservableValue;
  *
  * @author 10ondr
  */
-public class LinkFailure extends ObservableString {
+public class ConnectionFailure extends ObservableString {
     private final StringProperty failureName = new SimpleStringProperty();
     private final DoubleProperty rate = new SimpleDoubleProperty();
     
-    public LinkFailure(String name, double rate){
+    public ConnectionFailure(String name, double rate){
         this.setName(name);
         this.setRate(rate);
         

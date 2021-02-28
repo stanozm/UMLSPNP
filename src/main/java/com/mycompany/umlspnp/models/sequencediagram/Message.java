@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.models.common.Connection;
+import com.mycompany.umlspnp.models.common.ConnectionFailure;
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import javafx.beans.Observable;
 import javafx.beans.property.SimpleStringProperty;
@@ -23,8 +24,11 @@ public class Message extends Connection<Lifeline> {
     private final StringProperty name = new SimpleStringProperty();
     
     private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
+    private final ObservableList<ConnectionFailure> messageFailures;
+    
     private OperationEntry operationType;
     private final FilteredList<OperationEntry> operationTypeList; // At most 1 item
+    
     
     public Message(Lifeline from, Lifeline to) {
         super(from, to);
@@ -35,6 +39,16 @@ public class Message extends Connection<Lifeline> {
                 new Callback<ExecutionTime, Observable[]>() {
                     @Override
                     public Observable[] call(ExecutionTime param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
+        
+        messageFailures = FXCollections.observableArrayList(
+                new Callback<ConnectionFailure, Observable[]>() {
+                    @Override
+                    public Observable[] call(ConnectionFailure param) {
                         return new Observable[]{
                             param.getStringRepresentation()
                         };
@@ -78,6 +92,14 @@ public class Message extends Connection<Lifeline> {
     
     public ObservableList getExecutionTimeList(){
         return executionTime;
+    }
+    
+    public ObservableList getMessageFailures(){
+        return messageFailures;
+    }
+    
+    public void addMessageFailure(ConnectionFailure newMessageFailure){
+        messageFailures.add(newMessageFailure);
     }
     
     public ObservableList getOperationEntries(){
