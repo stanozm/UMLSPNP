@@ -25,6 +25,9 @@ public class ConnectionSlot extends Circle{
     private double defaultRadius;
     private final double zOffset;
     
+    private ConnectionSlot siblingHorizontal = null;
+    private ConnectionSlot siblingVertical = null;
+    
     private final BooleanProperty deletedProperty = new SimpleBooleanProperty();
     
     public ConnectionSlot(  double radius,
@@ -52,7 +55,13 @@ public class ConnectionSlot extends Circle{
         this.setOnMouseDragged((e) -> {
             if(e.getButton() == MouseButton.PRIMARY){
                 Point2D p = this.localToParent(this.sceneToLocal(e.getSceneX(), e.getSceneY()));
-                this.moveOnEdge(p);
+                this.moveOnEdge(p.getX(), p.getY());
+                if(siblingHorizontal != null){
+                    siblingHorizontal.moveOnEdge(p.getX(), siblingHorizontal.getTranslateY());
+                }
+                if(siblingVertical != null){
+                    siblingVertical.moveOnEdge(siblingVertical.getTranslateX(), p.getY());
+                }
             }
             e.consume();
         });
@@ -68,10 +77,7 @@ public class ConnectionSlot extends Circle{
         });
     }
     
-    private void moveOnEdge(Point2D mousePosition){
-        double mouseX = mousePosition.getX();
-        double mouseY = mousePosition.getY();
-
+    public void moveOnEdge(double mouseX, double mouseY){
         double z = this.zOffset;
 
         // Is the value above first and/or second diagonal line of the rectangle
@@ -114,6 +120,14 @@ public class ConnectionSlot extends Circle{
     
     public void refreshPosition(){
         Point2D p = new Point2D(this.getTranslateX(), this.getTranslateY());
-        this.moveOnEdge(p);
+        this.moveOnEdge(p.getX(), p.getY());
+    }
+    
+    public void setSiblingHorizontal(ConnectionSlot sibling){
+        siblingHorizontal = sibling;
+    }
+    
+    public void setSiblingVertical(ConnectionSlot sibling){
+        siblingVertical = sibling;
     }
 }

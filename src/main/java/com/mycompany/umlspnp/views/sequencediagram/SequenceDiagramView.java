@@ -59,7 +59,12 @@ public class SequenceDiagramView extends DiagramView{
     }
     
     public MessageView createMessage(LifelineView source, LifelineView destination, int messageModelID){
-        var newMessageView = new MessageView(messageModelID, source.getSpanBox().getEmptySlot(), destination.getSpanBox().getEmptySlot(), root);
+        var connectionSlotSource = source.getSpanBox().getEmptySlot();
+        var connectionSlotDestination = destination.getSpanBox().getEmptySlot();
+        connectionSlotSource.setSiblingVertical(connectionSlotDestination);
+        connectionSlotDestination.setSiblingVertical(connectionSlotSource);
+        
+        var newMessageView = new MessageView(messageModelID, connectionSlotSource, connectionSlotDestination, root);
 
         newMessageView.getArrow().getLine().boundsInLocalProperty().addListener(new ChangeListener(){
             @Override
