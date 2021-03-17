@@ -23,6 +23,7 @@ public class LifelineView extends NamedRectangle {
         super(x, y, width, height, "Unlinked lifeline", modelObjectID);
         
         this.setResizable(false, false);
+        this.setDraggable(true, false);
         
         spanBox = new BasicRectangle(Utils.generateObjectID(), 0, 0, 10, 150);
         initSpanBox();
@@ -38,7 +39,7 @@ public class LifelineView extends NamedRectangle {
         spanBox.setFill(Color.WHITE);
         spanBox.setMinHeight(30);
         spanBox.setResizable(true, false);
-        spanBox.setDraggable(false);
+        spanBox.setDraggable(false, false);
         spanBox.translateXProperty().bind(this.widthProperty().divide(2).subtract(spanBox.widthProperty().divide(2)));
         spanBox.translateYProperty().bind(this.heightProperty().add(30));
     }

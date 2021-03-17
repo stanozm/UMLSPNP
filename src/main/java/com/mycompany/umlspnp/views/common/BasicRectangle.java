@@ -38,7 +38,8 @@ public class BasicRectangle extends BasicElement{
     protected Rectangle resizeBottom;
     protected Rectangle resizeRight;
 
-    private boolean isDraggable = true;
+    private boolean isDraggableHorizontal = true;
+    private boolean isDraggableVertical = true;
     
     private boolean isSelected = false;
     
@@ -69,8 +70,13 @@ public class BasicRectangle extends BasicElement{
         });
 
         this.setOnMouseDragged((e) -> {
-            if(isDraggable && e.getButton() == MouseButton.PRIMARY){
-                moveInGrid(e.getSceneX(), e.getSceneY());
+            if(e.getButton() == MouseButton.PRIMARY){
+                if(isDraggableHorizontal && isDraggableVertical)
+                    moveInGrid(e.getSceneX(), e.getSceneY());
+                else if(isDraggableHorizontal)
+                    moveInGrid(e.getSceneX(), this.getTranslateY());
+                else if(isDraggableVertical)
+                    moveInGrid(this.getTranslateX(), e.getSceneY());
             }
             e.consume();
         });
@@ -326,8 +332,9 @@ public class BasicRectangle extends BasicElement{
         resizeRight.setDisable(!horizontal);
     }
     
-    public void setDraggable(boolean value){
-        isDraggable = value;
+    public void setDraggable(boolean horizontal, boolean vertical){
+        isDraggableHorizontal = horizontal;
+        isDraggableVertical = vertical;
     }
     
     public void changeDimensions(double newWidth, double newHeight){
