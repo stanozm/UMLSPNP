@@ -22,6 +22,16 @@ public class ConnectionSlot extends Circle{
     private final ReadOnlyDoubleProperty parentWidth;
     private final ReadOnlyDoubleProperty parentHeight;
     
+    public enum LimitMovement {
+        notLimited,
+        onlyLeft,
+        onlyRight,
+        onlyTop,
+        onlyBottom
+    }
+    
+    private LimitMovement limitMovement = LimitMovement.notLimited;
+    
     private double defaultRadius;
     private final double zOffset;
     
@@ -84,17 +94,17 @@ public class ConnectionSlot extends Circle{
         boolean aboveFirst = isPointAboveLine(0, -z, this.parentWidth.getValue() + z, this.parentHeight.getValue(), mouseX, mouseY);
         boolean aboveSecond = isPointAboveLine(0, this.parentHeight.getValue(), this.parentWidth.getValue(), 0, mouseX, mouseY);
 
-        if(aboveFirst && aboveSecond){
+        if(limitMovement == LimitMovement.onlyTop || (limitMovement == LimitMovement.notLimited && aboveFirst && aboveSecond)){
             this.setTranslateX(Math.max(0, Math.min(this.parentWidth.getValue() + z, mouseX)));
 
             this.setTranslateY(-z);
         }
-        else if(!aboveFirst && !aboveSecond){
+        else if(limitMovement == LimitMovement.onlyBottom || (limitMovement == LimitMovement.notLimited && !aboveFirst && !aboveSecond)){
             this.setTranslateX(Math.max(0, Math.min(this.parentWidth.getValue() + z, mouseX)));
 
             this.setTranslateY(this.parentHeight.getValue());
         }
-        else if(aboveFirst){
+        else if(limitMovement == LimitMovement.onlyRight || (limitMovement == LimitMovement.notLimited && aboveFirst)){
             this.setTranslateX(this.parentWidth.getValue() + z);
 
             this.setTranslateY(Math.max(0, Math.min(this.parentHeight.getValue(), mouseY)));
@@ -133,5 +143,12 @@ public class ConnectionSlot extends Circle{
     
     public double getDefaultRadius(){
         return defaultRadius;
+    }
+
+    public void setMovementLimit(LimitMovement newLimitMovement){
+        if(limitMovement != newLimitMovement){
+            limitMovement = newLimitMovement;
+            refreshPosition();
+        }
     }
 }

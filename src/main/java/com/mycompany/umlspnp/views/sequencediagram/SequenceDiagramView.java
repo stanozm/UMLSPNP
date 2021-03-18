@@ -81,6 +81,7 @@ public class SequenceDiagramView extends DiagramView{
         allElements.addConnection(newMessageView, messageModelID);
         root.getChildren().add(newMessageView);
         newMessageView.refreshLinePosition();
+        newMessageView.processMessageMoved();
         return newMessageView;
     }
     

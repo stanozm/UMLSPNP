@@ -34,6 +34,8 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     public MessageView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot) {
         super(modelObjectID, source, destination, diagramRoot, true);
         
+        messageInit();
+        
         messageLabel = new Label();
         
         messageLabel.translateXProperty().bind(arrow.getCenterX().subtract(messageLabel.widthProperty().divide(2)));
@@ -57,6 +59,39 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         annotationInit(operationTypeAnnotation);
         annotationInit(failureTypesAnnotation);
         annotationInit(messageSizeAnnotation);
+    }
+    
+    private void messageInit() {
+        this.source.localToSceneTransformProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                processMessageMoved();
+            }
+        });
+        
+        this.destination.localToSceneTransformProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                processMessageMoved();
+            }
+        });
+    }
+    
+    public void processMessageMoved(){
+        double startX = arrow.getLine().getStartX();
+        double endX = arrow.getLine().getEndX();
+        
+        // Changes would be cyclic without an offset that is equal or greater to the width of lifeline rectangle
+        double offset = 30;
+        
+        if(startX < endX - offset){
+            source.setMovementLimit(ConnectionSlot.LimitMovement.onlyRight);
+            destination.setMovementLimit(ConnectionSlot.LimitMovement.onlyLeft);
+        }
+        else if(startX > endX + offset){
+            source.setMovementLimit(ConnectionSlot.LimitMovement.onlyLeft);
+            destination.setMovementLimit(ConnectionSlot.LimitMovement.onlyRight);
+        }
     }
     
     public StringProperty nameProperty(){
