@@ -130,4 +130,8 @@ public class ConnectionSlot extends Circle{
     public void setSiblingVertical(ConnectionSlot sibling){
         siblingVertical = sibling;
     }
+    
+    public double getDefaultRadius(){
+        return defaultRadius;
+    }
 }

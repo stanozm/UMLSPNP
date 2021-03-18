@@ -48,4 +48,11 @@ public class Utils {
         }
         return null;
     }
+    
+    public static double getAngle(Point2D sourcePoint, Point2D destinationPoint) {
+        double angleRadians = (double) Math.atan2(destinationPoint.getY() - sourcePoint.getY(), destinationPoint.getX() - sourcePoint.getX());
+        if(angleRadians < 0)
+            return angleRadians + Math.PI * 2;
+        return angleRadians;
+    }
 }

@@ -44,14 +44,14 @@ public class ConnectionView extends BasicElement {
         this.source.localToSceneTransformProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                refreshLineStartPosition();
+                refreshLinePosition();
             }
         });
         
         this.destination.localToSceneTransformProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                refreshLineEndPosition();
+                refreshLinePosition();
             }
         });
         
@@ -79,23 +79,26 @@ public class ConnectionView extends BasicElement {
         return Utils.getPositionRelativeTo(this, relativeTo, newLocalPosition);
     }
     
-    private void refreshLineStartPosition(){
-        var startPosition = calculatePosition(diagramRoot, (Transform) source.localToSceneTransformProperty().getValue());
-        var line = arrow.getLine();
-        line.startXProperty().setValue(startPosition.getX());
-        line.startYProperty().setValue(startPosition.getY());
-    }
-    
-    private void refreshLineEndPosition(){
-        var endPosition = calculatePosition(diagramRoot, (Transform) destination.localToSceneTransformProperty().getValue());
-        var line = arrow.getLine();
-        line.endXProperty().setValue(endPosition.getX());
-        line.endYProperty().setValue(endPosition.getY());
-    }
-    
     public void refreshLinePosition(){
-        refreshLineStartPosition();
-        refreshLineEndPosition();
+        var line = arrow.getLine();
+        
+        var startPosition = calculatePosition(diagramRoot, (Transform) source.localToSceneTransformProperty().getValue());
+        var endPosition = calculatePosition(diagramRoot, (Transform) destination.localToSceneTransformProperty().getValue());
+
+        double angle =  Utils.getAngle(startPosition, endPosition);
+
+        // The line should start/end on the edge of the ConnectionSlot circle
+        double sourceCircleOffsetX = source.getDefaultRadius() * Math.cos(angle);
+        double sourceCircleOffsetY = source.getDefaultRadius() * Math.sin(angle);
+        
+        double destinationCircleOffsetX = destination.getDefaultRadius() * Math.cos(angle);
+        double destinationCircleOffsetY = destination.getDefaultRadius() * Math.sin(angle);
+
+        line.setStartX(startPosition.getX() + sourceCircleOffsetX);
+        line.setStartY(startPosition.getY() + sourceCircleOffsetY);
+
+        line.setEndX(endPosition.getX() - destinationCircleOffsetX);
+        line.setEndY(endPosition.getY() - destinationCircleOffsetY);
     }
     
     public void removeSlots(){
