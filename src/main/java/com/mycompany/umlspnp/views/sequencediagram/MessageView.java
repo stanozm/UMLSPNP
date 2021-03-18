@@ -81,8 +81,8 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         double startX = arrow.getLine().getStartX();
         double endX = arrow.getLine().getEndX();
         
-        // Changes would be cyclic without an offset that is equal or greater to the width of lifeline rectangle
-        double offset = 30;
+        // Changes would be cyclic without an offset that is equal or greater to the width of both lifeline rectangles
+        double offset = source.getParentWidth() + destination.getParentWidth() + 5;
         
         if(startX < endX - offset){
             source.setMovementLimit(ConnectionSlot.LimitMovement.onlyRight);

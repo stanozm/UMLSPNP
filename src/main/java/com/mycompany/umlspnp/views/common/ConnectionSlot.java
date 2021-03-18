@@ -145,6 +145,14 @@ public class ConnectionSlot extends Circle{
         return defaultRadius;
     }
 
+    public double getParentWidth(){
+        return parentWidth.doubleValue();
+    }
+    
+    public double getParentHeight(){
+        return parentHeight.doubleValue();
+    }
+    
     public void setMovementLimit(LimitMovement newLimitMovement){
         if(limitMovement != newLimitMovement){
             limitMovement = newLimitMovement;
