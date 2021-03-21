@@ -299,7 +299,13 @@ public class SequenceDiagramController {
         
         MenuItem menuItemDelete = new MenuItem("Delete");
         menuItemDelete.setOnAction((e) -> {
-            sequenceDiagram.removeLifeline(lifelineObjectID);
+            BooleanModalWindow confirmWindow = 
+                        new BooleanModalWindow((Stage) lifelineView.getScene().getWindow(), 
+                        "Confirm", "The lifeline \"" + Utils.shortenString(lifelineView.getNameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
+            confirmWindow.showAndWait();
+            if(confirmWindow.getResult()){
+                sequenceDiagram.removeLifeline(lifelineObjectID);
+            }
         });
         lifelineView.addMenuItem(menuItemDelete);
         
@@ -330,7 +336,13 @@ public class SequenceDiagramController {
         
         MenuItem menuItemDelete = new MenuItem("Delete message");
         menuItemDelete.setOnAction((e) -> {
-            sequenceDiagram.removeMessage(messageObjectID);
+            BooleanModalWindow confirmWindow = 
+                        new BooleanModalWindow((Stage) messageView.getScene().getWindow(), 
+                        "Confirm", "The message \"" + Utils.shortenString(message.nameProperty().getValue(), 50) + "\"will be deleted. Proceed?");
+            confirmWindow.showAndWait();
+            if(confirmWindow.getResult()){
+                sequenceDiagram.removeMessage(messageObjectID);
+            }
         });
         messageView.addMenuItem(menuItemDelete);    
 

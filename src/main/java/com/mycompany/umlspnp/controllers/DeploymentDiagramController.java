@@ -247,7 +247,13 @@ public class DeploymentDiagramController {
         
         MenuItem menuItemDelete = new MenuItem("Delete");
         menuItemDelete.setOnAction((e) -> {
-            deploymentDiagram.removeNode(deploymentTargetObjectID);
+            BooleanModalWindow confirmWindow = 
+                        new BooleanModalWindow((Stage) deploymentTargetView.getScene().getWindow(), 
+                        "Confirm", "The deployment target \"" + Utils.shortenString(deploymentTarget.getNameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
+            confirmWindow.showAndWait();
+            if(confirmWindow.getResult()){
+                deploymentDiagram.removeNode(deploymentTargetObjectID);
+            }
         });
         deploymentTargetView.addMenuItem(menuItemDelete);
         
@@ -317,7 +323,13 @@ public class DeploymentDiagramController {
         
         MenuItem menuItemDelete = new MenuItem("Delete connection");
         menuItemDelete.setOnAction((e) -> {
-            deploymentDiagram.removeCommunicationLink(communicationLinkObjectID);
+            BooleanModalWindow confirmWindow = 
+                        new BooleanModalWindow((Stage) communicationLinkView.getScene().getWindow(), 
+                        "Confirm", "The communication link will be deleted. Proceed?");
+            confirmWindow.showAndWait();
+            if(confirmWindow.getResult()){
+                deploymentDiagram.removeCommunicationLink(communicationLinkObjectID);
+            }
         });
         communicationLinkView.addMenuItem(menuItemDelete);    
 
@@ -346,8 +358,15 @@ public class DeploymentDiagramController {
     
     private void artifactMenuInit(ArtifactView artifactView){
         MenuItem menuItemDelete = new MenuItem("Delete");
+
         menuItemDelete.setOnAction((e) -> {
-            this.model.getDeploymentDiagram().removeNode(artifactView.getObjectInfo().getID());
+            BooleanModalWindow confirmWindow = 
+                        new BooleanModalWindow((Stage) artifactView.getScene().getWindow(), 
+                        "Confirm", "The artifact will be deleted. Proceed?");
+            confirmWindow.showAndWait();
+            if(confirmWindow.getResult()){
+                this.model.getDeploymentDiagram().removeNode(artifactView.getObjectInfo().getID());
+            }
         });
         artifactView.addMenuItem(menuItemDelete);
     }
