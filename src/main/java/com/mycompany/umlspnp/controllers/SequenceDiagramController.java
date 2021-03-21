@@ -68,7 +68,7 @@ public class SequenceDiagramController {
                 var secondElementID = connectionContainer.getSecondElementID();
                 if(firstElementID != null){
                     var firstLifelineView = sequenceDiagramView.getLifelineView(firstElementID.intValue());
-                    firstLifelineView.setSelected(true);
+                    firstLifelineView.getSpanBox().setSelected(true);
                     
                     if(secondElementID != null){
                         if(connectionContainer.getFirstElement() instanceof LifelineView){
@@ -76,7 +76,7 @@ public class SequenceDiagramController {
                             var secondLifeline = sequence.getLifeline(secondElementID.intValue());
                             sequence.createMessage(firstLifeline, secondLifeline);
                         }
-                        firstLifelineView.setSelected(false);
+                        firstLifelineView.getSpanBox().setSelected(false);
                         connectionContainer.clear();
                     }
                 }
