@@ -61,6 +61,14 @@ public class SequenceDiagram {
         return false;
     }
     
+    public boolean removeLifeline(Artifact artifact){
+        var lifeline = getLifeline(artifact);
+        if(lifeline != null) {
+            return removeLifeline(lifeline.getObjectInfo().getID());
+        }
+        return false;
+    }
+    
     public Lifeline getLifeline(Artifact artifact) {
         for (var lifeline : this.allElements.getNodes().values()){
             if(lifeline.getArtifact().equals(artifact)){

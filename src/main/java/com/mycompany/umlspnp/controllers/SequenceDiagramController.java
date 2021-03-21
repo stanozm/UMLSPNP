@@ -142,6 +142,8 @@ public class SequenceDiagramController {
                 else if(change.wasRemoved()){
                     var removedNode = (Artifact) change.getValueRemoved();
                     lifelineSubmenus.remove(removedNode);
+                    
+                    sequence.removeLifeline(removedNode);
                 }
             }
         });
