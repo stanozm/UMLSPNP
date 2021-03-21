@@ -8,6 +8,7 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.NamedNode;
+import java.util.HashSet;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -157,19 +158,12 @@ public class DeploymentDiagram {
     }
     
     public boolean areNodesConnected(Artifact first, Artifact second){
-        Artifact higherInHierarchy;
-        Artifact lowerInHierarchy;
-        
-        if(first.getObjectInfo().getTier() > second.getObjectInfo().getTier()){
-            higherInHierarchy = first;
-            lowerInHierarchy = second;
-        }
-        else{
-            higherInHierarchy = second;
-            lowerInHierarchy = first;
-        }
-        
-        var connectedNodes = higherInHierarchy.getConnectedNodes();
-        return connectedNodes.contains(lowerInHierarchy);
+        HashSet<Artifact> connectedNodes;
+        if(first instanceof DeploymentTarget)
+            connectedNodes =  ((DeploymentTarget) first).getConnectedNodes();
+        else
+            connectedNodes = first.getConnectedNodes();
+
+        return connectedNodes.contains(second);
     }
 }

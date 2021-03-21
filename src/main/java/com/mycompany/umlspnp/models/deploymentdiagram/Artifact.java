@@ -29,9 +29,24 @@ public class Artifact extends NamedNode{
         var connectedNodes = new HashSet();
         if(this.DTparent != null){
             connectedNodes.add(this.DTparent);
-            connectedNodes.addAll(this.DTparent.getConnectedNodes());
+            connectedNodes.addAll(this.DTparent.getConnectedNodes(false, false));
         }
         
         return connectedNodes;
+    }
+    
+    // directionUp: true = direction towards children, false = direction towards parent
+    // shallow: true = only children/parents, false = also all connections of children/parents
+    public HashSet<Artifact> getConnectedNodes(boolean directionUp, boolean shallow){
+        // TODO: connected nodes to this artifact if it will be a possibility
+        
+        if(directionUp) {
+            var connectedNodes = new HashSet();
+            // ...
+            return connectedNodes;
+        }
+        else {
+            return getConnectedNodes();
+        }
     }
 }
