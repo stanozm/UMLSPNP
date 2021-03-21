@@ -105,10 +105,6 @@ public class DeploymentTargetView extends Box implements AnnotationOwner {
         }
         
         super.changeDimensions(newWidth, newHeight);
-        
-        this.slots.forEach(slot -> {
-            slot.refreshPosition();
-        });
     }
     
     private void annotationInit(Annotation newAnnotation, Group diagramRoot){

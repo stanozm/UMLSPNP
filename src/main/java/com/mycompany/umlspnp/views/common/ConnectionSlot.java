@@ -8,6 +8,8 @@ package com.mycompany.umlspnp.views.common;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Point2D;
 import javafx.scene.Cursor;
 import javafx.scene.input.MouseButton;
@@ -65,13 +67,7 @@ public class ConnectionSlot extends Circle{
         this.setOnMouseDragged((e) -> {
             if(e.getButton() == MouseButton.PRIMARY){
                 Point2D p = this.localToParent(this.sceneToLocal(e.getSceneX(), e.getSceneY()));
-                this.moveOnEdge(p.getX(), p.getY());
-                if(siblingHorizontal != null){
-                    siblingHorizontal.moveOnEdge(p.getX(), siblingHorizontal.getTranslateY());
-                }
-                if(siblingVertical != null){
-                    siblingVertical.moveOnEdge(siblingVertical.getTranslateX(), p.getY());
-                }
+                refreshPosition(p);
             }
             e.consume();
         });
@@ -85,6 +81,15 @@ public class ConnectionSlot extends Circle{
             this.setRadius(this.defaultRadius);
             e.consume();
         });
+
+        var parentDimensionsChangeListener = new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object t, Object t1) {
+                refreshPosition();
+            }
+        };
+        parentWidth.addListener(parentDimensionsChangeListener);
+        parentHeight.addListener(parentDimensionsChangeListener);
     }
     
     public void moveOnEdge(double mouseX, double mouseY){
@@ -128,9 +133,18 @@ public class ConnectionSlot extends Circle{
         deletedProperty.setValue(value);
     }
     
-    public void refreshPosition(){
-        Point2D p = new Point2D(this.getTranslateX(), this.getTranslateY());
-        this.moveOnEdge(p.getX(), p.getY());
+    public void refreshPosition(Point2D newPoint){
+        this.moveOnEdge(newPoint.getX(), newPoint.getY());
+        if(siblingHorizontal != null){
+            siblingHorizontal.moveOnEdge(this.getTranslateX(), siblingHorizontal.getTranslateY());
+        }
+        if(siblingVertical != null){
+            siblingVertical.moveOnEdge(siblingVertical.getTranslateX(), this.getTranslateY());
+        }
+    }
+    
+    public void refreshPosition() {
+        refreshPosition(new Point2D(this.getTranslateX(), this.getTranslateY()));
     }
     
     public void setSiblingHorizontal(ConnectionSlot sibling){
