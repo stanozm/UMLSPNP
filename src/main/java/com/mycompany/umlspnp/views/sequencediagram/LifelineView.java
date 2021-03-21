@@ -26,6 +26,7 @@ public class LifelineView extends NamedRectangle {
         this.setDraggable(true, false);
         
         spanBox = new BasicRectangle(Utils.generateObjectID(), 0, 0, 10, 150);
+        this.spanBox.setPropagateEvents(true);
         initSpanBox();
         
         spanLine = new Line();

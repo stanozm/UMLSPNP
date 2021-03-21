@@ -45,6 +45,8 @@ public class BasicRectangle extends BasicElement{
     
     private boolean isSelected = false;
     
+    private boolean propagateEvents = false;
+    
     protected final ArrayList<ConnectionSlot> slots = new ArrayList<>();
     
     public BasicRectangle(int modelObjectID, double x, double y, double width, double height) {
@@ -68,7 +70,10 @@ public class BasicRectangle extends BasicElement{
         
         this.setOnMousePressed((e) -> {
             actionElementClicked(e);
-            e.consume();
+
+            if(!propagateEvents){
+                e.consume();
+            }
         });
 
         this.setOnMouseDragged((e) -> {
@@ -366,5 +371,9 @@ public class BasicRectangle extends BasicElement{
     
     public void setFill(Color newColor){
         rect.setFill(newColor);
+    }
+    
+    public void setPropagateEvents(boolean value){
+        propagateEvents = value;
     }
 }
