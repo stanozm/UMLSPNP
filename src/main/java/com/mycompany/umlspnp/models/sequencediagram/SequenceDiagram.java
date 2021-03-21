@@ -51,7 +51,14 @@ public class SequenceDiagram {
     }
     
     public boolean removeLifeline(int objectID){
-        return allElements.removeNode(objectID);
+        var removedLifeline = getLifeline(objectID);
+        if(removedLifeline != null){
+            removedLifeline.getMessages().forEach(message -> {
+                removeMessage(message.getObjectInfo().getID());
+            });
+            return allElements.removeNode(objectID);
+        }
+        return false;
     }
     
     public Lifeline getLifeline(Artifact artifact) {

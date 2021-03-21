@@ -9,6 +9,7 @@ import com.mycompany.umlspnp.models.common.BasicNode;
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
+import java.util.Collection;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -43,6 +44,10 @@ public class Lifeline extends BasicNode {
     
     public void removeMessage(Message removedMessage){
         messages.remove(removedMessage.getObjectInfo().getID());
+    }
+    
+    public Collection<Message> getMessages(){
+        return messages.values();
     }
     
     public void addMessagesChangeListener(MapChangeListener listener){
