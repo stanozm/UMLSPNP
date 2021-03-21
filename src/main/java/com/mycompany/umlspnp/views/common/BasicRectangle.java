@@ -34,6 +34,8 @@ public class BasicRectangle extends BasicElement{
     private final DoubleExpression centerY;
     
     protected final DoubleProperty borderOffset = new SimpleDoubleProperty(20.0);
+    // Upper border has to have greater offset thanks to the node title being displayed there
+    protected final DoubleProperty upperBorderAdditionalOffset = new SimpleDoubleProperty(10.0);
     
     protected Rectangle resizeBottom;
     protected Rectangle resizeRight;
@@ -287,7 +289,7 @@ public class BasicRectangle extends BasicElement{
 
                 double minVal;
                 if(parent != null)
-                    minVal = parent.borderOffset.getValue();
+                    minVal = parent.borderOffset.getValue() + parent.upperBorderAdditionalOffset.getValue();
                 else
                     minVal = 0;
 
