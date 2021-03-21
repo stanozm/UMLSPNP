@@ -26,7 +26,6 @@ public class LifelineView extends NamedRectangle {
         this.setDraggable(true, false);
         
         spanBox = new BasicRectangle(Utils.generateObjectID(), 0, 0, 10, 150);
-        this.spanBox.setPropagateEvents(true);
         initSpanBox();
         
         spanLine = new Line();
@@ -37,6 +36,7 @@ public class LifelineView extends NamedRectangle {
     }
     
     private void initSpanBox(){
+        spanBox.setPropagateEvents(true);
         spanBox.setFill(Color.WHITE);
         spanBox.setMinHeight(30);
         spanBox.setResizable(true, false);
