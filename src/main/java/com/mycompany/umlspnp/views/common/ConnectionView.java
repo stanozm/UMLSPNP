@@ -33,28 +33,17 @@ public class ConnectionView extends BasicElement {
         super(modelObjectID);
         
         this.source = source;
+        initSource();
+        
         this.destination = destination;
+        initDestination();
 
         this.diagramRoot = diagramRoot;
         
         this.arrow = new Arrow(hasArrow);
         
         this.arrow.setCursor(Cursor.HAND);
-        
-        this.source.localToSceneTransformProperty().addListener(new ChangeListener(){
-            @Override
-            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                refreshLinePosition();
-            }
-        });
-        
-        this.destination.localToSceneTransformProperty().addListener(new ChangeListener(){
-            @Override
-            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                refreshLinePosition();
-            }
-        });
-        
+
         this.setOnMouseEntered((e) -> {
             isHovered = true;
             this.arrow.setStrokeWidth(4);
@@ -72,6 +61,34 @@ public class ConnectionView extends BasicElement {
         });
         
         this.getChildren().add(arrow);
+    }
+    
+    private void initSource() {
+        this.source.localToSceneTransformProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                refreshLinePosition();
+            }
+        });
+        
+        this.source.setOnMousePressed((e) -> {
+            this.toFront();
+            e.consume();
+        });
+    }
+    
+    private void initDestination() {
+        this.destination.localToSceneTransformProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                refreshLinePosition();
+            }
+        });
+        
+        this.destination.setOnMousePressed((e) -> {
+            this.toFront();
+            e.consume();
+        });
     }
     
     private Point2D calculatePosition(Node relativeTo, Transform newPositionTransform){
