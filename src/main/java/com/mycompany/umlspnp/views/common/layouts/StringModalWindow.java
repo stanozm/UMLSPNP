@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views.common.layouts;
 
+import java.util.regex.Pattern;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -32,8 +33,10 @@ public class StringModalWindow extends ModalWindow {
         this.confirmButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                output.setValue(stringField.textProperty().getValue());
-                close();
+                if(checkInput()) {
+                    output.setValue(stringField.textProperty().getValue());
+                    close();
+                }
             }
         });
         
@@ -41,6 +44,22 @@ public class StringModalWindow extends ModalWindow {
         this.rootGrid.add(stringField, 1, 0);
         this.rootGrid.add(confirmButton, 0, 1);
     }
+    
+    private boolean checkInput(){
+        String errorMessage = null;
+        
+        var regex = Pattern.compile("^([a-zA-Z])[a-zA-Z0-9\\s_]*$");
+        if(!regex.matcher(this.stringField.textProperty().getValue()).matches()) {
+            errorMessage = "The value must start with a letter and contain only english letters, numbers, whitespace and underscore.";
+        }
+        
+        if(errorMessage != null){
+            showAlert(errorMessage);
+            return false;
+        }
+        return true;
+    }
+    
     
     public Label getLabel(){
         return this.stringLabel;

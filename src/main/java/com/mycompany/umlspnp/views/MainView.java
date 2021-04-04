@@ -12,6 +12,8 @@ import com.mycompany.umlspnp.views.common.layouts.PropertiesModalWindow;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
@@ -33,18 +35,15 @@ public class MainView extends VBox{
     private final DeploymentDiagramView deploymentDiagramView;
     private final SequenceDiagramView sequenceDiagramView;
     private final Stage appStage;
+    private final MenuBar mainMenu = new MenuBar();
     
     
     public MainView(Stage appStage){
         this.appStage = appStage;
         
         /* Main menu */
-        Menu fileMenu = new Menu("File");
-        Menu aboutMenu = new Menu("About");
-        aboutMenu.getItems().add(new MenuItem("Info"));
-        MenuBar mainMenu = new MenuBar(fileMenu, aboutMenu);
         this.getChildren().add(mainMenu);
-        
+
         /* Diagram tabs */
         TabPane diagramTabPane = new TabPane();
         diagramTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
@@ -94,6 +93,10 @@ public class MainView extends VBox{
  
     public Stage getAppStage(){
         return appStage;
+    }
+ 
+    public void addMenu(Menu newMenu) {
+        mainMenu.getMenus().add(newMenu);
     }
     
     public DeploymentDiagramView getDeploymentDiagramView(){

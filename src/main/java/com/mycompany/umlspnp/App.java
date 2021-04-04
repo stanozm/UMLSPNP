@@ -13,6 +13,7 @@ import javafx.stage.Stage;
  * JavaFX App
  */
 public class App extends Application {
+    private MainController mainController;
     private DeploymentDiagramController deploymentDiagramController;
     private SequenceDiagramController sequenceDiagramController;
     
@@ -24,6 +25,7 @@ public class App extends Application {
         var mainModel = new MainModel();
         var mainView = new MainView(stage);
         
+        mainController = new MainController(mainModel, mainView);
         deploymentDiagramController = new DeploymentDiagramController(mainModel, mainView);
         sequenceDiagramController = new SequenceDiagramController(mainModel, mainView);
         

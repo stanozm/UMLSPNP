@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views.common.layouts;
 
+import java.util.regex.Pattern;
 import javafx.beans.property.StringProperty;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
@@ -28,6 +29,13 @@ public class NameRateModalWindow extends ModalWindow {
             showAlert("Name is not valid.");
             return false;
         }
+        
+        var regex = Pattern.compile("^([a-zA-Z])[a-zA-Z0-9\\s_]*$");
+        if(!regex.matcher(nameProperty.getValue()).matches()) {
+            showAlert("Name must start with a letter and contain only english letters, numbers, whitespace and underscore.");
+            return false;
+        }
+        
         return true;
     }
     
