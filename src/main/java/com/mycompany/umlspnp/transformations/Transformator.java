@@ -247,10 +247,14 @@ public class Transformator {
             }
         }
 
-        // TODO halt function on end place?
         var usageEndPlaceName = createPlaceName(lifelineName, "end");
         var usageEndPlace = new StandardPlace(placeCounter++, usageEndPlaceName);
         petriNet.addPlace(usageEndPlace);
+        
+        FunctionSPNP<Integer> haltingFunction = new FunctionSPNP<>("halting_" + prepareName(lifelineName, 15),
+                                                                   FunctionType.Halting, String.format("return mark(\"%s\") < 1;", usageEndPlaceName),
+                                                                   Integer.class);
+        petriNet.addFunction(haltingFunction);
         
         var outputArc = new StandardArc(arcCounter++, ArcDirection.Output, usageEndPlace, previousTransition);
         petriNet.addArc(outputArc);
