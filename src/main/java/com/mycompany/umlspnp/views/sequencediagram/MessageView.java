@@ -31,14 +31,21 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     
     private boolean annotationsDisplayed = true;
     
-    public MessageView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot) {
-        super(modelObjectID, source, destination, diagramRoot, true);
+    private final boolean sourceIsDestination;
+    
+    public MessageView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, boolean sourceIsDestination, Group diagramRoot) {
+        super(modelObjectID, source, destination, diagramRoot, true, sourceIsDestination);
         
         messageInit();
         
+        this.sourceIsDestination = sourceIsDestination;
+        
         messageLabel = new Label();
         
-        messageLabel.translateXProperty().bind(arrow.getCenterX().subtract(messageLabel.widthProperty().divide(2)));
+        if(sourceIsDestination)
+            messageLabel.translateXProperty().bind(arrow.getCenterX());
+        else
+            messageLabel.translateXProperty().bind(arrow.getCenterX().subtract(messageLabel.widthProperty().divide(2)));
         messageLabel.translateYProperty().bind(arrow.getCenterY().subtract(25));
         
         this.getChildren().add(messageLabel);
@@ -84,7 +91,11 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         // Changes would be cyclic without an offset that is equal or greater to the width of both lifeline rectangles
         double offset = source.getParentWidth() + destination.getParentWidth() + 5;
         
-        if(startX < endX - offset){
+        if(sourceIsDestination){
+            source.setMovementLimit(ConnectionSlot.LimitMovement.onlyRight);
+            destination.setMovementLimit(ConnectionSlot.LimitMovement.onlyRight);
+        }
+        else if(startX < endX - offset){
             source.setMovementLimit(ConnectionSlot.LimitMovement.onlyRight);
             destination.setMovementLimit(ConnectionSlot.LimitMovement.onlyLeft);
         }

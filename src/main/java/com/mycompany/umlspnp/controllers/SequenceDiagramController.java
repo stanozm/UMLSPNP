@@ -271,11 +271,11 @@ public class SequenceDiagramController {
         sequenceDiagramView.registerNodeToSelect(newLifelineView, (e) -> {
             var startElement = (LifelineView) connectionContainer.getFirstElement();
             if(startElement != null){
-                if(startElement != newLifelineView && startElement.getClass().equals(newLifelineView.getClass())){
+                if(startElement.getClass().equals(newLifelineView.getClass())){
                     var startLifeline = sequenceDiagram.getLifeline(startElement.getObjectInfo().getID());
                     var startArtifact = startLifeline.getArtifact();
                     var newLifelineArtifact = newLifeline.getArtifact();
-                    if(deploymentDiagram.areNodesConnected(startArtifact, newLifelineArtifact)){
+                    if(startElement == newLifelineView || deploymentDiagram.areNodesConnected(startArtifact, newLifelineArtifact)){
                         connectionContainer.setSecondElement(newLifelineView);
                         return;
                     }
@@ -329,7 +329,7 @@ public class SequenceDiagramController {
         
         MenuItem menuItemRename = new MenuItem("Rename");
         menuItemRename.setOnAction((e) -> {
-            this.view.createStringModalWindow("Rename", "New name", message.nameProperty());
+            this.view.createStringModalWindow("Rename", "New name", message.nameProperty(), null);
         });
         messageView.nameProperty().bind(message.nameProperty());
         messageView.addMenuItem(menuItemRename);

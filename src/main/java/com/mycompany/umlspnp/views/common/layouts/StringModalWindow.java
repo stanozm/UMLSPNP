@@ -23,6 +23,8 @@ public class StringModalWindow extends ModalWindow {
     private final TextField stringField;
     private final Button confirmButton;
     
+    private String restrictionRegex = null;
+    
     public StringModalWindow(Stage parentStage, String windowName, String labelText, StringProperty output) {
         super(parentStage, windowName);
 
@@ -48,9 +50,11 @@ public class StringModalWindow extends ModalWindow {
     private boolean checkInput(){
         String errorMessage = null;
         
-        var regex = Pattern.compile("^([a-zA-Z])[a-zA-Z0-9\\s_]*$");
-        if(!regex.matcher(this.stringField.textProperty().getValue()).matches()) {
-            errorMessage = "The value must start with a letter and contain only english letters, numbers, whitespace and underscore.";
+        if(restrictionRegex != null) {
+            var regex = Pattern.compile(restrictionRegex);
+            if(!regex.matcher(this.stringField.textProperty().getValue()).matches()) {
+                errorMessage = "The value must start with a letter and contain only english letters, numbers, whitespace and underscore.";
+            }
         }
         
         if(errorMessage != null){
@@ -71,5 +75,9 @@ public class StringModalWindow extends ModalWindow {
     
     public Button getButton(){
         return this.confirmButton;
+    }
+    
+    public void setStringRestrictionRegex(String regex){
+        restrictionRegex = regex;
     }
 }

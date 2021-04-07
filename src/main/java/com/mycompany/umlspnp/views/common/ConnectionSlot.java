@@ -173,4 +173,9 @@ public class ConnectionSlot extends Circle{
             refreshPosition();
         }
     }
+
+    public void disable(boolean value) {
+        this.setDisable(value);
+        this.setVisible(!value);
+    }
 }

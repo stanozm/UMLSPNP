@@ -12,12 +12,9 @@ import com.mycompany.umlspnp.views.common.layouts.PropertiesModalWindow;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import javafx.beans.property.StringProperty;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Orientation;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.control.SplitPane;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
@@ -107,8 +104,10 @@ public class MainView extends VBox{
         return sequenceDiagramView;
     }
     
-    public void createStringModalWindow(String windowName, String labelText, StringProperty output){
+    public void createStringModalWindow(String windowName, String labelText, StringProperty output, String restrictionRegex){
         var modal = new StringModalWindow(appStage, windowName, labelText, output);
+        if(restrictionRegex != null)
+            modal.setStringRestrictionRegex(restrictionRegex);
         modal.showAndWait();
     }
     

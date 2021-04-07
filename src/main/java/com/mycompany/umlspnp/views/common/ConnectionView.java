@@ -28,9 +28,13 @@ public class ConnectionView extends BasicElement {
     protected final Group diagramRoot;
     
     private boolean isHovered = false;
+    
+    private final boolean sourceIsDestination;
 
-    public ConnectionView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot, boolean hasArrow){
+    public ConnectionView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot, boolean hasArrow, boolean sourceIsDestination){
         super(modelObjectID);
+        
+        this.sourceIsDestination = sourceIsDestination;
         
         this.source = source;
         initSource();
@@ -99,9 +103,13 @@ public class ConnectionView extends BasicElement {
     public void refreshLinePosition(){
         var line = arrow.getLine();
         
-        var startPosition = calculatePosition(diagramRoot, (Transform) source.localToSceneTransformProperty().getValue());
-        var endPosition = calculatePosition(diagramRoot, (Transform) destination.localToSceneTransformProperty().getValue());
-
+        Point2D startPosition;
+        Point2D endPosition = calculatePosition(diagramRoot, (Transform) destination.localToSceneTransformProperty().getValue());
+        if(sourceIsDestination)
+            startPosition = new Point2D(endPosition.getX() + 70, endPosition.getY());
+        else
+            startPosition = calculatePosition(diagramRoot, (Transform) source.localToSceneTransformProperty().getValue());
+        
         double angle =  Utils.getAngle(startPosition, endPosition);
 
         // The line should start/end on the edge of the ConnectionSlot circle
@@ -113,7 +121,7 @@ public class ConnectionView extends BasicElement {
 
         line.setStartX(startPosition.getX() + sourceCircleOffsetX);
         line.setStartY(startPosition.getY() + sourceCircleOffsetY);
-
+ 
         line.setEndX(endPosition.getX() - destinationCircleOffsetX);
         line.setEndY(endPosition.getY() - destinationCircleOffsetY);
     }

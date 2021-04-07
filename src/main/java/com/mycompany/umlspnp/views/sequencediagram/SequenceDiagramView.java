@@ -60,11 +60,13 @@ public class SequenceDiagramView extends DiagramView{
     
     public MessageView createMessage(LifelineView source, LifelineView destination, int messageModelID){
         var connectionSlotSource = source.getSpanBox().getEmptySlot();
+        connectionSlotSource.disable(source == destination);
+
         var connectionSlotDestination = destination.getSpanBox().getEmptySlot();
         connectionSlotSource.setSiblingVertical(connectionSlotDestination);
         connectionSlotDestination.setSiblingVertical(connectionSlotSource);
-        
-        var newMessageView = new MessageView(messageModelID, connectionSlotSource, connectionSlotDestination, root);
+
+        var newMessageView = new MessageView(messageModelID, connectionSlotSource, connectionSlotDestination, source == destination, root);
 
         newMessageView.getArrow().getLine().boundsInLocalProperty().addListener(new ChangeListener(){
             @Override

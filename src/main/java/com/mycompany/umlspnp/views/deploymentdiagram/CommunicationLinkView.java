@@ -26,7 +26,7 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
     private boolean annotationsDisplayed = true;
 
     public CommunicationLinkView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, Group diagramRoot){
-        super(modelObjectID, source, destination, diagramRoot, false);
+        super(modelObjectID, source, destination, diagramRoot, false, false);
 
         linkTypeAnnotation = new Annotation(250, 10, this.arrow.getCenterX(), this.arrow.getCenterY(), "Communication Link");
         linkTypeAnnotation.setFill(Color.LIGHTGREEN);

@@ -16,6 +16,7 @@ import javafx.scene.text.Text;
  * @author 10ondr
  */
 public class Utils {
+    public static String SPNP_NAME_RESTRICTION_REGEX = "^([a-zA-Z])[a-zA-Z0-9\\s_]*$";
     private static int objectIDCounter = 0;
     
     public static int generateObjectID(){

@@ -259,7 +259,7 @@ public class DeploymentDiagramController {
         
         MenuItem menuItemRename = new MenuItem("Rename");
         menuItemRename.setOnAction((e) -> {
-            this.view.createStringModalWindow("Rename", "New name", deploymentTarget.getNameProperty());
+            this.view.createStringModalWindow("Rename", "New name", deploymentTarget.getNameProperty(), Utils.SPNP_NAME_RESTRICTION_REGEX);
         });
         deploymentTargetView.addMenuItem(menuItemRename);
 
@@ -533,6 +533,7 @@ public class DeploymentDiagramController {
                 if(selected != null){
                     StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
                             "Rename state", "Type new name of the state \"" + Utils.shortenString(selected.toString(), 50) + "\":", selected.nameProperty());
+                    renameWindow.setStringRestrictionRegex(Utils.SPNP_NAME_RESTRICTION_REGEX);
                     renameWindow.showAndWait();
                     statesView.refresh();
                 }
