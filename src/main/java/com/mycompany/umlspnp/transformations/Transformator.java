@@ -4,19 +4,26 @@
  * and open the template in the editor.
  */
 package com.mycompany.umlspnp.transformations;
+import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.common.NamedNode;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.deploymentdiagram.State;
 import com.mycompany.umlspnp.models.deploymentdiagram.StateTransition;
+import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
+import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
+import cz.muni.fi.spnp.core.models.functions.FunctionType;
 import cz.muni.fi.spnp.core.models.places.Place;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
+import cz.muni.fi.spnp.core.models.transitions.ImmediateTransition;
 import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
+import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.*;
+import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.code.SPNPCode;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
 import cz.muni.fi.spnp.core.transformators.spnp.options.Option;
@@ -139,20 +146,20 @@ public class Transformator {
         return null;
     }
     
-    private String prepareName(String name) {
-        var result = name.replaceAll("\\s+", "");
-        if(result.length() > 8) {
-            result = result.substring(0, 8);
+    private String prepareName(String name, int maxLength) {
+        var result = name.replaceAll("\\s+", "").replaceAll(Utils.SPNP_NAME_RESTRICTION_REPLACE_REGEX, "");
+        if(result.length() > maxLength) {
+            result = result.substring(0, maxLength);
         }
         return result;
     }
     
     private String createPlaceName(String nodeName, String placeName) {
-        return "PL_" + prepareName(nodeName) + "_" + prepareName(placeName);
+        return "PL_" + prepareName(nodeName, 8) + "_" + prepareName(placeName, 8);
     }
     
     private String createTransitionName(String nodeName, String transitionName) {
-        return "TR_" + prepareName(nodeName) + "_" + prepareName(transitionName);
+        return "TR_" + prepareName(nodeName, 8) + "_" + prepareName(transitionName, 8);
     }
     
     private void transformNodes(Collection<NamedNode> nodes) {
@@ -198,10 +205,71 @@ public class Transformator {
         });
     }
 
+    private ImmediateTransition transformUsageLevelMessage(ImmediateTransition previousTransition, Message message) {
+        var messageName = message.nameProperty().getValue();
+
+        var serviceCallName = createPlaceName(messageName, "call");
+        var serviceCallPlace = new StandardPlace(placeCounter++, serviceCallName);
+        petriNet.addPlace(serviceCallPlace);
+        
+        var outputArc = new StandardArc(arcCounter++, ArcDirection.Output, serviceCallPlace, previousTransition);
+        petriNet.addArc(outputArc);
+
+        // TODO when next service segment is implemented
+        var guardName = "guard_" + prepareName(messageName, 15) + "_ok";
+        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, "mark();", Integer.class);
+
+        var serviceCallTransitionName = prepareName("TR_" + messageName, 15);
+        var serviceCallTransition = new ImmediateTransition(transitionCounter++, serviceCallTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(serviceCallTransition);
+
+        var inputArc = new StandardArc(arcCounter++, ArcDirection.Input, serviceCallPlace, serviceCallTransition);
+        petriNet.addArc(inputArc);
+
+        return serviceCallTransition;
+    }
+    
+    private void transformHighestLevelLifeline(Lifeline highestLevelLifeline) {
+        var lifelineName = highestLevelLifeline.nameProperty().getValue();
+        var sortedMessages = highestLevelLifeline.getSortedMessages();
+
+        // TODO finish guard function
+        FunctionSPNP<Integer> guard = new FunctionSPNP<>("guard_" + prepareName(lifelineName, 15) + "_usage_start", FunctionType.Guard, "mark();", Integer.class);
+        var initTransitionName = createTransitionName(lifelineName, "start");
+        var initialTransition = new ImmediateTransition(transitionCounter++, initTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(initialTransition);
+
+        var previousTransition = initialTransition;
+        for(var message : sortedMessages){
+            // Only outgoing messages
+            if(highestLevelLifeline == message.getFrom()) {
+                previousTransition = transformUsageLevelMessage(previousTransition, message);
+            }
+        }
+
+        // TODO halt function on end place?
+        var usageEndPlaceName = createPlaceName(lifelineName, "end");
+        var usageEndPlace = new StandardPlace(placeCounter++, usageEndPlaceName);
+        petriNet.addPlace(usageEndPlace);
+        
+        var outputArc = new StandardArc(arcCounter++, ArcDirection.Output, usageEndPlace, previousTransition);
+        petriNet.addArc(outputArc);
+    }
+
     public void transform() {
         var deploymentDiagram = model.getDeploymentDiagram();
+        var sequenceDiagram = model.getSequenceDiagram();
+ 
         var elements = deploymentDiagram.getElementContainer();
+
+        // Physical segment
         transformNodes(elements.getNodes().values());
+
+        // High-level usage segment
+        var highestLevelLifeline = sequenceDiagram.getHighestLevelLifeline();
+        if(highestLevelLifeline != null){
+            transformHighestLevelLifeline(highestLevelLifeline);
+        }
     }
 
     public String getOutput(){

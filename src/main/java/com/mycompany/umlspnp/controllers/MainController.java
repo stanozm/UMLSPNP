@@ -6,8 +6,11 @@
 package com.mycompany.umlspnp.controllers;
 
 import com.mycompany.umlspnp.models.MainModel;
+import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
+import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.transformations.Transformator;
 import com.mycompany.umlspnp.views.MainView;
+import java.util.ArrayList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
@@ -36,6 +39,8 @@ public class MainController {
             @Override
             public void handle(ActionEvent tt) {
                 if(tt.getSource().equals(transformMenuItem)){
+                    performPreTransformActions();
+
                     var transformator = new Transformator(model);
                     transformator.transform();
                     System.out.println(transformator.getOutput());
@@ -50,5 +55,31 @@ public class MainController {
         
         this.view.addMenu(fileMenu);
         this.view.addMenu(aboutMenu);
+    }
+    
+    private void createLifelineSortedMessages(Lifeline lifeline) {
+        var sequenceDiagram = model.getSequenceDiagram();
+        var sequenceDiagramView = view.getSequenceDiagramView();
+
+        var messageIDs = new ArrayList<Integer>();
+        for(var message : lifeline.getMessages()){
+            messageIDs.add(message.getObjectInfo().getID());
+        }
+        var sortedMessageViews = sequenceDiagramView.sortMessages(messageIDs);
+
+        var sortedMessages = new ArrayList<Message>();
+        for(var messageView : sortedMessageViews){
+            var message = sequenceDiagram.getMessage(messageView.getObjectInfo().getID());
+            if(message != null){
+                sortedMessages.add(message);
+            }
+        }
+        lifeline.setSortedMessages(sortedMessages);
+    }
+    
+    private void performPreTransformActions() {
+        for(var lifeline : model.getSequenceDiagram().getLifelines()) {
+            createLifelineSortedMessages(lifeline);
+        }
     }
 }

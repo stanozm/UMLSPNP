@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import java.util.Collection;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
@@ -86,6 +87,10 @@ public class SequenceDiagram {
         return null;
     }
     
+    public Collection<Lifeline> getLifelines() {
+        return allElements.getNodes().values();
+    }
+
     public Message createMessage(Lifeline source, Lifeline destination){
         var message = new Message(source, destination);
         
@@ -98,6 +103,12 @@ public class SequenceDiagram {
     }
     
     public boolean removeMessage(int objectID){
+        var message = getMessage(objectID);
+        if(message == null)
+            return false;
+        message.getFrom().removeMessage(message);
+        message.getTo().removeMessage(message);
+
         return allElements.removeConnection(objectID);
     }
     

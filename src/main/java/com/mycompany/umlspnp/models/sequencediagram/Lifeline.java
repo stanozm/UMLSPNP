@@ -9,6 +9,7 @@ import com.mycompany.umlspnp.models.common.BasicNode;
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
+import java.util.ArrayList;
 import java.util.Collection;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -23,6 +24,9 @@ import javafx.collections.ObservableMap;
 public class Lifeline extends BasicNode {
     private final Artifact artifact;
     private final ObservableMap<Number, Message> messages;
+    
+    // Only available while transforming to SPNP
+    private ArrayList<Message> sortedMessages = null;
     
     public Lifeline(Artifact linkedArtifact){
         this.artifact = linkedArtifact;
@@ -60,5 +64,13 @@ public class Lifeline extends BasicNode {
             return dt.getAllOperationEntries();
         }
         return null;
+    }
+    
+    public void setSortedMessages(ArrayList<Message> sortedMessages) {
+        this.sortedMessages = sortedMessages;
+    }
+
+    public ArrayList<Message> getSortedMessages() {
+        return sortedMessages;
     }
 }

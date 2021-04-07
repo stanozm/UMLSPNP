@@ -150,4 +150,12 @@ public class ConnectionView extends BasicElement {
     public boolean getHovered(){
         return isHovered;
     }
+    
+    public ConnectionSlot getSourceConnectionSlot() {
+        return source;
+    }
+
+    public ConnectionSlot getDestinationConnectionSlot() {
+        return destination;
+    }
 }

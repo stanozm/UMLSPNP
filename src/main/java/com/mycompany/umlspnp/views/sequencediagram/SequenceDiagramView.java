@@ -7,6 +7,9 @@ package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.DiagramView;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -193,7 +196,25 @@ public class SequenceDiagramView extends DiagramView{
         if(currentHighest != highest)
             highestLifelineProperty.setValue(highest);
     }
-    
+
+    public Collection<MessageView> sortMessages(Collection<Integer> messageObjectIDs){
+        var sortedMessages = new ArrayList<MessageView>();
+        for(var messageID : messageObjectIDs){
+            var messageView = allElements.getConnection(messageID);
+            if(messageView != null){
+                sortedMessages.add(messageView);
+            }
+        }
+
+        Collections.sort(sortedMessages, (m1, m2) -> {
+            Double first = m1.getSourceConnectionSlot().getTranslateY();
+            Double second = m2.getSourceConnectionSlot().getTranslateY();
+            return first.compareTo(second);
+        });
+
+        return sortedMessages;
+    }
+
     public ObjectProperty<LifelineView> getHighestLifelineProperty() {
         return highestLifelineProperty;
     }
