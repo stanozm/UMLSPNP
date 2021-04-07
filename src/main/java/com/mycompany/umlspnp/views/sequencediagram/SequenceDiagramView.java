@@ -7,6 +7,8 @@ package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.DiagramView;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -23,7 +25,8 @@ public class SequenceDiagramView extends DiagramView{
     private final Group root;
     
     private static final ElementContainer<LifelineView, MessageView> allElements = new ElementContainer<>();
-    
+    private final ObjectProperty<LifelineView> highestLifelineProperty = new SimpleObjectProperty(null);
+
     private final ObservableMap<Number, LoopView> loopViews;
     
     public SequenceDiagramView(){
@@ -32,16 +35,36 @@ public class SequenceDiagramView extends DiagramView{
         loopViews = FXCollections.observableHashMap();
         
         diagramPane.getChildren().add(root);
+        
+        highestLifelineProperty.addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(oldValue != null){
+                    ((LifelineView) oldValue).setIsHighest(false);
+                }
+                if(newValue != null){
+                    ((LifelineView) newValue).setIsHighest(true);
+                }
+            }
+        });
     }
     
     public LifelineView createLifelineView(int modelObjectID){
         var newLifelineView = new LifelineView(10, 30, 10, 0, modelObjectID);
         allElements.addNode(newLifelineView, modelObjectID);
         
+        newLifelineView.localToSceneTransformProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                checkHighestLifeline();
+            }
+        });
+        
         newLifelineView.setRestrictionsInParent(root);
         root.getChildren().add(newLifelineView);
         
         newLifelineView.changeDimensions(150, 40);
+        checkHighestLifeline();
         return newLifelineView;
     }
     
@@ -55,6 +78,7 @@ public class SequenceDiagramView extends DiagramView{
         if(!success)
             return false;
 
+        checkHighestLifeline();
         return root.getChildren().remove(removedLifline);
     }
     
@@ -151,5 +175,26 @@ public class SequenceDiagramView extends DiagramView{
             messageView.setInLoop(false);
             return false;
         }
+    }
+    
+    private void checkHighestLifeline() {
+        var currentHighest = highestLifelineProperty.getValue();
+        
+        double minX = Double.POSITIVE_INFINITY;
+        LifelineView highest = null;
+
+        for(var lifelineView : allElements.getNodes().values()) {
+            double x = lifelineView.getTranslateX();
+            if(x < minX) {
+                minX = x;
+                highest = lifelineView;
+            }
+        }
+        if(currentHighest != highest)
+            highestLifelineProperty.setValue(highest);
+    }
+    
+    public ObjectProperty<LifelineView> getHighestLifelineProperty() {
+        return highestLifelineProperty;
     }
 }

@@ -125,6 +125,15 @@ public class SequenceDiagramController {
             }
         });
 
+        sequenceDiagramView.getHighestLifelineProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(newValue == null)
+                    sequence.setHighestLevelLifeline(Integer.MIN_VALUE);
+                sequence.setHighestLevelLifeline(((LifelineView) newValue).getObjectInfo().getID());
+            }
+        });
+        
         Menu addNodeMenu = new Menu("Add Node");
         Menu lifelineMenu = new Menu("Lifeline");
         

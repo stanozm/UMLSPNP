@@ -8,6 +8,7 @@ package com.mycompany.umlspnp.views.sequencediagram;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.common.BasicRectangle;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
+import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
@@ -18,6 +19,8 @@ import javafx.scene.shape.Line;
 public class LifelineView extends NamedRectangle {
     private final BasicRectangle spanBox;
     private final Line spanLine;
+    
+    protected final Label highestLevelLabel;
     
     public LifelineView(double x, double y, double width, double height, int modelObjectID) {
         super(x, y, width, height, "Unlinked lifeline", modelObjectID);
@@ -31,6 +34,10 @@ public class LifelineView extends NamedRectangle {
         spanLine = new Line();
         initSpanLine();
         
+        highestLevelLabel = new Label();
+        initHighestLevelLabel();
+        
+        this.getChildren().add(highestLevelLabel);
         this.getChildren().add(spanBox);
         this.getChildren().add(spanLine);
     }
@@ -53,7 +60,19 @@ public class LifelineView extends NamedRectangle {
         spanLine.endYProperty().bind(spanBox.translateYProperty());
     }
     
+    private void initHighestLevelLabel() {
+        highestLevelLabel.setText("(Highest level lifeline)");
+        highestLevelLabel.setTranslateY(-20);
+        highestLevelLabel.translateXProperty().bind(this.widthProperty().divide(2).subtract(highestLevelLabel.widthProperty().divide(2)));
+        highestLevelLabel.setVisible(false);
+    }
+    
     public BasicRectangle getSpanBox() {
         return this.spanBox;
+    }
+    
+    public void setIsHighest(boolean value) {
+        this.highestLevelLabel.setVisible(value);
+        this.setBoldHeader(value);
     }
 }

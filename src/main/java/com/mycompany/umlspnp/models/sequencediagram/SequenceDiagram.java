@@ -18,6 +18,7 @@ import javafx.collections.ObservableMap;
 public class SequenceDiagram {
     private static final ElementContainer<Lifeline, Message> allElements = new ElementContainer<>();
     private final ObservableMap<Number, Loop> loops;
+    private Lifeline highestLevelLifeline = null;
     
     public SequenceDiagram(){
         loops = FXCollections.observableHashMap();
@@ -121,5 +122,13 @@ public class SequenceDiagram {
     
     public void addLoopsChangeListener(MapChangeListener listener){
         loops.addListener(listener);
+    }
+    
+    public void setHighestLevelLifeline(int objectID) {
+        highestLevelLifeline = getLifeline(objectID);
+    }
+    
+    public Lifeline getHighestLevelLifeline() {
+        return highestLevelLifeline;
     }
 }
