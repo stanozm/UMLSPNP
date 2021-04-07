@@ -29,8 +29,10 @@ import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransit
 import cz.muni.fi.spnp.core.transformators.spnp.options.Option;
 import cz.muni.fi.spnp.core.transformators.spnp.options.SPNPOptions;
 import cz.muni.fi.spnp.core.transformators.spnp.parameters.InputParameter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import javafx.util.Pair;
 /**
  *
  * @author 10ondr
@@ -205,7 +207,7 @@ public class Transformator {
         });
     }
 
-    private ImmediateTransition transformUsageLevelMessage(ImmediateTransition previousTransition, Message message) {
+    private Pair<ImmediateTransition, StandardPlace> transformUsageLevelMessage(ImmediateTransition previousTransition, Message message) {
         var messageName = message.nameProperty().getValue();
 
         var serviceCallName = createPlaceName(messageName, "call");
@@ -226,31 +228,52 @@ public class Transformator {
         var inputArc = new StandardArc(arcCounter++, ArcDirection.Input, serviceCallPlace, serviceCallTransition);
         petriNet.addArc(inputArc);
 
-        return serviceCallTransition;
+        return new Pair(serviceCallTransition, serviceCallPlace);
     }
     
     private void transformHighestLevelLifeline(Lifeline highestLevelLifeline) {
         var lifelineName = highestLevelLifeline.nameProperty().getValue();
         var sortedMessages = highestLevelLifeline.getSortedMessages();
 
-        // TODO finish guard function
-        FunctionSPNP<Integer> guard = new FunctionSPNP<>("guard_" + prepareName(lifelineName, 15) + "_usage_start", FunctionType.Guard, "mark();", Integer.class);
+        // Initial transition
         var initTransitionName = createTransitionName(lifelineName, "start");
-        var initialTransition = new ImmediateTransition(transitionCounter++, initTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
-        petriNet.addTransition(initialTransition);
+        var initialTransition = new ImmediateTransition(transitionCounter++, initTransitionName, 1, null, new ConstantTransitionProbability(1.0));
 
+        // Individual service calls
+        var usagePlaces = new ArrayList<StandardPlace>();
         var previousTransition = initialTransition;
         for(var message : sortedMessages){
-            // Only outgoing messages
-            if(highestLevelLifeline == message.getFrom()) {
-                previousTransition = transformUsageLevelMessage(previousTransition, message);
+            if(highestLevelLifeline == message.getFrom()) { // Only outgoing messages
+                var transitionPlacePair = transformUsageLevelMessage(previousTransition, message);
+                previousTransition = transitionPlacePair.getKey();
+                usagePlaces.add(transitionPlacePair.getValue());
             }
         }
+        
+        // Initial transition guard
+        var startGuardBody = new StringBuilder();
+        if(usagePlaces.size() < 1){
+            startGuardBody.append("return 1;");
+        }
+        else{
+            startGuardBody.append("return !(");
+            for(var place : usagePlaces){
+                startGuardBody.append(String.format("mark(\"%s\")", place.getName()));
+                if(usagePlaces.indexOf(place) < usagePlaces.size() - 1)
+                    startGuardBody.append(" || ");
+            }
+            startGuardBody.append(");");
+        }
+        FunctionSPNP<Integer> startGuard = new FunctionSPNP<>("guard_" + prepareName(lifelineName, 15) + "_usage_start", FunctionType.Guard,
+                                                              startGuardBody.toString(), Integer.class);
+        initialTransition.setGuardFunction(startGuard);
+        petriNet.addTransition(initialTransition);
 
+        // End usage place
         var usageEndPlaceName = createPlaceName(lifelineName, "end");
         var usageEndPlace = new StandardPlace(placeCounter++, usageEndPlaceName);
         petriNet.addPlace(usageEndPlace);
-        
+
         FunctionSPNP<Integer> haltingFunction = new FunctionSPNP<>("halting_" + prepareName(lifelineName, 15),
                                                                    FunctionType.Halting, String.format("return mark(\"%s\") < 1;", usageEndPlaceName),
                                                                    Integer.class);
