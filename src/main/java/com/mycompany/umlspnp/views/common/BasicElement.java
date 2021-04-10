@@ -21,7 +21,7 @@ import javafx.scene.input.MouseEvent;
  */
 public class BasicElement extends Group{
     private final ObjectInfo objectInfo;
-    protected final static double gridSize = 10;
+    protected double gridSize = 10;
     
     protected final ContextMenu contextMenu;
     
@@ -59,5 +59,9 @@ public class BasicElement extends Group{
                 childElement.setTranslateY(childElement.getTranslateY() + diff);
             }
         });
+    }
+    
+    public void setGridSize(double newGridSize) {
+        this.gridSize = newGridSize;
     }
 }

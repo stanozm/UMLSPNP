@@ -84,12 +84,21 @@ public class SequenceDiagramView extends DiagramView{
         checkHighestLifeline();
         return root.getChildren().remove(removedLifline);
     }
+
+    public ActivationView getActivationView(int objectID) {
+        for(var lifeline : allElements.getNodes().values()) {
+            var activationView = lifeline.getActivationView(objectID);
+            if(activationView != null)
+                return activationView;
+        }
+        return null;
+    }
     
-    public MessageView createMessage(LifelineView source, LifelineView destination, int messageModelID){
-        var connectionSlotSource = source.getSpanBox().getEmptySlot();
+    public MessageView createMessage(ActivationView source, ActivationView destination, int messageModelID){
+        var connectionSlotSource = source.getEmptySlot();
         connectionSlotSource.disable(source == destination);
 
-        var connectionSlotDestination = destination.getSpanBox().getEmptySlot();
+        var connectionSlotDestination = destination.getEmptySlot();
         connectionSlotSource.setSiblingVertical(connectionSlotDestination);
         connectionSlotDestination.setSiblingVertical(connectionSlotSource);
 
@@ -115,8 +124,8 @@ public class SequenceDiagramView extends DiagramView{
     }
     
     public MessageView createMessage(int sourceID, int destinationID, int connectionModelID){
-        var source = getLifelineView(sourceID);
-        var destination = getLifelineView(destinationID);
+        var source = getActivationView(sourceID);
+        var destination = getActivationView(destinationID);
         return createMessage(source, destination, connectionModelID);
     }
     

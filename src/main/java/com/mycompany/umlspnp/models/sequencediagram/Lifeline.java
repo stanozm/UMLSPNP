@@ -23,7 +23,7 @@ import javafx.collections.ObservableMap;
  */
 public class Lifeline extends BasicNode {
     private final Artifact artifact;
-    private final ObservableMap<Number, Message> messages;
+    private final ObservableMap<Number, Activation> activations;
     
     // Only available while transforming to SPNP
     private ArrayList<Message> sortedMessages = null;
@@ -31,7 +31,32 @@ public class Lifeline extends BasicNode {
     public Lifeline(Artifact linkedArtifact){
         this.artifact = linkedArtifact;
         
-        this.messages = FXCollections.observableHashMap();
+        this.activations = FXCollections.observableHashMap();
+    }
+    
+    public Activation createActivation(){
+        var newActivation = new Activation(this);
+        activations.put(newActivation.getObjectInfo().getID(), newActivation);
+        return newActivation;
+    }
+
+    public boolean removeActivation(int objectID){
+        var activation = getActivation(objectID);
+        if(activation == null)
+            return false;
+        return activations.remove(objectID) != null;
+    }
+    
+    public Activation getActivation(int objectID) {
+        return activations.get(objectID);
+    }
+    
+    public Collection<Activation> getActivations(){
+        return activations.values();
+    }
+    
+    public void addActivationsChangeListener(MapChangeListener listener){
+        activations.addListener(listener);
     }
     
     public Artifact getArtifact(){
@@ -41,23 +66,7 @@ public class Lifeline extends BasicNode {
     public StringProperty nameProperty(){
         return this.artifact.getNameProperty();
     }
-    
-    public void addMessage(Message newMessage){
-        messages.put(newMessage.getObjectInfo().getID(), newMessage);
-    }
-    
-    public void removeMessage(Message removedMessage){
-        messages.remove(removedMessage.getObjectInfo().getID());
-    }
-    
-    public Collection<Message> getMessages(){
-        return messages.values();
-    }
-    
-    public void addMessagesChangeListener(MapChangeListener listener){
-        messages.addListener(listener);
-    }
-    
+
     public ObservableList<OperationEntry> getOperationEntries(){
         if(this.artifact instanceof DeploymentTarget){
             var dt = (DeploymentTarget) this.artifact;

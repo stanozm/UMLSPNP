@@ -78,17 +78,13 @@ public class BasicRectangle extends BasicElement{
 
         this.setOnMouseDragged((e) -> {
             if(e.getButton() == MouseButton.PRIMARY){
-                if(isDraggableHorizontal && isDraggableVertical)
+                if(isDraggableHorizontal || isDraggableVertical)
                     moveInGrid(e.getSceneX(), e.getSceneY());
-                else if(isDraggableHorizontal)
-                    moveInGrid(e.getSceneX(), this.getTranslateY());
-                else if(isDraggableVertical)
-                    moveInGrid(this.getTranslateX(), e.getSceneY());
             }
             e.consume();
         });
     }
-
+    
     public DoubleExpression getCenterX(){
         return this.centerX;
     }
@@ -99,18 +95,20 @@ public class BasicRectangle extends BasicElement{
     
     private void moveInGrid(double scenePosX, double scenePosY){
         double moveX = this.getTranslateX() + getPositionInGrid(scenePosX, originalPositionX);
-
+        
         if(moveX != this.getTranslateX()){
             originalPositionX = scenePosX - ((this.getTranslateX() + (scenePosX - originalPositionX)) - moveX);
         }
-        this.setTranslateX(moveX);
-
+        if(isDraggableHorizontal)
+            this.setTranslateX(moveX);
+        
 
         double moveY = this.getTranslateY() + getPositionInGrid(scenePosY, originalPositionY);
         if(moveY != this.getTranslateY()){
             originalPositionY = scenePosY - ((this.getTranslateY() + (scenePosY - originalPositionY)) - moveY);
         }
-        this.setTranslateY(moveY);
+        if(isDraggableVertical)
+            this.setTranslateY(moveY);
     }
 
  

@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import java.util.ArrayList;
 import java.util.Collection;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -55,8 +56,8 @@ public class SequenceDiagram {
     public boolean removeLifeline(int objectID){
         var removedLifeline = getLifeline(objectID);
         if(removedLifeline != null){
-            removedLifeline.getMessages().forEach(message -> {
-                removeMessage(message.getObjectInfo().getID());
+            new ArrayList<Activation>(removedLifeline.getActivations()).forEach(activation -> {
+                removeActivation(activation);
             });
             return allElements.removeNode(objectID);
         }
@@ -87,11 +88,42 @@ public class SequenceDiagram {
         return null;
     }
     
+    public Activation getActivation(int objectID){
+        var lifelines = allElements.getNodes().values();
+        for(var lifeline : lifelines) {
+            for(var activation : lifeline.getActivations()) {
+                if(activation.getObjectInfo().getID() == objectID) {
+                    return activation;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private boolean removeActivation(Activation activation) {
+        new ArrayList<Message>(activation.getMessages()).forEach(message -> {
+            removeMessage(message.getObjectInfo().getID());
+        });
+
+        for(var lifeline : allElements.getNodes().values()) {
+            if(lifeline.getActivation(activation.getObjectInfo().getID()) != null) {
+                lifeline.removeActivation(activation.getObjectInfo().getID());
+                return true;
+            }        
+        }
+        return false;
+    }
+    
+    public boolean removeActivation(int objectID) {
+        var activation = getActivation(objectID);
+        return removeActivation(activation);
+    }
+    
     public Collection<Lifeline> getLifelines() {
         return allElements.getNodes().values();
     }
 
-    public Message createMessage(Lifeline source, Lifeline destination){
+    public Message createMessage(Activation source, Activation destination){
         var message = new Message(source, destination);
         
         allElements.addConnection(message, message.getObjectInfo().getID());

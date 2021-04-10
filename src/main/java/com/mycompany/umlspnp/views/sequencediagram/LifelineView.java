@@ -5,9 +5,12 @@
  */
 package com.mycompany.umlspnp.views.sequencediagram;
 
-import com.mycompany.umlspnp.common.Utils;
-import com.mycompany.umlspnp.views.common.BasicRectangle;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
+import java.util.Collection;
+import java.util.HashMap;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -17,8 +20,8 @@ import javafx.scene.shape.Line;
  * @author 10ondr
  */
 public class LifelineView extends NamedRectangle {
-    private final BasicRectangle spanBox;
     private final Line spanLine;
+    private final HashMap<Number, ActivationView> activationViews;
     
     protected final Label highestLevelLabel;
     
@@ -28,51 +31,80 @@ public class LifelineView extends NamedRectangle {
         this.setResizable(false, false);
         this.setDraggable(true, false);
         
-        spanBox = new BasicRectangle(Utils.generateObjectID(), 0, 0, 10, 150);
-        initSpanBox();
-        
         spanLine = new Line();
         initSpanLine();
         
+        activationViews = new HashMap<>();
+        
         highestLevelLabel = new Label();
         initHighestLevelLabel();
-        
+
         this.getChildren().add(highestLevelLabel);
-        this.getChildren().add(spanBox);
         this.getChildren().add(spanLine);
     }
-    
-    private void initSpanBox(){
-        spanBox.setPropagateEvents(true);
-        spanBox.setFill(Color.WHITE);
-        spanBox.setMinHeight(30);
-        spanBox.setResizable(true, false);
-        spanBox.setDraggable(false, false);
-        spanBox.translateXProperty().bind(this.widthProperty().divide(2).subtract(spanBox.widthProperty().divide(2)));
-        spanBox.translateYProperty().bind(this.heightProperty().add(30));
+ 
+    private void initActivation(ActivationView activationView){
+        activationView.setGridSize(1.0);
+        activationView.setPropagateEvents(false);
+        activationView.setFill(Color.WHITE);
+        activationView.setMinHeight(30);
+        activationView.setResizable(true, false);
+        activationView.setDraggable(false, true);
+        activationView.setTranslateX(this.getWidth() / 2 - activationView.getWidth() / 2);
+        activationView.setTranslateY(this.getHeight() + 30);
+        activationView.translateYProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                double minY = spanLine.getStartY() + 10;
+                double maxY = spanLine.getEndY() - 10;
+                if((Double) newValue < minY || (Double) newValue + activationView.getHeight() > maxY)
+                    activationView.setTranslateY((Double) oldValue);
+            }});
     }
-    
+
     private void initSpanLine(){
         spanLine.getStrokeDashArray().addAll(7.0, 4.0);
         spanLine.startXProperty().bind(this.widthProperty().divide(2));
         spanLine.startYProperty().bind(this.heightProperty());
         spanLine.endXProperty().bind(spanLine.startXProperty());
-        spanLine.endYProperty().bind(spanBox.translateYProperty());
+        spanLine.endYProperty().bind(new SimpleDoubleProperty(500));
     }
-    
+
     private void initHighestLevelLabel() {
         highestLevelLabel.setText("(Highest level lifeline)");
         highestLevelLabel.setTranslateY(-20);
         highestLevelLabel.translateXProperty().bind(this.widthProperty().divide(2).subtract(highestLevelLabel.widthProperty().divide(2)));
         highestLevelLabel.setVisible(false);
     }
-    
-    public BasicRectangle getSpanBox() {
-        return this.spanBox;
-    }
-    
+
     public void setIsHighest(boolean value) {
         this.highestLevelLabel.setVisible(value);
         this.setBoldHeader(value);
+    }
+
+    public ActivationView createActivationView(int modelObjectID) {
+        var activationView = new ActivationView(modelObjectID, 0, 0, 10, 150);
+        activationViews.put(modelObjectID, activationView);
+        initActivation(activationView);
+
+        this.getChildren().add(activationView);
+        return activationView;
+    }
+
+    public ActivationView removeActivationView(int modelObjectID) {
+        var activationView = getActivationView(modelObjectID);
+        if(activationView == null)
+            return null;
+        
+        this.getChildren().remove(activationView);
+        return activationViews.remove(modelObjectID);
+    }
+    
+    public ActivationView getActivationView(int modelObjectID) {
+        return activationViews.get(modelObjectID);
+    }
+
+    public Collection<ActivationView> getActivationViews() {
+        return activationViews.values();
     }
 }

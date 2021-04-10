@@ -62,8 +62,11 @@ public class MainController {
         var sequenceDiagramView = view.getSequenceDiagramView();
 
         var messageIDs = new ArrayList<Integer>();
-        for(var message : lifeline.getMessages()){
-            messageIDs.add(message.getObjectInfo().getID());
+        
+        for(var activation : lifeline.getActivations()){
+            for(var message : activation.getMessages()){
+                messageIDs.add(message.getObjectInfo().getID());
+            }
         }
         var sortedMessageViews = sequenceDiagramView.sortMessages(messageIDs);
 

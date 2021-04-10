@@ -20,7 +20,7 @@ import javafx.util.Callback;
  *
  * @author 10ondr
  */
-public class Message extends Connection<Lifeline> {
+public class Message extends Connection<Activation> {
     private final StringProperty name = new SimpleStringProperty();
     
     private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
@@ -31,7 +31,7 @@ public class Message extends Connection<Lifeline> {
     private final FilteredList<OperationEntry> operationTypeList; // At most 1 item
     
     
-    public Message(Lifeline from, Lifeline to) {
+    public Message(Activation from, Activation to) {
         super(from, to);
         
         name.setValue("newMessage()");
@@ -66,17 +66,17 @@ public class Message extends Connection<Lifeline> {
                     }
                 });
         
-        operationTypeList = new FilteredList<>(from.getOperationEntries(),
+        operationTypeList = new FilteredList<>(from.getLifeline().getOperationEntries(),
                                                item -> item.equals(operationType));
 
         setExecutionTime(1);
     }
     
-    public Lifeline getFrom() {
+    public Activation getFrom() {
         return this.getFirst();
     }
     
-    public Lifeline getTo() {
+    public Activation getTo() {
         return this.getSecond();
     }
     
@@ -135,7 +135,7 @@ public class Message extends Connection<Lifeline> {
     }
     
     public ObservableList getOperationEntries(){
-        return getFirst().getOperationEntries();
+        return getFirst().getLifeline().getOperationEntries();
     }
     
     public void setOperationType(OperationEntry newEntry){

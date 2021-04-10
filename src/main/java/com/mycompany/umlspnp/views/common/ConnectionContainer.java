@@ -50,14 +50,14 @@ public class ConnectionContainer {
     }
 
     public Number getFirstElementID(){
-        if(first instanceof NamedRectangle)
-            return ((NamedRectangle) first).getObjectInfo().getID();
+        if(first instanceof BasicElement)
+            return ((BasicElement) first).getObjectInfo().getID();
         return null;
     }
     
     public Number getSecondElementID(){
-        if(second instanceof NamedRectangle)
-            return ((NamedRectangle) second).getObjectInfo().getID();
+        if(second instanceof BasicElement)
+            return ((BasicElement) second).getObjectInfo().getID();
         return null;
     }
     

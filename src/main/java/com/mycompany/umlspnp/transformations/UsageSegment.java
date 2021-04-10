@@ -66,7 +66,7 @@ public class UsageSegment extends Segment {
         var usagePlaces = new ArrayList<StandardPlace>();
         var previousTransition = initialTransition;
         for(var message : sortedMessages){
-            if(highestLevelLifeline == message.getFrom()) { // Only outgoing messages
+            if(highestLevelLifeline == message.getFrom().getLifeline()) { // Only outgoing messages
                 var transitionPlacePair = transformUsageLevelMessage(previousTransition, message);
                 previousTransition = transitionPlacePair.getKey();
                 usagePlaces.add(transitionPlacePair.getValue());

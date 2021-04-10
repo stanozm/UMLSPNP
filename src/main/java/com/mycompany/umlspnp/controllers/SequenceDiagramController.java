@@ -10,6 +10,7 @@ import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.common.ConnectionFailure;
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.Loop;
@@ -22,6 +23,7 @@ import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.IntegerModalWindow;
+import com.mycompany.umlspnp.views.sequencediagram.ActivationView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
 import com.mycompany.umlspnp.views.sequencediagram.LoopView;
 import com.mycompany.umlspnp.views.sequencediagram.MessageView;
@@ -67,16 +69,16 @@ public class SequenceDiagramController {
                 var firstElementID = connectionContainer.getFirstElementID();
                 var secondElementID = connectionContainer.getSecondElementID();
                 if(firstElementID != null){
-                    var firstLifelineView = sequenceDiagramView.getLifelineView(firstElementID.intValue());
-                    firstLifelineView.getSpanBox().setSelected(true);
+                    var firstActivationView = sequenceDiagramView.getActivationView(firstElementID.intValue());
+                    firstActivationView.setSelected(true);
                     
                     if(secondElementID != null){
-                        if(connectionContainer.getFirstElement() instanceof LifelineView){
-                            var firstLifeline = sequence.getLifeline(firstElementID.intValue());
-                            var secondLifeline = sequence.getLifeline(secondElementID.intValue());
-                            sequence.createMessage(firstLifeline, secondLifeline);
+                        if(connectionContainer.getFirstElement() instanceof ActivationView){
+                            var firstActivation = sequence.getActivation(firstElementID.intValue());
+                            var secondActivation = sequence.getActivation(secondElementID.intValue());
+                            sequence.createMessage(firstActivation, secondActivation);
                         }
-                        firstLifelineView.getSpanBox().setSelected(false);
+                        firstActivationView.setSelected(false);
                         connectionContainer.clear();
                     }
                 }
@@ -130,7 +132,8 @@ public class SequenceDiagramController {
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
                 if(newValue == null)
                     sequence.setHighestLevelLifeline(Integer.MIN_VALUE);
-                sequence.setHighestLevelLifeline(((LifelineView) newValue).getObjectInfo().getID());
+                else
+                    sequence.setHighestLevelLifeline(((LifelineView) newValue).getObjectInfo().getID());
             }
         });
         
@@ -272,31 +275,31 @@ public class SequenceDiagramController {
         var sequenceDiagram = model.getSequenceDiagram();
         var deploymentDiagram = model.getDeploymentDiagram();
         var sequenceDiagramView = view.getSequenceDiagramView();
-
+        
         newLifelineView.getNameProperty().bind(newLifeline.nameProperty());
 
-        var connectionContainer = sequenceDiagramView.getConnectionContainer();
-        
-        sequenceDiagramView.registerNodeToSelect(newLifelineView, (e) -> {
-            var startElement = (LifelineView) connectionContainer.getFirstElement();
-            if(startElement != null){
-                if(startElement.getClass().equals(newLifelineView.getClass())){
-                    var startLifeline = sequenceDiagram.getLifeline(startElement.getObjectInfo().getID());
-                    var startArtifact = startLifeline.getArtifact();
-                    var newLifelineArtifact = newLifeline.getArtifact();
-                    if(startElement == newLifelineView || deploymentDiagram.areNodesConnected(startArtifact, newLifelineArtifact)){
-                        connectionContainer.setSecondElement(newLifelineView);
-                        return;
-                    }
-                    else{
-                        System.err.println("Unable to create connection. Nodes in deployment diagram are not connected.");
+        newLifeline.addActivationsChangeListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newNode = change.getValueAdded();
+                    if(newNode instanceof Activation){
+                        var newActivation = (Activation) newNode;
+
+                        var lifelineView = sequenceDiagramView.getLifelineView(newActivation.getLifeline().getObjectInfo().getID());
+                        var newActivationView = lifelineView.createActivationView(newActivation.getObjectInfo().getID());
+                        
+                        activationInit(newActivationView, newActivation);
+                        activationMenuInit(newActivationView);
+                        //deploymentTargetAnnotationsInit(newDT);
                     }
                 }
-                else{
-                    System.err.println("Unable to create connection. Select suitable destination node.");
+                else if(change.wasRemoved()){
+                    var removedActivation = (Activation) change.getValueRemoved();
+                    var lifeline = removedActivation.getLifeline();
+                    var lifelineView = sequenceDiagramView.getLifelineView(lifeline.getObjectInfo().getID());
+                    lifelineView.removeActivationView(removedActivation.getObjectInfo().getID());
                 }
-                startElement.setSelected(false);
-                connectionContainer.clear();
             }
         });
     }
@@ -318,13 +321,68 @@ public class SequenceDiagramController {
         });
         lifelineView.addMenuItem(menuItemDelete);
         
-        MenuItem menuItemConnect = new MenuItem("Create message");
-        menuItemConnect.setOnAction((e) -> {
-            this.view.getSequenceDiagramView().startConnection(lifelineView);
+        MenuItem menuItemCreateActivation = new MenuItem("Create activation");
+        menuItemCreateActivation.setOnAction((e) -> {
+            var newActivation = lifeline.createActivation();
+            // TODO activation init
         });
-        lifelineView.addMenuItem(menuItemConnect);
+        lifelineView.addMenuItem(menuItemCreateActivation);
     }
     
+    private void activationInit(ActivationView newActivationView, Activation newActivation) {
+        var sequenceDiagram = model.getSequenceDiagram();
+        var deploymentDiagram = model.getDeploymentDiagram();
+        var sequenceDiagramView = view.getSequenceDiagramView();
+
+        var connectionContainer = sequenceDiagramView.getConnectionContainer();
+        
+        sequenceDiagramView.registerNodeToSelect(newActivationView, (e) -> {
+            var startElement = (ActivationView) connectionContainer.getFirstElement();
+            if(startElement != null){
+                if(startElement.getClass().equals(newActivationView.getClass())){
+                    var startActivation = sequenceDiagram.getActivation(startElement.getObjectInfo().getID());
+                    var startArtifact = startActivation.getLifeline().getArtifact();
+                    var newArtifact = newActivation.getLifeline().getArtifact();
+                    if(startActivation == newActivation || deploymentDiagram.areNodesConnected(startArtifact, newArtifact)){
+                        connectionContainer.setSecondElement(newActivationView);
+                        return;
+                    }
+                    else{
+                        System.err.println("Unable to create connection. Nodes in deployment diagram are not connected.");
+                    }
+                }
+                else{
+                    System.err.println("Unable to create connection. Select suitable destination node.");
+                }
+                startElement.setSelected(false);
+                connectionContainer.clear();
+            }
+        });
+    }
+    
+    private void activationMenuInit(ActivationView activationView){
+        var sequenceDiagram = this.model.getSequenceDiagram();
+        var activationObjectID = activationView.getObjectInfo().getID();
+        var lifeline = sequenceDiagram.getActivation(activationObjectID).getLifeline();
+        
+        MenuItem menuItemDelete = new MenuItem("Delete activation");
+        menuItemDelete.setOnAction((e) -> {
+            BooleanModalWindow confirmWindow = 
+                        new BooleanModalWindow((Stage) activationView.getScene().getWindow(), 
+                        "Confirm", "The activation of lifeline \"" + Utils.shortenString(lifeline.nameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
+            confirmWindow.showAndWait();
+            if(confirmWindow.getResult()){
+                sequenceDiagram.removeActivation(activationObjectID);
+            }
+        });
+        activationView.addMenuItem(menuItemDelete);
+        
+        MenuItem menuItemConnect = new MenuItem("Create message");
+        menuItemConnect.setOnAction((e) -> {
+            this.view.getSequenceDiagramView().startConnection(activationView);
+        });
+        activationView.addMenuItem(menuItemConnect);
+    }
     
     private void messageMenuInit(MessageView messageView){
         var sequenceDiagram = this.model.getSequenceDiagram();
