@@ -9,6 +9,8 @@ import com.mycompany.umlspnp.models.common.Connection;
 import com.mycompany.umlspnp.models.common.ConnectionFailure;
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import javafx.beans.Observable;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -21,6 +23,7 @@ import javafx.util.Callback;
  * @author 10ondr
  */
 public class Message extends Connection<Activation> {
+    private final IntegerProperty order = new SimpleIntegerProperty();
     private final StringProperty name = new SimpleStringProperty();
     
     private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
@@ -80,6 +83,18 @@ public class Message extends Connection<Activation> {
         return this.getSecond();
     }
     
+    public IntegerProperty orderProperty() {
+        return order;
+    }
+    
+    public Integer getOrder() {
+        return order.getValue();
+    }
+    
+    public void setOrder(int value) {
+        order.set(value);
+    }
+    
     public StringProperty nameProperty(){
         return name;
     }
@@ -97,8 +112,12 @@ public class Message extends Connection<Activation> {
         return executionTime.get(0);
     }
     
+    public int getExecutionTimeValue() {
+        return executionTime.get(0).executionTimeProperty().getValue();
+    }
+    
     public void removeExecutionTime(){
-        executionTime.remove(0);
+        executionTime.clear();
     }
     
     public ObservableList getExecutionTimeList(){
@@ -119,14 +138,14 @@ public class Message extends Connection<Activation> {
     }
     
     public void removeMessageSize(){
-        messageSize.remove(0);
+        messageSize.clear();
     }
     
-    public ObservableList getMessageSizeList(){
+    public ObservableList<MessageSize> getMessageSizeList(){
         return messageSize;
     }
     
-    public ObservableList getMessageFailures(){
+    public ObservableList<ConnectionFailure> getMessageFailures(){
         return messageFailures;
     }
     
@@ -134,7 +153,7 @@ public class Message extends Connection<Activation> {
         messageFailures.add(newMessageFailure);
     }
     
-    public ObservableList getOperationEntries(){
+    public ObservableList<OperationEntry> getOperationEntries(){
         return getFirst().getLifeline().getOperationEntries();
     }
     
@@ -153,5 +172,19 @@ public class Message extends Connection<Activation> {
     
     public FilteredList<OperationEntry> getOperationTypeList(){
         return operationTypeList;
+    }
+
+    public final boolean isLeafMessage() {
+        var sendingActivation = this.getFrom();
+        var receivingActivation = this.getTo();
+
+        if(sendingActivation == receivingActivation)
+            return true;
+        
+        for(var message : receivingActivation.getMessages()) {
+            if(message.getFrom() == receivingActivation && message.getTo() != receivingActivation && message.getOrder() >= this.getOrder())
+                return false;
+        }
+        return true;
     }
 }

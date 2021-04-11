@@ -26,7 +26,7 @@ public class Lifeline extends BasicNode {
     private final ObservableMap<Number, Activation> activations;
     
     // Only available while transforming to SPNP
-    private ArrayList<Message> sortedMessages = null;
+    private ArrayList<Activation> sortedActivations = null;
     
     public Lifeline(Artifact linkedArtifact){
         this.artifact = linkedArtifact;
@@ -75,11 +75,11 @@ public class Lifeline extends BasicNode {
         return null;
     }
     
-    public void setSortedMessages(ArrayList<Message> sortedMessages) {
-        this.sortedMessages = sortedMessages;
+    public void setSortedActivations(ArrayList<Activation> sortedActivations) {
+        this.sortedActivations = sortedActivations;
     }
 
-    public ArrayList<Message> getSortedMessages() {
-        return sortedMessages;
+    public ArrayList<Activation> getSortedActivations() {
+        return sortedActivations;
     }
 }

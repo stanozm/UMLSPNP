@@ -6,11 +6,13 @@
 package com.mycompany.umlspnp.controllers;
 
 import com.mycompany.umlspnp.models.MainModel;
+import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.transformations.Transformator;
 import com.mycompany.umlspnp.views.MainView;
 import java.util.ArrayList;
+import java.util.Collections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
@@ -57,32 +59,48 @@ public class MainController {
         this.view.addMenu(aboutMenu);
     }
     
-    private void createLifelineSortedMessages(Lifeline lifeline) {
+    private void createActivationSortedMessages(Activation activation) {
         var sequenceDiagram = model.getSequenceDiagram();
         var sequenceDiagramView = view.getSequenceDiagramView();
 
-        var messageIDs = new ArrayList<Integer>();
+        var messages = new ArrayList<Message>(activation.getMessages());
+        
+        Collections.sort(messages, (m1, m2) -> {
+            return m1.getOrder().compareTo(m2.getOrder());
+        });
+
+        activation.setSortedMessages(messages);
+    }
+    
+    private void createLifelineSortedActivations(Lifeline lifeline) {
+        var sequenceDiagram = model.getSequenceDiagram();
+        var sequenceDiagramView = view.getSequenceDiagramView();
+
+        var activationIDs = new ArrayList<Integer>();
         
         for(var activation : lifeline.getActivations()){
-            for(var message : activation.getMessages()){
-                messageIDs.add(message.getObjectInfo().getID());
-            }
+            activationIDs.add(activation.getObjectInfo().getID());
         }
-        var sortedMessageViews = sequenceDiagramView.sortMessages(messageIDs);
 
-        var sortedMessages = new ArrayList<Message>();
-        for(var messageView : sortedMessageViews){
-            var message = sequenceDiagram.getMessage(messageView.getObjectInfo().getID());
-            if(message != null){
-                sortedMessages.add(message);
+        var sortedActivationViews = sequenceDiagramView.sortActivations(activationIDs);
+
+        var sortedActivations = new ArrayList<Activation>();
+        for(var activationView : sortedActivationViews){
+            var activation = lifeline.getActivation(activationView.getObjectInfo().getID());
+            if(activation != null){
+                sortedActivations.add(activation);
             }
         }
-        lifeline.setSortedMessages(sortedMessages);
+        lifeline.setSortedActivations(sortedActivations);
     }
     
     private void performPreTransformActions() {
-        for(var lifeline : model.getSequenceDiagram().getLifelines()) {
-            createLifelineSortedMessages(lifeline);
-        }
+        model.getSequenceDiagram().getLifelines().forEach(lifeline -> {
+            createLifelineSortedActivations(lifeline);
+
+            lifeline.getActivations().forEach(activation -> {
+                createActivationSortedMessages(activation);
+            });
+        });
     }
 }

@@ -58,60 +58,8 @@ public class Transformator {
 
     protected final PetriNet createPetriNet() {
         var net = new PetriNet();
-                
-//        var stdPlace1 = new StandardPlace(0, "StdPlace1");
-//        var stdPlace2 = new StandardPlace(1, "StdPlace2");
-//        var stdPlace3 = new StandardPlace(2, "StdPlace3");
-//        var stdPlace4 = new StandardPlace(3, "StdPlace4");
-//        var stdPlace5 = new StandardPlace(4, "StdPlace5");
-//        
-//        stdPlace3.setNumberOfTokens(5);
-//        stdPlace5.setNumberOfTokens(99999999);
-//        net.addPlace(stdPlace1);
-//        net.addPlace(stdPlace2);
-//        net.addPlace(stdPlace3);
-//        net.addPlace(stdPlace4);
-//        net.addPlace(stdPlace5);
-//        
-//        var fluidPlace1 = new FluidPlace(0, "FluidPlace1");
-//        var fluidPlace2 = new FluidPlace(1, "FluidPlace2");
-//        var fluidPlace3 = new FluidPlace(2, "FluidPlace3");
-//        var fluidPlace4 = new FluidPlace(3, "FluidPlace4");
-//        var fluidPlace5 = new FluidPlace(4, "FluidPlace5");
-//        
-//        fluidPlace1.setInitialValue(0.123);
-//        fluidPlace4.setInitialValue(9849.2615);
-//        fluidPlace5.setInitialValue(546.00001);
-//
-//        fluidPlace3.setBoundValue(0.5654);
-//        fluidPlace4.setBoundValue(165.5654);
-//        fluidPlace5.setBoundValue(99999.00001);
-//        
-//        fluidPlace4.addBreakValue(123.01);
-//        fluidPlace4.addBreakValue(456.02);
-//        fluidPlace4.addBreakValue(789.03);
-//        fluidPlace4.addBreakValue(999.99);
-//        fluidPlace4.addBreakValue(987.789);
-//        fluidPlace5.addBreakValue(1.1);
-//        fluidPlace5.addBreakValue(7.7);
-//
-//        net.addPlace(fluidPlace1);
-//        net.addPlace(fluidPlace2);
-//        net.addPlace(fluidPlace3);
-//        net.addPlace(fluidPlace4);
-//        net.addPlace(fluidPlace5);
-//
-//        var constantTransitionProbability = new ConstantTransitionProbability(0.75);
-//        FunctionSPNP<Integer> guard = new FunctionSPNP<>("ImmediateGuard", FunctionType.Guard, "return 4;", Integer.class);
-//        var immediateTransition1 = new ImmediateTransition(1, "ImmediateTransition1", 1, guard, constantTransitionProbability);
-//        net.addTransition(immediateTransition1);
-//
-//        FunctionSPNP<Integer> guard2 = new FunctionSPNP<>("ImmediateGuard2", FunctionType.Guard,
-//                                                            String.format("int a = 4;%nint b = 6;%nreturn a + b;"), Integer.class);
-//        var immediateTransition2 = new ImmediateTransition(2, "ImmediateTransition2", 1, guard2, constantTransitionProbability);
-//        net.addTransition(immediateTransition2);
-//
-//        net.addArc(new StandardArc(1, ArcDirection.Input, stdPlace1, immediateTransition1));
+
+        /* Any global net alterations here */
 
         return net;
     }
@@ -125,7 +73,7 @@ public class Transformator {
         physicalSegment.transform();
 
         // Highest-level usage segment
-        var usageSegment = new PhysicalSegment(petriNet, deploymentDiagram, sequenceDiagram);
+        var usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram);
         usageSegment.transform();
     }
 

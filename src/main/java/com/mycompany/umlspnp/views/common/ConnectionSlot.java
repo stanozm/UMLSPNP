@@ -136,14 +136,20 @@ public class ConnectionSlot extends Circle{
     public void refreshPosition(Point2D newPoint){
         this.moveOnEdge(newPoint.getX(), newPoint.getY());
 
-        if(siblingHorizontal != null || siblingVertical != null) {
-            var sceneTransformPoint = this.getLocalToSceneTransform();
-            var siblingLocalPoint = siblingVertical.getParent().sceneToLocal(sceneTransformPoint.getTx(), sceneTransformPoint.getTy());
-
-            if(siblingHorizontal != null)
+        var sceneTransformPoint = this.getLocalToSceneTransform();
+        if(siblingHorizontal != null) {
+            var siblingParent = siblingHorizontal.getParent();
+            if(siblingParent != null) {
+                var siblingLocalPoint = siblingParent.sceneToLocal(sceneTransformPoint.getTx(), sceneTransformPoint.getTy());
                 siblingHorizontal.moveOnEdge(siblingLocalPoint.getX(), siblingHorizontal.getTranslateY());
-            if(siblingVertical != null)
+            }
+        }
+        if(siblingVertical != null) {
+            var siblingParent = siblingVertical.getParent();
+            if(siblingParent != null) {
+                var siblingLocalPoint = siblingParent.sceneToLocal(sceneTransformPoint.getTx(), sceneTransformPoint.getTy());
                 siblingVertical.moveOnEdge(siblingVertical.getTranslateX(), siblingLocalPoint.getY());
+            }
         }
     }
     

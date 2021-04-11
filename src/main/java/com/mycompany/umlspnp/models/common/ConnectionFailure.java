@@ -5,7 +5,6 @@
  */
 package com.mycompany.umlspnp.models.common;
 
-import com.mycompany.umlspnp.models.common.ObservableString;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;

@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.DiagramView;
+import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -205,23 +206,23 @@ public class SequenceDiagramView extends DiagramView{
         if(currentHighest != highest)
             highestLifelineProperty.setValue(highest);
     }
-
-    public Collection<MessageView> sortMessages(Collection<Integer> messageObjectIDs){
-        var sortedMessages = new ArrayList<MessageView>();
-        for(var messageID : messageObjectIDs){
-            var messageView = allElements.getConnection(messageID);
-            if(messageView != null){
-                sortedMessages.add(messageView);
+    
+    public Collection<ActivationView> sortActivations(Collection<Integer> activationObjectIDs){
+        var sortedActivations = new ArrayList<ActivationView>();
+        for(var activationID : activationObjectIDs){
+            var activationView = this.getActivationView(activationID);
+            if(activationView != null){
+                sortedActivations.add(activationView);
             }
         }
 
-        Collections.sort(sortedMessages, (m1, m2) -> {
-            Double first = m1.getSourceConnectionSlot().getTranslateY();
-            Double second = m2.getSourceConnectionSlot().getTranslateY();
+        Collections.sort(sortedActivations, (a1, a2) -> {
+            Double first = a1.getLocalToSceneTransform().getTy();
+            Double second = a2.getLocalToSceneTransform().getTy();
             return first.compareTo(second);
         });
 
-        return sortedMessages;
+        return sortedActivations;
     }
 
     public ObjectProperty<LifelineView> getHighestLifelineProperty() {

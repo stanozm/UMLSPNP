@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
@@ -19,10 +20,13 @@ import javafx.collections.ObservableMap;
  */
 public class SequenceDiagram {
     private static final ElementContainer<Lifeline, Message> allElements = new ElementContainer<>();
+    private final ObservableList<Message> sortedMessages;
+    
     private final ObservableMap<Number, Loop> loops;
     private Lifeline highestLevelLifeline = null;
     
     public SequenceDiagram(){
+        sortedMessages = FXCollections.observableArrayList();
         loops = FXCollections.observableHashMap();
     }
     
@@ -127,7 +131,8 @@ public class SequenceDiagram {
         var message = new Message(source, destination);
         
         allElements.addConnection(message, message.getObjectInfo().getID());
-        
+        sortedMessages.add(message);
+
         source.addMessage(message);
         destination.addMessage(message);
         
@@ -140,12 +145,17 @@ public class SequenceDiagram {
             return false;
         message.getFrom().removeMessage(message);
         message.getTo().removeMessage(message);
-
+        
+        sortedMessages.remove(message);
         return allElements.removeConnection(objectID);
     }
     
     public Message getMessage(int objectID){
         return allElements.getConnection(objectID);
+    }
+    
+    public ObservableList<Message> getSortedMessages() {
+        return sortedMessages;
     }
     
     public Loop createLoop(){

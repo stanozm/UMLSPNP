@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.models.common.BasicNode;
+import java.util.ArrayList;
 import java.util.Collection;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -18,6 +19,9 @@ import javafx.collections.ObservableMap;
 public class Activation extends BasicNode {
     private final Lifeline lifeline; // TODO better solution
     private final ObservableMap<Number, Message> messages;
+    
+    // Only available while transforming to SPNP
+    private ArrayList<Message> sortedMessages = null;
     
     public Activation(Lifeline lifeline) {
         this.lifeline = lifeline;
@@ -42,5 +46,13 @@ public class Activation extends BasicNode {
     
     public void addMessagesChangeListener(MapChangeListener listener){
         messages.addListener(listener);
+    }
+    
+    public void setSortedMessages(ArrayList<Message> sortedMessages) {
+        this.sortedMessages = sortedMessages;
+    }
+
+    public ArrayList<Message> getSortedMessages() {
+        return sortedMessages;
     }
 }

@@ -6,31 +6,23 @@
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
-import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.functions.FunctionType;
+import cz.muni.fi.spnp.core.models.places.StandardPlace;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 
 /**
  *
  * @author 10ondr
  */
-public class UsageSegment extends HighLevelSegment {
+public class ServiceIntermediateSegment extends HighLevelSegment implements ServiceSegment {
+    private final ServiceCall serviceCall;
     
-    public UsageSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram) {
-        super(petriNet, deploymentDiagram, sequenceDiagram, getHighestActivation(sequenceDiagram));
-    }
+    public ServiceIntermediateSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, ServiceCall serviceCall) {
+        super(petriNet, deploymentDiagram, sequenceDiagram, serviceCall.getMessage().getTo());
 
-    private static Activation getHighestActivation(SequenceDiagram sequenceDiagram) {
-        var highestLevelLifeline = sequenceDiagram.getHighestLevelLifeline();
-        if(highestLevelLifeline != null){
-            var sortedActivations = highestLevelLifeline.getSortedActivations();
-            if(sortedActivations.size() > 0) {
-                return sortedActivations.get(0);
-            }
-        }
-        return null;
+        this.serviceCall = serviceCall;
     }
 
     private void transformInitialTransitionGuard() {
@@ -38,12 +30,13 @@ public class UsageSegment extends HighLevelSegment {
         var startGuardBody = new StringBuilder();
 
         var tokenStrings = getTokenStrings();
+        var serviceCallTokenString = String.format("mark(\"%s\")", serviceCall.getPlace().getName());
 
         if(tokenStrings.size() < 1){
-            startGuardBody.append("return 1;");
+            startGuardBody.append(String.format("return %s", serviceCallTokenString));
         }
         else{
-            startGuardBody.append("return !(");
+            startGuardBody.append(String.format("return %s && !(", serviceCallTokenString));
             tokenStrings.forEach(tokenString -> {
                 startGuardBody.append(tokenString);
                 if(tokenStrings.indexOf(tokenString) < tokenStrings.size() - 1)
@@ -57,19 +50,20 @@ public class UsageSegment extends HighLevelSegment {
         initialTransition.setGuardFunction(startGuard);
     }
 
-    private void transformEndPlaceHaltingFunction() {
-        var lifelineName = activation.getLifeline().nameProperty().getValue();
-        FunctionSPNP<Integer> haltingFunction = new FunctionSPNP<>("halting_" + SPNPUtils.prepareName(lifelineName, 15),
-                                                                   FunctionType.Halting, String.format("return !mark(\"%s\");", endPlace.getName()),
-                                                                   Integer.class);
-        petriNet.addFunction(haltingFunction);
-    }
-    
     @Override
     public void transform() {
         super.transform();
 
         transformInitialTransitionGuard();
-        transformEndPlaceHaltingFunction();
+    }
+
+    @Override
+    public ServiceCall getServiceCall() {
+        return serviceCall;
+    }
+    
+    @Override
+    public StandardPlace getEndPlace() {
+        return endPlace;
     }
 }

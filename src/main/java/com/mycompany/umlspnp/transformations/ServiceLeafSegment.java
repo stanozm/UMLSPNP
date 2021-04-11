@@ -1,0 +1,211 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.mycompany.umlspnp.transformations;
+
+import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
+import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
+import cz.muni.fi.spnp.core.models.PetriNet;
+import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
+import cz.muni.fi.spnp.core.models.arcs.StandardArc;
+import cz.muni.fi.spnp.core.models.functions.FunctionType;
+import cz.muni.fi.spnp.core.models.places.StandardPlace;
+import cz.muni.fi.spnp.core.models.transitions.ImmediateTransition;
+import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
+import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
+import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
+import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.util.Pair;
+
+/**
+ *
+ * @author 10ondr
+ */
+public class ServiceLeafSegment extends Segment implements ServiceSegment {
+    private final ServiceCall serviceCall;
+    
+    protected ImmediateTransition initialTransition = null;
+    protected ImmediateTransition flushTransition = null;
+
+    protected StandardPlace startPlace = null;
+    
+    protected TimedTransition endTransition = null;
+    protected StandardPlace endPlace = null;
+    
+    protected ImmediateTransition failHWTransition = null;
+    protected StandardPlace failHWPlace = null;
+    
+    protected List<Pair<TimedTransition, StandardPlace>> failTypes = new ArrayList<>();
+
+    
+    public ServiceLeafSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, ServiceCall serviceCall) {
+        super(petriNet, deploymentDiagram, sequenceDiagram);
+        
+        this.serviceCall = serviceCall;
+    }
+    
+    private void transformInitialTransition(String messageName) {
+        var initialTransitionName = SPNPUtils.createTransitionName(messageName, "start");
+        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(initialTransition);
+    }
+    
+    private void createInitialTransitionGuard(String messageName) {
+        var guardBody = new StringBuilder();
+        guardBody.append(String.format("return mark(\"%s\") && !(", serviceCall.getPlace().getName()));
+
+        guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
+        failTypes.forEach(pair -> {
+            guardBody.append(String.format("mark(\"%s\") || ", pair.getValue().getName()));
+        });
+        guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
+        // TODO if invoked remotely through communication channel - alter guard
+
+        var startGuardName = "guard_" + SPNPUtils.prepareName(messageName, 15) + "_leaf_start";
+        FunctionSPNP<Integer> startGuard = new FunctionSPNP<>(startGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
+
+        petriNet.addFunction(startGuard);
+        initialTransition.setGuardFunction(startGuard);
+    }
+    
+    private void transformStartPlace(String messageName) {
+        var startPlaceName = SPNPUtils.createPlaceName(messageName, "start");
+        startPlace = new StandardPlace(SPNPUtils.placeCounter++, startPlaceName);
+        petriNet.addPlace(startPlace);
+
+        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, startPlace, initialTransition);
+        petriNet.addArc(outputArc);
+    }
+
+    private void transformFlushTransition(String messageName) {
+        var flushTransitionName = SPNPUtils.createTransitionName(messageName, "flush");
+        flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(flushTransition);
+        // TODO flush and end transition priorities needs to be configured (not yet specified properly)
+    }
+
+    private void createFlushTransitionGuard(String messageName) {
+        var guardBody = new StringBuilder();
+        guardBody.append(String.format("return mark(\"%s\") && (", serviceCall.getPlace().getName()));
+
+        guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
+        failTypes.forEach(pair -> {
+            guardBody.append(String.format("mark(\"%s\") || ", pair.getValue().getName()));
+        });
+        guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
+
+        var flushGuardName = "guard_" + SPNPUtils.prepareName(messageName, 15) + "_leaf_flush";
+        FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
+
+        petriNet.addFunction(flushGuard);
+        flushTransition.setGuardFunction(flushGuard);
+    }
+
+    private void transformEnd(String messageName) {
+        var endPlaceName = SPNPUtils.createPlaceName(messageName, "end");
+        endPlace = new StandardPlace(SPNPUtils.placeCounter++, endPlaceName);
+        petriNet.addPlace(endPlace);
+
+        var endTransitionName = SPNPUtils.createTransitionName(messageName, "end");
+        var distribution = new ExponentialTransitionDistribution(1 / (double) serviceCall.getMessage().getExecutionTimeValue());
+        endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, 1, null, distribution);
+        petriNet.addTransition(endTransition);
+
+        var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, endTransition);
+        petriNet.addArc(inputArc);
+
+        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, endPlace, endTransition);
+        petriNet.addArc(outputArc);
+        
+        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, endPlace, flushTransition);
+        petriNet.addArc(flushInputArc);
+    }
+    
+    private void transformFailHW(String messageName) {
+        var failHWPlaceName = SPNPUtils.createPlaceName(messageName, "HW_fail");
+        failHWPlace = new StandardPlace(SPNPUtils.placeCounter++, failHWPlaceName);
+        petriNet.addPlace(failHWPlace);
+
+        var failHWTransitionName = SPNPUtils.createTransitionName(messageName, "HW_fail");
+        failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(failHWTransition);
+        // TODO HW fail guard when specified properly
+
+        var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failHWTransition);
+        petriNet.addArc(inputArc);
+
+        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, failHWPlace, failHWTransition);
+        petriNet.addArc(outputArc);
+        
+        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failHWPlace, flushTransition);
+        petriNet.addArc(flushInputArc);
+    }
+    
+    private void transformFailType(String messageName, String failureName, double failureRate) {
+        var failTypePlaceName = SPNPUtils.createPlaceName(messageName, "FT_" + failureName);
+        var failTypePlace = new StandardPlace(SPNPUtils.placeCounter++, failTypePlaceName);
+        petriNet.addPlace(failTypePlace);
+
+        var failTypeTransitionName = SPNPUtils.createTransitionName(messageName, "FT_" + failureName);
+        var distribution = new ExponentialTransitionDistribution(failureRate);
+        var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, 1, null, distribution);
+        petriNet.addTransition(failTypeTransition);
+
+        failTypes.add(new Pair<>(failTypeTransition, failTypePlace));
+        
+        var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failTypeTransition);
+        petriNet.addArc(inputArc);
+
+        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, failTypePlace, failTypeTransition);
+        petriNet.addArc(outputArc);
+        
+        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failTypePlace, flushTransition);
+        petriNet.addArc(flushInputArc);
+    }
+    
+    @Override
+    public ServiceCall getServiceCall() {
+        return serviceCall;
+    }
+
+    @Override
+    public StandardPlace getEndPlace() {
+        return endPlace;
+    }
+
+    @Override
+    public void transform() {
+        var message = serviceCall.getMessage();
+        var messageName = message.nameProperty().getValue();
+
+        // Initial transition
+        transformInitialTransition(messageName);
+
+        // Start place
+        transformStartPlace(messageName);
+
+        // Flush transition
+        transformFlushTransition(messageName);
+
+        // End place and transition
+        transformEnd(messageName);
+
+        // HW Fail place and transition
+        transformFailHW(messageName);
+
+        // Service call fail types - places and transitions
+        message.getMessageFailures().forEach(messageFailure -> {
+            transformFailType(messageName, messageFailure.nameProperty().getValue(), messageFailure.rateProperty().getValue());
+        });
+
+        // Initial transition guard function
+        createInitialTransitionGuard(messageName);
+
+        // Flush transition guard function
+        createFlushTransitionGuard(messageName);
+    }
+}

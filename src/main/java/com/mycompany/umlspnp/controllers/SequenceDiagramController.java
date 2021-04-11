@@ -28,10 +28,13 @@ import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
 import com.mycompany.umlspnp.views.sequencediagram.LoopView;
 import com.mycompany.umlspnp.views.sequencediagram.MessageView;
 import java.util.ArrayList;
+import java.util.Collections;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
@@ -85,6 +88,15 @@ public class SequenceDiagramController {
             }
         });
         
+        sequence.getSortedMessages().addListener(new ListChangeListener() {
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                sequence.getSortedMessages().forEach(message -> {
+                    message.setOrder(sequence.getSortedMessages().indexOf(message));
+                });
+            }
+        });
+        
         sequence.addMessagesListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
@@ -94,13 +106,17 @@ public class SequenceDiagramController {
                     var secondID = newMessage.getSecond().getObjectInfo().getID();
                     var newMessageView = sequenceDiagramView.createMessage(firstID, secondID, newMessage.getObjectInfo().getID());
 
-                    messageMenuInit(newMessageView);
+                    messageInit(newMessage, newMessageView);
+                    messageMenuInit(newMessage, newMessageView);
                     messageAnnotationsInit(newMessage, newMessageView);
+
+                    sortMessages(); // Does not work - should be async after view init. However that results in yet in another JavaFX crash
 //                    createSampleAnnotations(newConnection);
                 }
                 if(change.wasRemoved()){
                     var removedMessage = (Message) change.getValueRemoved();
                     sequenceDiagramView.removeMessage(removedMessage.getObjectInfo().getID());
+                    sortMessages();
                 }
             }
         });
@@ -272,8 +288,6 @@ public class SequenceDiagramController {
     }
     
     private void lifelineInit(LifelineView newLifelineView, Lifeline newLifeline) {
-        var sequenceDiagram = model.getSequenceDiagram();
-        var deploymentDiagram = model.getDeploymentDiagram();
         var sequenceDiagramView = view.getSequenceDiagramView();
         
         newLifelineView.getNameProperty().bind(newLifeline.nameProperty());
@@ -323,8 +337,7 @@ public class SequenceDiagramController {
         
         MenuItem menuItemCreateActivation = new MenuItem("Create activation");
         menuItemCreateActivation.setOnAction((e) -> {
-            var newActivation = lifeline.createActivation();
-            // TODO activation init
+            lifeline.createActivation();
         });
         lifelineView.addMenuItem(menuItemCreateActivation);
     }
@@ -384,10 +397,51 @@ public class SequenceDiagramController {
         activationView.addMenuItem(menuItemConnect);
     }
     
-    private void messageMenuInit(MessageView messageView){
+    private void sortMessages() {
+        var sequenceDiagram = this.model.getSequenceDiagram();
+        var sequenceDiagramView = this.view.getSequenceDiagramView();
+
+        Collections.sort(sequenceDiagram.getSortedMessages(), (m1, m2) -> {
+            Double first = sequenceDiagramView.getConnection(m1.getObjectInfo().getID()).getSourceConnectionSlot().getLocalToSceneTransform().getTy();
+            Double second = sequenceDiagramView.getConnection(m2.getObjectInfo().getID()).getSourceConnectionSlot().getLocalToSceneTransform().getTy();
+            return first.compareTo(second);
+        });
+    }
+    
+    private void messageInit(Message message, MessageView messageView){
+        messageView.getSourceConnectionSlot().localToSceneTransformProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                sortMessages();
+            }
+        });
+
+        // Needs to be run async, otherwise it breaks because of not fully initialized view
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                message.orderProperty().addListener(new ChangeListener() {
+                    @Override
+                    public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                        if(message.isLeafMessage()) {
+                            messageView.getExecutionTimeAnnotation().setDisplayed(true);
+                            messageView.getFailureTypesAnnotation().setDisplayed(true);
+                        }
+                        else {
+                            messageView.getExecutionTimeAnnotation().setDisplayed(false);
+                            messageView.getFailureTypesAnnotation().setDisplayed(false);
+                        }
+                    }
+                });
+            }
+        });
+
+        messageView.nameProperty().bind(message.orderProperty().asString().concat(". ").concat(message.nameProperty()));
+    }
+    
+    private void messageMenuInit(Message message, MessageView messageView){
         var sequenceDiagram = this.model.getSequenceDiagram();
         var messageObjectID = messageView.getObjectInfo().getID();
-        var message = sequenceDiagram.getMessage(messageObjectID);
         
         if(message == null){
             System.err.println("Message with id " + messageObjectID + " was not found!");
@@ -398,7 +452,6 @@ public class SequenceDiagramController {
         menuItemRename.setOnAction((e) -> {
             this.view.createStringModalWindow("Rename", "New name", message.nameProperty(), null);
         });
-        messageView.nameProperty().bind(message.nameProperty());
         messageView.addMenuItem(menuItemRename);
         
         MenuItem menuItemDelete = new MenuItem("Delete message");
@@ -422,16 +475,20 @@ public class SequenceDiagramController {
         
         MenuItem menuProperties = new MenuItem("Properties");
         menuProperties.setOnAction((e) -> {
+            boolean messageIsLeaf = message.isLeafMessage();
+
             var executionTimeView = createExecutionTimeProperties(message);
             var messageSizeView = createMessageSizeProperties(message);
             var operationTypeView = createOperationTypeProperties(message);
             var failureTypesView = createMessageFailureTypesProperties(message);
             
             ArrayList<EditableListView> sections = new ArrayList();
-            sections.add(executionTimeView);
+            if(messageIsLeaf)
+                sections.add(executionTimeView);
             sections.add(messageSizeView);
             sections.add(operationTypeView);
-            sections.add(failureTypesView);
+            if(messageIsLeaf)
+                sections.add(failureTypesView);
             
             this.view.createPropertiesModalWindow("\"" + message.nameProperty().getValue() + "\" properties", sections);
 
