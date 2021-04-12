@@ -5,8 +5,13 @@
  */
 package com.mycompany.umlspnp.transformations;
 
+import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
+import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.places.Place;
+import java.util.Set;
+import javafx.util.Pair;
 
 /**
  *
@@ -44,5 +49,31 @@ public class SPNPUtils {
 
     public static String getCombinedName(String firstNodeName, String secondNodeName) {
         return String.format("%s_%s", prepareName(firstNodeName, 4), prepareName(secondNodeName, 4));
+    }
+
+    private static boolean isNodeInConnectedNodes(Artifact node, Set<Pair<CommunicationLink, Artifact>> connectedNodes) {
+        for(var pair : connectedNodes) {
+            if(pair.getValue() == node)
+                return true;
+        }
+        return false;
+    }
+
+    public static CommunicationLink getMessageCommunicationLink(Message message) {
+        if(!message.isLeafMessage())
+            return null;
+
+        var firstLifeline = message.getFrom().getLifeline();
+        var secondLifeline = message.getTo().getLifeline();
+        var firstArtifact = firstLifeline.getArtifact();
+        var secondArtifact = secondLifeline.getArtifact();
+
+        for(var pair : firstArtifact.getConnectedNodes()) {
+            var connected = pair.getValue().getConnectedNodesShallow();
+            if(pair.getValue() == secondArtifact || isNodeInConnectedNodes(secondArtifact, connected)) {
+                return pair.getKey();
+            }
+        }
+        return null;
     }
 }

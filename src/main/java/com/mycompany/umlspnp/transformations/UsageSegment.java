@@ -11,15 +11,15 @@ import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.functions.FunctionType;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
+import java.util.List;
 
 /**
  *
  * @author 10ondr
  */
 public class UsageSegment extends HighLevelSegment {
-    
-    public UsageSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram) {
-        super(petriNet, deploymentDiagram, sequenceDiagram, getHighestActivation(sequenceDiagram));
+    public UsageSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, List<CommunicationSegment> communicationSegments) {
+        super(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, getHighestActivation(sequenceDiagram));
     }
 
     private static Activation getHighestActivation(SequenceDiagram sequenceDiagram) {

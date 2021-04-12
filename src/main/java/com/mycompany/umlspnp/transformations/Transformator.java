@@ -11,7 +11,9 @@ import cz.muni.fi.spnp.core.transformators.spnp.code.SPNPCode;
 import cz.muni.fi.spnp.core.transformators.spnp.options.Option;
 import cz.muni.fi.spnp.core.transformators.spnp.options.SPNPOptions;
 import cz.muni.fi.spnp.core.transformators.spnp.parameters.InputParameter;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 /**
  *
  * @author 10ondr
@@ -24,6 +26,9 @@ public class Transformator {
     private final SPNPOptions options;
     private final PetriNet petriNet;
 
+    private List<PhysicalSegment> physicalSegments = new ArrayList<>();
+    private List<CommunicationSegment> communicationSegments = new ArrayList<>();
+    private UsageSegment usageSegment = null;
 
     public Transformator(MainModel mainModel){
         this.model = mainModel;
@@ -73,16 +78,23 @@ public class Transformator {
         elements.getNodes().values().forEach(node -> {
             var physicalSegment = new PhysicalSegment(petriNet, deploymentDiagram, sequenceDiagram, node);
             physicalSegment.transform();
+            physicalSegments.add(physicalSegment);
         });
-
-        // Usage segment
-        var usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram);
-        usageSegment.transform();
 
         // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
-            var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, usageSegment, communicationLink);
+            var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationLink);
             communicationSegment.transform();
+            communicationSegments.add(communicationSegment);
+        });
+
+        // Usage segment
+        usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments);
+        usageSegment.transform();
+
+        // Communictaion segment finish Usage Segment dependent transformations
+        communicationSegments.forEach(communicationSegment -> {
+            communicationSegment.transformAfter(usageSegment);
         });
     }
 

@@ -11,6 +11,7 @@ import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.functions.FunctionType;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
+import java.util.List;
 
 /**
  *
@@ -19,8 +20,12 @@ import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 public class ServiceIntermediateSegment extends HighLevelSegment implements ServiceSegment {
     private final ServiceCall serviceCall;
     
-    public ServiceIntermediateSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, ServiceCall serviceCall) {
-        super(petriNet, deploymentDiagram, sequenceDiagram, serviceCall.getMessage().getTo());
+    public ServiceIntermediateSegment(PetriNet petriNet,
+                                      DeploymentDiagram deploymentDiagram,
+                                      SequenceDiagram sequenceDiagram,
+                                      List<CommunicationSegment> communicationSegments,
+                                      ServiceCall serviceCall) {
+        super(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCall.getMessage().getTo());
 
         this.serviceCall = serviceCall;
     }

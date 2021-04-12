@@ -28,6 +28,8 @@ import javafx.util.Pair;
  * @author 10ondr
  */
 public class HighLevelSegment extends Segment {
+    private final List<CommunicationSegment> communicationSegments;
+    
     protected final Activation activation;
     
     protected final Map<ImmediateTransition, ServiceCall> serviceCalls = new HashMap<>();
@@ -36,20 +38,25 @@ public class HighLevelSegment extends Segment {
     
     protected final List<ServiceSegment> serviceSegments = new ArrayList<>();
     
-    public HighLevelSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, Activation activation) {
+    public HighLevelSegment(PetriNet petriNet,
+                            DeploymentDiagram deploymentDiagram,
+                            SequenceDiagram sequenceDiagram,
+                            List<CommunicationSegment> communicationSegments,
+                            Activation activation) {
         super(petriNet, deploymentDiagram, sequenceDiagram);
         
+        this.communicationSegments = communicationSegments;
         this.activation = activation;
     }
 
     public ServiceSegment transformServiceCall(ServiceCall serviceCall) {
         ServiceSegment serviceSegment = null;
         if(serviceCall.getMessage().isLeafMessage()) {
-            serviceSegment = new ServiceLeafSegment(petriNet, deploymentDiagram, sequenceDiagram, serviceCall);
+            serviceSegment = new ServiceLeafSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCall);
             serviceSegment.transform();
         }
         else{
-            serviceSegment = new ServiceIntermediateSegment(petriNet, deploymentDiagram, sequenceDiagram, serviceCall);
+            serviceSegment = new ServiceIntermediateSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCall);
             serviceSegment.transform();
         }
         return serviceSegment;

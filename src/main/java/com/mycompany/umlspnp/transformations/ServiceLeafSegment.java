@@ -18,6 +18,7 @@ import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionP
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,6 +26,7 @@ import java.util.Map;
  * @author 10ondr
  */
 public class ServiceLeafSegment extends Segment implements ServiceSegment {
+    private final List<CommunicationSegment> communicationSegments;
     private final ServiceCall serviceCall;
     
     protected ImmediateTransition initialTransition = null;
@@ -41,9 +43,14 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
     protected Map<TimedTransition, StandardPlace> failTypes = new HashMap<>();
 
     
-    public ServiceLeafSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, ServiceCall serviceCall) {
+    public ServiceLeafSegment(PetriNet petriNet,
+                              DeploymentDiagram deploymentDiagram,
+                              SequenceDiagram sequenceDiagram,
+                              List<CommunicationSegment> communicationSegments,
+                              ServiceCall serviceCall) {
         super(petriNet, deploymentDiagram, sequenceDiagram);
         
+        this.communicationSegments = communicationSegments;
         this.serviceCall = serviceCall;
     }
     
@@ -57,13 +64,24 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         var guardBody = new StringBuilder();
         guardBody.append(String.format("return mark(\"%s\") && !(", serviceCall.getPlace().getName()));
 
+        // TODO add start place as well
         guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
         failTypes.values().forEach(failTypePlace -> {
             guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
         });
-        guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
-        // TODO if invoked remotely through communication channel - alter guard
+        guardBody.append(String.format("mark(\"%s\"))", failHWPlace.getName()));
 
+        // Remotely invoked through a communication link
+        var communicationLink = SPNPUtils.getMessageCommunicationLink(serviceCall.getMessage());
+        if(communicationLink != null) {
+            communicationSegments.forEach(communicationSegment -> {
+                if(communicationLink == communicationSegment.getCommunicationLink()) {
+                    guardBody.append(String.format(" && mark(\"%s\")", communicationSegment.getEndPlace().getName()));
+                }
+            });
+        }
+        guardBody.append(";");
+        
         var startGuardName = "guard_" + SPNPUtils.prepareName(messageName, 15) + "_leaf_start";
         FunctionSPNP<Integer> startGuard = new FunctionSPNP<>(startGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 

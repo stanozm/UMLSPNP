@@ -5,7 +5,6 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
@@ -24,15 +23,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import javafx.util.Pair;
 
 /**
  *
  * @author 10ondr
  */
 public class CommunicationSegment extends Segment {
-    protected final UsageSegment usageSegment;
     protected final CommunicationLink communicationLink;
     
     protected List<StandardPlace> topLevelServicePlaces = new ArrayList<>();
@@ -53,20 +49,26 @@ public class CommunicationSegment extends Segment {
     public CommunicationSegment(PetriNet petriNet,
                                 DeploymentDiagram deploymentDiagram,
                                 SequenceDiagram sequenceDiagram,
-                                UsageSegment usageSegment,
                                 CommunicationLink communicationLink) {
         super(petriNet, deploymentDiagram, sequenceDiagram);
 
-        this.usageSegment = usageSegment;
         this.communicationLink = communicationLink;
     }
+    
+    public CommunicationLink getCommunicationLink() {
+        return communicationLink;
+    }
 
+    public StandardPlace getEndPlace() {
+        return endPlace;
+    }
+    
     private void transformInitialTransition(String communicationLinkName) {
         var initialTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comStart");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName, 1, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(initialTransition);
     }
-    
+
     private String getTopLevelServicePlacesString() {
         var result = new StringBuilder();
         if(topLevelServicePlaces.size() > 0) {
@@ -168,50 +170,33 @@ public class CommunicationSegment extends Segment {
         }
         return null;
     }
-    
-    private boolean isNodeInConnectedNodes(Artifact node, Set<Pair<CommunicationLink, Artifact>> connectedNodes) {
-        for(var pair : connectedNodes) {
-            if(pair.getValue() == node)
-                return true;
-        }
-        return false;
-    }
-    
-    private FunctionSPNP<Double> createDistributionFunction(String communicationLinkName) {
+
+    private FunctionSPNP<Double> createDistributionFunction(String communicationLinkName, UsageSegment usageSegment) {
         var distributionFunctionName = "comm_trans_dist_func__" + SPNPUtils.prepareName(communicationLinkName, 15);
         var distributionValues = new StringBuilder();
 
         double transferRate = communicationLink.getLinkType().rateProperty().getValue();
 
         sequenceDiagram.getSortedMessages().forEach(message -> {
-            if(message.isLeafMessage()) {
-                var firstLifeline = message.getFrom().getLifeline();
-                var secondLifeline = message.getTo().getLifeline();
-                var firstArtifact = firstLifeline.getArtifact();
-                var secondArtifact = secondLifeline.getArtifact();
+            var messageCommunicationLink = SPNPUtils.getMessageCommunicationLink(message);
+            if(communicationLink == messageCommunicationLink) {
+                var topLevelServicePlace = findTopLevelServicePlace(usageSegment, message);
+                if(topLevelServicePlace != null) {
+                    topLevelServicePlaces.add(topLevelServicePlace);
 
-                for(var pair : firstArtifact.getConnectedNodes()) {
-                    var connected = pair.getValue().getConnectedNodesShallow();
-                    if((pair.getValue() == secondArtifact || isNodeInConnectedNodes(secondArtifact, connected)) && pair.getKey() == communicationLink){
-                        var topLevelServicePlace = findTopLevelServicePlace(usageSegment, message);
-                        if(topLevelServicePlace != null) {
-                            topLevelServicePlaces.add(topLevelServicePlace);
+                    var messageSizeObj = message.getMessageSize();
+                    if(messageSizeObj == null)
+                        return;
+                    int messageSize = messageSizeObj.messageSizeProperty().getValue();
+                    double rate;
+                    if(messageSize <= 0)
+                        rate = 0;
+                    else
+                        rate = 1.0 / (messageSize / transferRate);
 
-                            var messageSizeObj = message.getMessageSize();
-                            if(messageSizeObj == null)
-                                break;
-                            int messageSize = messageSizeObj.messageSizeProperty().getValue();
-                            double rate;
-                            if(messageSize <= 0)
-                                rate = 0;
-                            else
-                                rate = 1.0 / (messageSize / transferRate);
-
-                            if(!distributionValues.isEmpty())
-                                distributionValues.append(" + ");
-                            distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServicePlace.getName(), rate));
-                        }
-                    }
+                    if(!distributionValues.isEmpty())
+                        distributionValues.append(" + ");
+                    distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServicePlace.getName(), rate));
                 }
             }
         });
@@ -224,14 +209,16 @@ public class CommunicationSegment extends Segment {
         return distributionFunction;
     }
     
-    private void transformEnd(String communicationLinkName) {
+    private void transformEndPlace(String communicationLinkName) {
         var endPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "trEnd");
         endPlace = new StandardPlace(SPNPUtils.placeCounter++, endPlaceName);
         petriNet.addPlace(endPlace);
-
+    }
+    
+    private void transformEndTransition(String communicationLinkName, UsageSegment usageSegment) {
         var endTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "trEnd");
   
-        var distribution = new ExponentialTransitionDistribution(createDistributionFunction(communicationLinkName));
+        var distribution = new ExponentialTransitionDistribution(createDistributionFunction(communicationLinkName, usageSegment));
         endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, 1, null, distribution);
         petriNet.addTransition(endTransition);
 
@@ -267,11 +254,15 @@ public class CommunicationSegment extends Segment {
         petriNet.addArc(flushInputArc);
     }
     
-    public void transform() {
+    private String getCommunicationLinkNameSPNP() {
         var firstNodeName = communicationLink.getFirst().getNameProperty().getValue();
         var secondNodeName = communicationLink.getSecond().getNameProperty().getValue();
-        String communicationLinkName = SPNPUtils.getCombinedName(firstNodeName, secondNodeName);
-        
+        return SPNPUtils.getCombinedName(firstNodeName, secondNodeName);
+    }
+    
+    public void transform() {
+        String communicationLinkName = getCommunicationLinkNameSPNP();
+
         // Initial transition
         transformInitialTransition(communicationLinkName);
 
@@ -283,9 +274,9 @@ public class CommunicationSegment extends Segment {
         
         // HW fail place and transition
         transformFailHW(communicationLinkName);
-        
-        // End place and transition
-        transformEnd(communicationLinkName);
+
+        // End place (Transition needs to be transformed separately due to its cyclic dependency on Service Segment)
+        transformEndPlace(communicationLinkName);
         
         // Fail type places and transitions
         communicationLink.getLinkFailures().forEach(failType -> {
@@ -297,5 +288,12 @@ public class CommunicationSegment extends Segment {
         
         // Flush transition guard function
         createFlushTransitionGuard(communicationLinkName);
+    }
+    
+    public void transformAfter(UsageSegment usageSegment) {
+        String communicationLinkName = getCommunicationLinkNameSPNP();
+
+        // End transition
+        transformEndTransition(communicationLinkName, usageSegment);
     }
 }

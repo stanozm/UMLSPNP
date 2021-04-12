@@ -285,8 +285,11 @@ public class DeploymentTarget extends Artifact {
             innerConnections.values().forEach(connection -> {
                 var other = connection.getOther(this);
                 connectedNodes.add(new Pair<>(connection, other));
-                connectedNodes.addAll(other.getConnectedNodes(true, true));
-                connectedNodes.addAll(other.getConnectedNodes(false, true));
+                var otherShallow = other.getConnectedNodes(true, true);
+                otherShallow.addAll(other.getConnectedNodes(false, true));
+                otherShallow.forEach(pair -> {
+                    connectedNodes.add(new Pair<>(connection, pair.getValue()));
+                });
             });
         }
         
