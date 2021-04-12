@@ -357,18 +357,26 @@ public class DeploymentDiagramController {
     }
     
     private void artifactMenuInit(ArtifactView artifactView){
+        var deploymentDiagram = model.getDeploymentDiagram();
+        var artifact = deploymentDiagram.getNode(artifactView.getObjectInfo().getID());
         MenuItem menuItemDelete = new MenuItem("Delete");
 
         menuItemDelete.setOnAction((e) -> {
             BooleanModalWindow confirmWindow = 
                         new BooleanModalWindow((Stage) artifactView.getScene().getWindow(), 
-                        "Confirm", "The artifact will be deleted. Proceed?");
+                        "Confirm", "The artifact \"" + Utils.shortenString(artifact.getNameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
             confirmWindow.showAndWait();
             if(confirmWindow.getResult()){
                 this.model.getDeploymentDiagram().removeNode(artifactView.getObjectInfo().getID());
             }
         });
         artifactView.addMenuItem(menuItemDelete);
+        
+        MenuItem menuItemRename = new MenuItem("Rename");
+        menuItemRename.setOnAction((e) -> {
+            this.view.createStringModalWindow("Rename", "New name", artifact.getNameProperty(), Utils.SPNP_NAME_RESTRICTION_REGEX);
+        });
+        artifactView.addMenuItem(menuItemRename);
     }
     
     private MenuItem createToggleAnnotationsMenuItem(AnnotationOwner view){

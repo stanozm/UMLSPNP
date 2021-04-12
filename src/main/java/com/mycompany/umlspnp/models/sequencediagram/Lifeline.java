@@ -68,11 +68,15 @@ public class Lifeline extends BasicNode {
     }
 
     public ObservableList<OperationEntry> getOperationEntries(){
-        if(this.artifact instanceof DeploymentTarget){
-            var dt = (DeploymentTarget) this.artifact;
-            return dt.getAllOperationEntries();
-        }
-        return null;
+        DeploymentTarget dt;
+        if(this.artifact instanceof DeploymentTarget)
+            dt = (DeploymentTarget) this.artifact;
+        else
+            dt = this.artifact.getParent();
+
+        if(dt == null)
+            return null;
+        return dt.getAllOperationEntries();
     }
     
     public void setSortedActivations(ArrayList<Activation> sortedActivations) {

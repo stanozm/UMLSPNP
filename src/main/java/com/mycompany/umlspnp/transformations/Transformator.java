@@ -68,15 +68,18 @@ public class Transformator {
         var deploymentDiagram = model.getDeploymentDiagram();
         var sequenceDiagram = model.getSequenceDiagram();
 
-        // Physical segment
-        var physicalSegment = new PhysicalSegment(petriNet, deploymentDiagram, sequenceDiagram);
-        physicalSegment.transform();
+        // Physical segments
+        var elements = deploymentDiagram.getElementContainer();
+        elements.getNodes().values().forEach(node -> {
+            var physicalSegment = new PhysicalSegment(petriNet, deploymentDiagram, sequenceDiagram, node);
+            physicalSegment.transform();
+        });
 
         // Usage segment
         var usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram);
         usageSegment.transform();
-        
-        // Communication segment
+
+        // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
             var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, usageSegment, communicationLink);
             communicationSegment.transform();

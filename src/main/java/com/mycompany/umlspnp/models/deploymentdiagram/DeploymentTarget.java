@@ -26,22 +26,22 @@ import javafx.util.Pair;
  */
 public class DeploymentTarget extends Artifact {
     private final ElementContainer allElements = DeploymentDiagram.getElementContainer();
-    
+
     private final ObservableMap<Number, Artifact> innerNodes;
     private final ObservableMap<Number, CommunicationLink> innerConnections;
-    
+
     // Annotations
     private final ObservableList<State> states;
     private final ObservableList<StateTransition> stateTransitions;
     private final ObservableList<StateOperation> stateOperations;
-    
+
     // Listeners
     private final Map<StateOperation, ListChangeListener> OperationEntriesListeners = new HashMap();
-    
+
     // Shortcuts
     private final ObservableList<State> statesWithoutOperations;
     private final ObservableList<OperationEntry> allOperationEntries;
-    
+
     public DeploymentTarget(String name, DeploymentTarget parent){
         super(name, parent);
         
@@ -238,7 +238,7 @@ public class DeploymentTarget extends Artifact {
         this.statesWithoutOperations.setAll(states.filtered(state -> !stateHasOperations(state)));
     }
     
-    public void initStatesWithoutOperations(){
+    public final void initStatesWithoutOperations(){
         refilterStatesWithoutOperations();
         
         states.addListener(new ListChangeListener(){

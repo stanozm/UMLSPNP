@@ -25,6 +25,7 @@ public class SPNPUtils {
         return null;
     }
 
+    // TODO something to prevent possible same-name collisions
     public static String prepareName(String name, int maxLength) {
         var result = name.replaceAll("\\s+", "").replaceAll(com.mycompany.umlspnp.common.Utils.SPNP_NAME_RESTRICTION_REPLACE_REGEX, "");
         if(result.length() > maxLength) {

@@ -22,7 +22,7 @@ import javafx.util.Pair;
  * @author 10ondr
  */
 public class DeploymentDiagram {
-    private static final ElementContainer<NamedNode, CommunicationLink> allElements = new ElementContainer<>();
+    private static final ElementContainer<Artifact, CommunicationLink> allElements = new ElementContainer<>();
     private final ObservableList<LinkType> allLinkTypes;
     
     public DeploymentDiagram(){
@@ -55,7 +55,7 @@ public class DeploymentDiagram {
         });
     }
     
-    public static ElementContainer getElementContainer(){
+    public static ElementContainer<Artifact, CommunicationLink> getElementContainer(){
         return allElements;
     }
     
@@ -85,7 +85,7 @@ public class DeploymentDiagram {
         return newArtifact;
     }
     
-    public void addNode(NamedNode newNode){
+    public void addNode(Artifact newNode){
         allElements.addNode(newNode, newNode.getObjectInfo().getID());
     }
 
@@ -112,8 +112,8 @@ public class DeploymentDiagram {
         return true;
     }
     
-    public NamedNode getNode(int objectID){
-        return (NamedNode) allElements.getNode(objectID);
+    public Artifact getNode(int objectID){
+        return allElements.getNode(objectID);
     }
     
     public DeploymentTarget getDeploymentTarget(int objectID){

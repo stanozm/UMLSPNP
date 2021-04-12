@@ -5,7 +5,6 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.common.NamedNode;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
@@ -18,64 +17,80 @@ import cz.muni.fi.spnp.core.models.arcs.StandardArc;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
 import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javafx.util.Pair;
 
 /**
  *
  * @author 10ondr
  */
 public class PhysicalSegment extends Segment {
+    protected final Artifact node;
+    protected Map<State, StandardPlace> statePlaces = new HashMap<>();
 
-    public PhysicalSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram) {
+    public PhysicalSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, Artifact node) {
         super(petriNet, deploymentDiagram, sequenceDiagram);
-    }
-    
-    private void transformNodes(Collection<NamedNode> nodes) {
-        nodes.forEach(node -> {
-            if(node instanceof DeploymentTarget) {
-                var deploymentTarget = (DeploymentTarget) node;
-                transformStates(deploymentTarget, deploymentTarget.getStates());
-                transformTransitions(deploymentTarget, deploymentTarget.getStateTransitions());
-            }
-            else if(node instanceof Artifact) {
-            
-            }
-        });
+        
+        this.node = node;
     }
 
-    private void transformStates(DeploymentTarget deploymentTarget, Collection<State> states) {
-        states.forEach(state -> {
-            var placeName = SPNPUtils.createPlaceName(deploymentTarget.getNameProperty().getValue(), state.nameProperty().getValue());
-            var statePlace = new StandardPlace(SPNPUtils.placeCounter++, placeName);
-            if(state.isDefaultProperty().getValue()) {
-                statePlace.setNumberOfTokens(1);
-            }
-            petriNet.addPlace(statePlace);
-        });
+    private void transformState(String nodeName, State state) {
+        var statePlaceName = SPNPUtils.createPlaceName(nodeName, state.nameProperty().getValue());
+        var statePlace = new StandardPlace(SPNPUtils.placeCounter++, statePlaceName);
+        if(state.isDefaultProperty().getValue())
+            statePlace.setNumberOfTokens(1);
+        petriNet.addPlace(statePlace);
+        statePlaces.put(state, statePlace);
     }
 
-    private void transformTransitions(DeploymentTarget deploymentTarget, Collection<StateTransition> transitions) {
-        transitions.forEach(transition -> {
-            var name = SPNPUtils.createTransitionName(deploymentTarget.getNameProperty().getValue(), transition.nameProperty().getValue());
-            var rate = transition.rateProperty().getValue();
-            var stateTransition = new TimedTransition(SPNPUtils.transitionCounter++, name, new ExponentialTransitionDistribution(rate));
-            petriNet.addTransition(stateTransition);
-            
-            var stateFrom = transition.getStateFrom();
-            var placeFrom = SPNPUtils.getPlaceFromNet(petriNet, SPNPUtils.createPlaceName(deploymentTarget.getNameProperty().getValue(), stateFrom.nameProperty().getValue()));
+    private void transformTransition(String nodeName, StateTransition transition) {
+        var transitionName = SPNPUtils.createTransitionName(nodeName, transition.nameProperty().getValue());
+        var rate = transition.rateProperty().getValue();
+        var stateTransition = new TimedTransition(SPNPUtils.transitionCounter++, transitionName, new ExponentialTransitionDistribution(rate));
+        petriNet.addTransition(stateTransition);
+
+        var stateFrom = transition.getStateFrom();
+        var placeFrom = statePlaces.get(stateFrom);
+        if(placeFrom == null) {
+            System.err.println(String.format("Physical segment: Node \"%s\": Could not find place for source state \"%s\"", nodeName, stateFrom.nameProperty().getValue()));
+        }
+        else {
             var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, placeFrom, stateTransition);
             petriNet.addArc(inputArc);
-
-            var stateTo = transition.getStateTo();
-            var placeTo = SPNPUtils.getPlaceFromNet(petriNet, SPNPUtils.createPlaceName(deploymentTarget.getNameProperty().getValue(), stateTo.nameProperty().getValue()));
+        }
+        var stateTo = transition.getStateTo();
+        var placeTo = statePlaces.get(stateTo);
+        if(placeFrom == null) {
+            System.err.println(String.format("Physical segment: Node \"%s\": Could not find place for destination state \"%s\"", nodeName, stateTo.nameProperty().getValue()));
+        }
+        else {
             var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, placeTo, stateTransition);
             petriNet.addArc(outputArc);
-        });
+        }
     }
 
+    private void transformServiceGuard() {
+        // TODO when properly specified
+    }
+    
     public void transform() {
-        var elements = deploymentDiagram.getElementContainer();
+        DeploymentTarget dt;
+        if(node instanceof DeploymentTarget)
+            dt = (DeploymentTarget) node;
+        else
+            dt = node.getParent();
 
-        transformNodes(elements.getNodes().values());
+        var nodeName = dt.getNameProperty().getValue();
+        dt.getStates().forEach(state -> {
+            transformState(nodeName, state);
+        });
+
+        dt.getStateTransitions().forEach(transition -> {
+            transformTransition(nodeName, transition);
+        });
     }
 }
