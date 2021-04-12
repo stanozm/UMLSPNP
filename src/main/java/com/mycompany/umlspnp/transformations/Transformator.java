@@ -84,7 +84,6 @@ public class Transformator {
         // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
             var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationLink);
-            communicationSegment.transform();
             communicationSegments.add(communicationSegment);
         });
 
@@ -94,7 +93,8 @@ public class Transformator {
 
         // Communictaion segment finish Usage Segment dependent transformations
         communicationSegments.forEach(communicationSegment -> {
-            communicationSegment.transformAfter(usageSegment);
+            communicationSegment.setUsageSegment(usageSegment);
+            communicationSegment.transform();
         });
     }
 

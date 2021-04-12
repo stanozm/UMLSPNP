@@ -64,7 +64,7 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         var guardBody = new StringBuilder();
         guardBody.append(String.format("return mark(\"%s\") && !(", serviceCall.getPlace().getName()));
 
-        // TODO add start place as well
+        guardBody.append(String.format("mark(\"%s\") || ", startPlace.getName()));
         guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
         failTypes.values().forEach(failTypePlace -> {
             guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));

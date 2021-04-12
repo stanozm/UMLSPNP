@@ -29,9 +29,10 @@ import java.util.Map;
  * @author 10ondr
  */
 public class CommunicationSegment extends Segment {
+    protected UsageSegment usageSegment = null;
     protected final CommunicationLink communicationLink;
     
-    protected List<StandardPlace> topLevelServicePlaces = new ArrayList<>();
+    protected List<ServiceCall> topLevelServiceCalls = new ArrayList<>();
     
     protected ImmediateTransition initialTransition = null;
     protected StandardPlace startPlace = null;
@@ -53,6 +54,10 @@ public class CommunicationSegment extends Segment {
         super(petriNet, deploymentDiagram, sequenceDiagram);
 
         this.communicationLink = communicationLink;
+
+        String communicationLinkName = getCommunicationLinkNameSPNP();
+        // End place
+        transformEndPlace(communicationLinkName);
     }
     
     public CommunicationLink getCommunicationLink() {
@@ -63,6 +68,21 @@ public class CommunicationSegment extends Segment {
         return endPlace;
     }
     
+    public void setUsageSegment(UsageSegment usageSegment) {
+        this.usageSegment = usageSegment;
+    }
+    
+    private void resolveTopLevelServiceCalls() {
+        sequenceDiagram.getSortedMessages().forEach(message -> {
+            var messageCommunicationLink = SPNPUtils.getMessageCommunicationLink(message);
+            if(communicationLink == messageCommunicationLink) {
+                var topLevelServiceCall = findTopLevelServiceCall(usageSegment, message);
+                if(topLevelServiceCall != null)
+                    topLevelServiceCalls.add(topLevelServiceCall);
+            }
+        });
+    }
+
     private void transformInitialTransition(String communicationLinkName) {
         var initialTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comStart");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName, 1, null, new ConstantTransitionProbability(1.0));
@@ -71,10 +91,10 @@ public class CommunicationSegment extends Segment {
 
     private String getTopLevelServicePlacesString() {
         var result = new StringBuilder();
-        if(topLevelServicePlaces.size() > 0) {
-            topLevelServicePlaces.forEach(topLevelPlace -> {
-                result.append(String.format("mark(\"%s\")", topLevelPlace.getName()));
-                if(topLevelServicePlaces.indexOf(topLevelPlace) < topLevelServicePlaces.size() - 1)
+        if(topLevelServiceCalls.size() > 0) {
+            topLevelServiceCalls.forEach(topLevelServiceCall -> {
+                result.append(String.format("mark(\"%s\")", topLevelServiceCall.getPlace().getName()));
+                if(topLevelServiceCalls.indexOf(topLevelServiceCall) < topLevelServiceCalls.size() - 1)
                     result.append(" || ");
             });
         }
@@ -83,11 +103,17 @@ public class CommunicationSegment extends Segment {
     
     private void createInitialTransitionGuard(String communicationLinkName) {
         var guardBody = new StringBuilder();
+        guardBody.append("return ");
 
-        if(topLevelServicePlaces.size() > 0)
-            guardBody.append(String.format("return %s;", getTopLevelServicePlacesString()));
-        else
-            guardBody.append("return 0;");
+        if(topLevelServiceCalls.size() > 0)
+            guardBody.append(String.format("(%s) && ", getTopLevelServicePlacesString()));
+
+        guardBody.append(String.format("!(mark(\"%s\")", startPlace.getName()));
+        guardBody.append(String.format(" || (mark(\"%s\")", endPlace.getName()));
+        failTypes.values().forEach(failTypePlace -> {
+            guardBody.append(String.format(" || mark(\"%s\")", failTypePlace.getName()));
+        });
+        guardBody.append(String.format(" || mark(\"%s\"));", failHWPlace.getName()));
 
         var guardName = "guard_" + SPNPUtils.prepareName(communicationLinkName, 15) + "_comm_start";
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
@@ -115,10 +141,8 @@ public class CommunicationSegment extends Segment {
         var guardBody = new StringBuilder();
         guardBody.append("return ");
 
-        if(topLevelServicePlaces.size() > 0) {
-            guardBody.append(String.format("(%s) &&", getTopLevelServicePlacesString()));
-            guardBody.append(System.lineSeparator());
-            guardBody.append("\t");
+        if(topLevelServiceCalls.size() > 0) {
+            guardBody.append(String.format("(%s) && ", getTopLevelServicePlacesString()));
         }
 
         guardBody.append(String.format("(mark(\"%s\") || ", endPlace.getName()));
@@ -158,47 +182,39 @@ public class CommunicationSegment extends Segment {
         petriNet.addArc(flushInputArc);
     }
     
-    private StandardPlace findTopLevelServicePlace(HighLevelSegment segment, Message message) {
+    private ServiceCall findTopLevelServiceCall(HighLevelSegment segment, Message message) {
         for(var serviceCall : segment.serviceCalls.values()) {
             if(serviceCall.getMessage() == message)
-                return serviceCall.getPlace();
+                return serviceCall;
         }
 
         for(var subsegment : segment.getServiceSegments()) {
             if(subsegment instanceof HighLevelSegment)
-                return findTopLevelServicePlace((HighLevelSegment) subsegment, message);
+                return findTopLevelServiceCall((HighLevelSegment) subsegment, message);
         }
         return null;
     }
-
-    private FunctionSPNP<Double> createDistributionFunction(String communicationLinkName, UsageSegment usageSegment) {
+    
+    private FunctionSPNP<Double> createDistributionFunction(String communicationLinkName) {
         var distributionFunctionName = "comm_trans_dist_func__" + SPNPUtils.prepareName(communicationLinkName, 15);
         var distributionValues = new StringBuilder();
 
         double transferRate = communicationLink.getLinkType().rateProperty().getValue();
 
-        sequenceDiagram.getSortedMessages().forEach(message -> {
-            var messageCommunicationLink = SPNPUtils.getMessageCommunicationLink(message);
-            if(communicationLink == messageCommunicationLink) {
-                var topLevelServicePlace = findTopLevelServicePlace(usageSegment, message);
-                if(topLevelServicePlace != null) {
-                    topLevelServicePlaces.add(topLevelServicePlace);
+        topLevelServiceCalls.forEach(topLevelServiceCall -> {
+            var messageSizeObj = topLevelServiceCall.getMessage().getMessageSize();
+            if(messageSizeObj == null)
+                return;
+            int messageSize = messageSizeObj.messageSizeProperty().getValue();
+            double rate;
+            if(messageSize <= 0)
+                rate = 0;
+            else
+                rate = 1.0 / (messageSize / transferRate);
 
-                    var messageSizeObj = message.getMessageSize();
-                    if(messageSizeObj == null)
-                        return;
-                    int messageSize = messageSizeObj.messageSizeProperty().getValue();
-                    double rate;
-                    if(messageSize <= 0)
-                        rate = 0;
-                    else
-                        rate = 1.0 / (messageSize / transferRate);
-
-                    if(!distributionValues.isEmpty())
-                        distributionValues.append(" + ");
-                    distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServicePlace.getName(), rate));
-                }
-            }
+            if(!distributionValues.isEmpty())
+                distributionValues.append(" + ");
+            distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServiceCall.getPlace().getName(), rate));
         });
 
         if(distributionValues.isEmpty())
@@ -215,10 +231,10 @@ public class CommunicationSegment extends Segment {
         petriNet.addPlace(endPlace);
     }
     
-    private void transformEndTransition(String communicationLinkName, UsageSegment usageSegment) {
+    private void transformEndTransition(String communicationLinkName) {
         var endTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "trEnd");
   
-        var distribution = new ExponentialTransitionDistribution(createDistributionFunction(communicationLinkName, usageSegment));
+        var distribution = new ExponentialTransitionDistribution(createDistributionFunction(communicationLinkName));
         endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, 1, null, distribution);
         petriNet.addTransition(endTransition);
 
@@ -259,9 +275,11 @@ public class CommunicationSegment extends Segment {
         var secondNodeName = communicationLink.getSecond().getNameProperty().getValue();
         return SPNPUtils.getCombinedName(firstNodeName, secondNodeName);
     }
-    
+
     public void transform() {
         String communicationLinkName = getCommunicationLinkNameSPNP();
+
+        this.resolveTopLevelServiceCalls();
 
         // Initial transition
         transformInitialTransition(communicationLinkName);
@@ -275,9 +293,6 @@ public class CommunicationSegment extends Segment {
         // HW fail place and transition
         transformFailHW(communicationLinkName);
 
-        // End place (Transition needs to be transformed separately due to its cyclic dependency on Service Segment)
-        transformEndPlace(communicationLinkName);
-        
         // Fail type places and transitions
         communicationLink.getLinkFailures().forEach(failType -> {
             transformFailType(failType.nameProperty().getValue(), failType.rateProperty().getValue());
@@ -288,12 +303,11 @@ public class CommunicationSegment extends Segment {
         
         // Flush transition guard function
         createFlushTransitionGuard(communicationLinkName);
-    }
-    
-    public void transformAfter(UsageSegment usageSegment) {
-        String communicationLinkName = getCommunicationLinkNameSPNP();
-
+        
+        // End place
+        // NOTE: trnasformed alredy in constructor due to Service Segment cyclic dependency
+        
         // End transition
-        transformEndTransition(communicationLinkName, usageSegment);
+        transformEndTransition(communicationLinkName);
     }
 }
