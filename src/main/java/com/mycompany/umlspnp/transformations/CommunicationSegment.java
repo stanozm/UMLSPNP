@@ -21,7 +21,9 @@ import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionP
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javafx.util.Pair;
 
@@ -44,7 +46,7 @@ public class CommunicationSegment extends Segment {
     protected ImmediateTransition failHWTransition = null;
     protected StandardPlace failHWPlace = null;
     
-    protected List<Pair<TimedTransition, StandardPlace>> failTypes = new ArrayList<>();
+    protected Map<TimedTransition, StandardPlace> failTypes = new HashMap<>();
 
     protected ImmediateTransition flushTransition = null;
 
@@ -118,8 +120,8 @@ public class CommunicationSegment extends Segment {
         }
 
         guardBody.append(String.format("(mark(\"%s\") || ", endPlace.getName()));
-        failTypes.forEach(pair -> {
-            guardBody.append(String.format("mark(\"%s\") || ", pair.getValue().getName()));
+        failTypes.values().forEach(failTypePlace -> {
+            guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
         });
         guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
 
@@ -155,12 +157,11 @@ public class CommunicationSegment extends Segment {
     }
     
     private StandardPlace findTopLevelServicePlace(HighLevelSegment segment, Message message) {
-        for(var pair : segment.pairs) {
-            var serviceCall = pair.getValue();
+        for(var serviceCall : segment.serviceCalls.values()) {
             if(serviceCall.getMessage() == message)
                 return serviceCall.getPlace();
         }
-        
+
         for(var subsegment : segment.getServiceSegments()) {
             if(subsegment instanceof HighLevelSegment)
                 return findTopLevelServicePlace((HighLevelSegment) subsegment, message);
@@ -254,7 +255,7 @@ public class CommunicationSegment extends Segment {
         var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, 1, null, distribution);
         petriNet.addTransition(failTypeTransition);
 
-        failTypes.add(new Pair<>(failTypeTransition, failTypePlace));
+        failTypes.put(failTypeTransition, failTypePlace);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failTypeTransition);
         petriNet.addArc(inputArc);

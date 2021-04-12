@@ -17,9 +17,8 @@ import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
 import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
-import java.util.ArrayList;
-import java.util.List;
-import javafx.util.Pair;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -39,7 +38,7 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
     protected ImmediateTransition failHWTransition = null;
     protected StandardPlace failHWPlace = null;
     
-    protected List<Pair<TimedTransition, StandardPlace>> failTypes = new ArrayList<>();
+    protected Map<TimedTransition, StandardPlace> failTypes = new HashMap<>();
 
     
     public ServiceLeafSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, ServiceCall serviceCall) {
@@ -59,8 +58,8 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         guardBody.append(String.format("return mark(\"%s\") && !(", serviceCall.getPlace().getName()));
 
         guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
-        failTypes.forEach(pair -> {
-            guardBody.append(String.format("mark(\"%s\") || ", pair.getValue().getName()));
+        failTypes.values().forEach(failTypePlace -> {
+            guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
         });
         guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
         // TODO if invoked remotely through communication channel - alter guard
@@ -93,8 +92,8 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         guardBody.append(String.format("return mark(\"%s\") && (", serviceCall.getPlace().getName()));
 
         guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
-        failTypes.forEach(pair -> {
-            guardBody.append(String.format("mark(\"%s\") || ", pair.getValue().getName()));
+        failTypes.values().forEach(failTypePlace -> {
+            guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
         });
         guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
 
@@ -155,7 +154,7 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, 1, null, distribution);
         petriNet.addTransition(failTypeTransition);
 
-        failTypes.add(new Pair<>(failTypeTransition, failTypePlace));
+        failTypes.put(failTypeTransition, failTypePlace);
         
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failTypeTransition);
         petriNet.addArc(inputArc);

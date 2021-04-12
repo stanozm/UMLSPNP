@@ -18,7 +18,9 @@ import cz.muni.fi.spnp.core.models.transitions.ImmediateTransition;
 import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javafx.util.Pair;
 
 /**
@@ -28,7 +30,7 @@ import javafx.util.Pair;
 public class HighLevelSegment extends Segment {
     protected final Activation activation;
     
-    protected final List<Pair<ImmediateTransition, ServiceCall>> pairs = new ArrayList<>();
+    protected final Map<ImmediateTransition, ServiceCall> serviceCalls = new HashMap<>();
     protected ImmediateTransition initialTransition = null;
     protected StandardPlace endPlace = null;
     
@@ -98,8 +100,8 @@ public class HighLevelSegment extends Segment {
 
     public List<StandardPlace> getPlaces() {
         List<StandardPlace> places = new ArrayList<>();
-        pairs.forEach(pair -> {
-            places.add(pair.getValue().getPlace());
+        serviceCalls.values().forEach(serviceCall -> {
+            places.add(serviceCall.getPlace());
         });
         return places;
     }
@@ -118,8 +120,8 @@ public class HighLevelSegment extends Segment {
         return activation;
     }
     
-    public List<Pair<ImmediateTransition, ServiceCall>> getPairs() {
-        return pairs;
+    public Map<ImmediateTransition, ServiceCall> getServiceCalls() {
+        return serviceCalls;
     }
     
     public ImmediateTransition getInitialTransition() {
@@ -147,7 +149,7 @@ public class HighLevelSegment extends Segment {
         for(var message : sortedMessages){
             if(lifeline == message.getFrom().getLifeline()) { // Only outgoing messages
                 var transitionPlacePair = transformHighLevelMessage(previousTransition, message);
-                pairs.add(transitionPlacePair);
+                serviceCalls.put(transitionPlacePair.getKey(), transitionPlacePair.getValue());
                 previousTransition = transitionPlacePair.getKey();
             }
         }

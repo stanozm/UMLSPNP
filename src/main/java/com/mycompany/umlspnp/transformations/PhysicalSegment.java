@@ -17,12 +17,8 @@ import cz.muni.fi.spnp.core.models.arcs.StandardArc;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
 import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javafx.util.Pair;
 
 /**
  *
