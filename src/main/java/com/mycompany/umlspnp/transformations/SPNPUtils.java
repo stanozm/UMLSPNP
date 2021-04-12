@@ -40,4 +40,8 @@ public class SPNPUtils {
     public static String createTransitionName(String nodeName, String transitionName) {
         return "TR_" + prepareName(nodeName, 8) + "_" + prepareName(transitionName, 8);
     }
+
+    public static String getCombinedName(String firstNodeName, String secondNodeName) {
+        return String.format("%s_%s", prepareName(firstNodeName, 4), prepareName(secondNodeName, 4));
+    }
 }

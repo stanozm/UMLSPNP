@@ -134,6 +134,8 @@ public class Message extends Connection<Activation> {
     }
     
     public MessageSize getMessageSize(){
+        if(messageSize.size() < 1)
+            return null;
         return messageSize.get(0);
     }
     

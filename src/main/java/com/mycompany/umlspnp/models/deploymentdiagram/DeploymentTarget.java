@@ -18,6 +18,7 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 import javafx.util.Callback;
+import javafx.util.Pair;
 
 /**
  *
@@ -269,8 +270,8 @@ public class DeploymentTarget extends Artifact {
     }
     
     @Override
-    public HashSet<Artifact> getConnectedNodes(){
-        var connectedNodes = new HashSet<Artifact>();
+    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(){
+        var connectedNodes = new HashSet<Pair<CommunicationLink, Artifact>>();
         connectedNodes.addAll(getConnectedNodes(true, false));
         connectedNodes.addAll(getConnectedNodes(false, false));
         
@@ -278,12 +279,12 @@ public class DeploymentTarget extends Artifact {
     }
     
     @Override
-    public HashSet<Artifact> getConnectedNodes(boolean directionUp, boolean shallow) {
-        var connectedNodes = new HashSet<Artifact>();
+    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(boolean directionUp, boolean shallow) {
+        var connectedNodes = new HashSet<Pair<CommunicationLink, Artifact>>();
         if(!shallow){
             innerConnections.values().forEach(connection -> {
                 var other = connection.getOther(this);
-                connectedNodes.add(other);
+                connectedNodes.add(new Pair<>(connection, other));
                 connectedNodes.addAll(other.getConnectedNodes(true, true));
                 connectedNodes.addAll(other.getConnectedNodes(false, true));
             });
@@ -291,14 +292,14 @@ public class DeploymentTarget extends Artifact {
         
         if(directionUp) {
             innerNodes.values().forEach(child -> {
-                connectedNodes.add(child);
+                connectedNodes.add(new Pair<>(null, child));
                 connectedNodes.addAll(child.getConnectedNodes(true, shallow));
             });
         }
         else{
             var parent = getParent();
             if(parent != null){
-                connectedNodes.add(parent);
+                connectedNodes.add(new Pair<>(null, parent));
                 connectedNodes.addAll(parent.getConnectedNodes(false, shallow));
             }
         }

@@ -28,9 +28,11 @@ import javafx.util.Pair;
 public class HighLevelSegment extends Segment {
     protected final Activation activation;
     
-    protected final ArrayList<Pair<ImmediateTransition, ServiceCall>> pairs = new ArrayList<>();
+    protected final List<Pair<ImmediateTransition, ServiceCall>> pairs = new ArrayList<>();
     protected ImmediateTransition initialTransition = null;
     protected StandardPlace endPlace = null;
+    
+    protected final List<ServiceSegment> serviceSegments = new ArrayList<>();
     
     public HighLevelSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, Activation activation) {
         super(petriNet, deploymentDiagram, sequenceDiagram);
@@ -63,6 +65,7 @@ public class HighLevelSegment extends Segment {
 
         var serviceCall = new ServiceCall(message, serviceCallPlace);
         var serviceSegment = transformServiceCall(serviceCall);
+        serviceSegments.add(serviceSegment);
 
         var guardName = "guard_" + SPNPUtils.prepareName(messageName, 15) + "_ok";
         var guardBody = String.format("return mark(\"%s\");", serviceSegment.getEndPlace().getName());
@@ -115,7 +118,7 @@ public class HighLevelSegment extends Segment {
         return activation;
     }
     
-    public ArrayList<Pair<ImmediateTransition, ServiceCall>> getPairs() {
+    public List<Pair<ImmediateTransition, ServiceCall>> getPairs() {
         return pairs;
     }
     
@@ -125,6 +128,10 @@ public class HighLevelSegment extends Segment {
     
     public StandardPlace getEndPlace() {
         return endPlace;
+    }
+    
+    public List<ServiceSegment> getServiceSegments() {
+        return serviceSegments;
     }
 
     public void transform() {

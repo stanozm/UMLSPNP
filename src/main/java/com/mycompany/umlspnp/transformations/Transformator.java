@@ -72,9 +72,15 @@ public class Transformator {
         var physicalSegment = new PhysicalSegment(petriNet, deploymentDiagram, sequenceDiagram);
         physicalSegment.transform();
 
-        // Highest-level usage segment
+        // Usage segment
         var usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram);
         usageSegment.transform();
+        
+        // Communication segment
+        deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
+            var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, usageSegment, communicationLink);
+            communicationSegment.transform();
+        });
     }
 
     public String getOutput(){

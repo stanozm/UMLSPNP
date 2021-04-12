@@ -8,12 +8,14 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.NamedNode;
+import java.util.Collection;
 import java.util.HashSet;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.util.Callback;
+import javafx.util.Pair;
 
 /**
  *
@@ -140,6 +142,10 @@ public class DeploymentDiagram {
         return allElements.getConnection(objectID);
     }
     
+    public Collection<CommunicationLink> getCommunicationLinks() {
+        return allElements.getConnections().values();
+    }
+    
     public LinkType createLinkType(String name, Double rate){
         var newLinkType = new LinkType(name, rate); 
         allLinkTypes.add(newLinkType);
@@ -158,12 +164,16 @@ public class DeploymentDiagram {
     }
     
     public boolean areNodesConnected(Artifact first, Artifact second){
-        HashSet<Artifact> connectedNodes;
+        HashSet<Pair<CommunicationLink, Artifact>> connectedNodes;
         if(first instanceof DeploymentTarget)
             connectedNodes =  ((DeploymentTarget) first).getConnectedNodes();
         else
             connectedNodes = first.getConnectedNodes();
 
-        return connectedNodes.contains(second);
+        for(var pair : connectedNodes) {
+            if(pair.getValue() == second)
+                return true;
+        }
+        return false;
     }
 }

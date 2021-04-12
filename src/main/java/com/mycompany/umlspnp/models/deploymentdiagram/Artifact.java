@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.*;
 import java.util.HashSet;
+import javafx.util.Pair;
 
 /**
  *
@@ -25,10 +26,10 @@ public class Artifact extends NamedNode{
         return DTparent;
     }
     
-    public HashSet<Artifact> getConnectedNodes(){
-        var connectedNodes = new HashSet();
+    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(){
+        var connectedNodes = new HashSet<Pair<CommunicationLink, Artifact>>();
         if(this.DTparent != null){
-            connectedNodes.add(this.DTparent);
+            connectedNodes.add(new Pair<>(null, this.DTparent));
             connectedNodes.addAll(this.DTparent.getConnectedNodes(false, false));
         }
         
@@ -37,7 +38,7 @@ public class Artifact extends NamedNode{
     
     // directionUp: true = direction towards children, false = direction towards parent
     // shallow: true = only children/parents, false = also all connections of children/parents
-    public HashSet<Artifact> getConnectedNodes(boolean directionUp, boolean shallow){
+    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(boolean directionUp, boolean shallow){
         // TODO: connected nodes to this artifact if it will be a possibility
         
         if(directionUp) {
@@ -48,5 +49,13 @@ public class Artifact extends NamedNode{
         else {
             return getConnectedNodes();
         }
+    }
+    
+    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodesShallow() {
+        var upwards = getConnectedNodes(true, true);
+        var downwards = getConnectedNodes(false, true);
+
+        upwards.addAll(downwards);
+        return upwards;
     }
 }

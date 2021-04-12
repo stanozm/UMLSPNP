@@ -93,7 +93,7 @@ public class CommunicationLink extends Connection<DeploymentTarget> {
         }
     }
     
-    public ObservableList getLinkFailures(){
+    public ObservableList<ConnectionFailure> getLinkFailures(){
         return linkFailures;
     }
     
