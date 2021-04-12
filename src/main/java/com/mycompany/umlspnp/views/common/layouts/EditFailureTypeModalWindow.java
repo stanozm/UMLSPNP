@@ -27,7 +27,7 @@ public class EditFailureTypeModalWindow extends NameRateModalWindow {
                                         String windowName,
                                         StringProperty failureName,
                                         DoubleProperty failureRate) {
-        super(parentStage, windowName);
+        super(parentStage, windowName, true);
         
 
         var nameLabel = new Label("Failure name:");

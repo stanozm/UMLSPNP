@@ -27,7 +27,7 @@ public class EditAllLinkTypesModalWindow extends NameRateModalWindow {
                                         String windowName,
                                         StringProperty linkName,
                                         DoubleProperty transferRate) {
-        super(parentStage, windowName);
+        super(parentStage, windowName, false);
         
 
         var nameLabel = new Label("Link type name:");

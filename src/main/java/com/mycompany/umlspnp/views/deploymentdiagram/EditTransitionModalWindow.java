@@ -35,7 +35,7 @@ public class EditTransitionModalWindow extends NameRateModalWindow {
                                         ObjectProperty fromState,
                                         ObjectProperty toState,
                                         ObservableList states   ) {
-        super(parentStage, windowName);
+        super(parentStage, windowName, true);
         
         var fromLabel = new Label("From state:");
         this.fromStateInput = new ComboBox(states);

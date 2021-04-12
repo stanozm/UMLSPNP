@@ -7,7 +7,6 @@ package com.mycompany.umlspnp.views.common.layouts;
 
 import java.util.regex.Pattern;
 import javafx.beans.property.StringProperty;
-import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
 /**
@@ -15,9 +14,12 @@ import javafx.stage.Stage;
  * @author 10ondr
  */
 public class NameRateModalWindow extends ModalWindow {
-
-    public NameRateModalWindow(Stage parentStage, String windowName) {
+    private final boolean isNormalized;
+    
+    public NameRateModalWindow(Stage parentStage, String windowName, boolean normalized) {
         super(parentStage, windowName);
+
+        this.isNormalized = normalized;
     }
     
     protected boolean checkNameRateInputs(StringProperty nameProperty, StringProperty rateProperty){
@@ -44,9 +46,10 @@ public class NameRateModalWindow extends ModalWindow {
         
         try {
             double rate = parseRate(rateProperty);
-            if(rate > 1.0 || rate < 0.0){
+            if(isNormalized && rate > 1.0)
                 errorMessage = "Rate is out of range (0.0 to 1.0).";
-            }
+            else if(rate < 0.0)
+                errorMessage = "Rate has to be greater or equal to 0.";
         }
         catch(Exception e) {
             errorMessage = "Error while parsing rate value.";
