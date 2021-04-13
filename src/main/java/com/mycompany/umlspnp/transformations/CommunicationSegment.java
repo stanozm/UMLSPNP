@@ -5,8 +5,8 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
+import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
@@ -166,18 +166,18 @@ public class CommunicationSegment extends Segment {
         flushTransition.setGuardFunction(guard);
     }
 
-    private String createGuardBody(Artifact artifact) {
-        var downPlace = SPNPUtils.getDownPlace(physicalSegments, artifact);
+    private String createGuardBody(DeploymentTarget targetNode) {
+        var downPlace = SPNPUtils.getDownPlace(physicalSegments, targetNode);
         if(downPlace != null)
             return String.format("return mark(\"%s\");", downPlace.getName());
         return "return 0";
     }
 
-    private Pair<ImmediateTransition, StandardPlace> transformFailHW(Artifact artifact, String communicationLinkName) {
+    private Pair<ImmediateTransition, StandardPlace> transformFailHW(DeploymentTarget targetNode, String communicationLinkName) {
         String failHWPlaceName;
         String failHWTransitionName;
         String guardNameFormatString;
-        if(artifact == communicationLink.getFirst()){
+        if(targetNode == communicationLink.getFirst()){
             failHWPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "HWf_st");
             failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HWf_st");
             guardNameFormatString = "guard_%s_HW_fail_first";
@@ -191,7 +191,7 @@ public class CommunicationSegment extends Segment {
         petriNet.addPlace(failHWPlace);
 
         var guardName = SPNPUtils.createFunctionName(String.format(guardNameFormatString, SPNPUtils.prepareName(communicationLinkName, 15)));
-        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, createGuardBody(artifact), Integer.class);
+        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, createGuardBody(targetNode), Integer.class);
 
         var failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(failHWTransition);

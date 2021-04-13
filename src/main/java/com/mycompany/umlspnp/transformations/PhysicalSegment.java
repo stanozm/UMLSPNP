@@ -5,7 +5,6 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.deploymentdiagram.State;
 import com.mycompany.umlspnp.models.deploymentdiagram.StateTransition;
@@ -28,16 +27,16 @@ import java.util.Map;
  * @author 10ondr
  */
 public class PhysicalSegment extends Segment {
-    protected final Artifact node;
+    protected final DeploymentTarget node;
     protected Map<State, StandardPlace> statePlaces = new HashMap<>();
 
-    public PhysicalSegment(PetriNet petriNet, Artifact node) {
+    public PhysicalSegment(PetriNet petriNet, DeploymentTarget node) {
         super(petriNet);
         
         this.node = node;
     }
     
-    public Artifact getNode() {
+    public DeploymentTarget getNode() {
         return node;
     }
     
@@ -110,33 +109,20 @@ public class PhysicalSegment extends Segment {
     }
     
     public void transform() {
-        // TODO really? doesn't this mean the parent will be transformed twice?
-        DeploymentTarget dt;
-        if(node instanceof DeploymentTarget)
-            dt = (DeploymentTarget) node;
-        else
-            dt = node.getParent();
-
-        var nodeName = dt.getNameProperty().getValue();
-        dt.getStates().forEach(state -> {
+        var nodeName = node.getNameProperty().getValue();
+        node.getStates().forEach(state -> {
             transformState(nodeName, state);
         });
 
-        dt.getStateTransitions().forEach(transition -> {
+        node.getStateTransitions().forEach(transition -> {
             transformTransition(nodeName, transition);
         });
     }
     
     public void transformPhysicalSegmentDependencies(List<PhysicalSegment> physicalSegments) {
-        // TODO really? doesn't this mean the parent will be transformed twice?
-        DeploymentTarget dt;
-        if(node instanceof DeploymentTarget)
-            dt = (DeploymentTarget) node;
-        else
-            dt = node.getParent();
-        var nodeName = dt.getNameProperty().getValue();
-
+        var nodeName = node.getNameProperty().getValue();
         var parentNode = this.node.getParent();
+
         if(parentNode != null) {
             var downPlace = this.getDownStatePlace();
             var parentDownPlace = SPNPUtils.getDownPlace(physicalSegments, parentNode);

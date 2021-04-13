@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
+import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.places.Place;
@@ -96,9 +97,9 @@ public class SPNPUtils {
         return null;
     }
     
-    public static StandardPlace getDownPlace(List<PhysicalSegment> physicalSegments, Artifact artifact) {
+    public static StandardPlace getDownPlace(List<PhysicalSegment> physicalSegments, DeploymentTarget targetNode) {
         for(var physicalSegment : physicalSegments) {
-            if(physicalSegment.getNode() == artifact) {
+            if(physicalSegment.getNode() == targetNode) {
                 var downStatePlace = physicalSegment.getDownStatePlace();
                 if(downStatePlace != null)
                     return downStatePlace;

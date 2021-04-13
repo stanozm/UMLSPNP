@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.transformations;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
+import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.transformators.spnp.*;
 import cz.muni.fi.spnp.core.transformators.spnp.code.SPNPCode;
@@ -89,9 +90,11 @@ public class Transformator {
         // Physical segments
         var elements = DeploymentDiagram.getElementContainer();
         elements.getNodes().values().forEach(node -> {
-            var physicalSegment = new PhysicalSegment(petriNet, node);
-            physicalSegment.transform();
-            physicalSegments.add(physicalSegment);
+            if(node instanceof DeploymentTarget) {
+                var physicalSegment = new PhysicalSegment(petriNet, (DeploymentTarget) node);
+                physicalSegment.transform();
+                physicalSegments.add(physicalSegment);
+            }
         });
 
         // Physical segment dependency transformations
