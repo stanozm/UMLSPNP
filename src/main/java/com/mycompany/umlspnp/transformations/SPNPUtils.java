@@ -10,6 +10,8 @@ import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.places.Place;
+import cz.muni.fi.spnp.core.models.places.StandardPlace;
+import java.util.List;
 import java.util.Set;
 import javafx.util.Pair;
 
@@ -89,6 +91,17 @@ public class SPNPUtils {
             var connected = pair.getValue().getConnectedNodesShallow();
             if(pair.getValue() == secondArtifact || isNodeInConnectedNodes(secondArtifact, connected)) {
                 return pair.getKey();
+            }
+        }
+        return null;
+    }
+    
+    public static StandardPlace getDownPlace(List<PhysicalSegment> physicalSegments, Artifact artifact) {
+        for(var physicalSegment : physicalSegments) {
+            if(physicalSegment.getNode() == artifact) {
+                var downStatePlace = physicalSegment.getDownStatePlace();
+                if(downStatePlace != null)
+                    return downStatePlace;
             }
         }
         return null;

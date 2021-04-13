@@ -165,40 +165,32 @@ public class CommunicationSegment extends Segment {
         petriNet.addFunction(guard);
         flushTransition.setGuardFunction(guard);
     }
-    
+
     private String createGuardBody(Artifact artifact) {
-        for(var physicalSegment : physicalSegments) {
-            if(physicalSegment.getNode() == artifact) {
-                var statePlaces = physicalSegment.getStatePlaces();
-                for(var state : statePlaces.keySet()) {
-                    if(state.isStateDOWN()){
-                        var place = statePlaces.get(state);
-                        return String.format("return mark(\"%s\");", place.getName());
-                    }
-                }
-            }
-        }
+        var downPlace = SPNPUtils.getDownPlace(physicalSegments, artifact);
+        if(downPlace != null)
+            return String.format("return mark(\"%s\");", downPlace.getName());
         return "return 0";
     }
 
     private Pair<ImmediateTransition, StandardPlace> transformFailHW(Artifact artifact, String communicationLinkName) {
         String failHWPlaceName;
         String failHWTransitionName;
-        String guardNamePrefix;
+        String guardNameFormatString;
         if(artifact == communicationLink.getFirst()){
             failHWPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "HWf_st");
             failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HWf_st");
-            guardNamePrefix = "guard_%s_HW_fail_first";
+            guardNameFormatString = "guard_%s_HW_fail_first";
         }
         else {
             failHWPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "HWf_nd");
             failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HWf_nd");
-            guardNamePrefix = "guard_%s_HW_fail_second";
+            guardNameFormatString = "guard_%s_HW_fail_second";
         }
         var failHWPlace = new StandardPlace(SPNPUtils.placeCounter++, failHWPlaceName);
         petriNet.addPlace(failHWPlace);
 
-        var guardName = SPNPUtils.createFunctionName(String.format(guardNamePrefix, SPNPUtils.prepareName(communicationLinkName, 15)));
+        var guardName = SPNPUtils.createFunctionName(String.format(guardNameFormatString, SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, createGuardBody(artifact), Integer.class);
 
         var failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, guard, new ConstantTransitionProbability(1.0));

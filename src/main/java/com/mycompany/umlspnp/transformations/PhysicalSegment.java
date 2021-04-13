@@ -12,10 +12,15 @@ import com.mycompany.umlspnp.models.deploymentdiagram.StateTransition;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
+import cz.muni.fi.spnp.core.models.functions.FunctionType;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
+import cz.muni.fi.spnp.core.models.transitions.ImmediateTransition;
 import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
+import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
+import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -38,6 +43,15 @@ public class PhysicalSegment extends Segment {
     
     public Map<State, StandardPlace> getStatePlaces() {
         return statePlaces;
+    }
+    
+    public StandardPlace getDownStatePlace() {
+        for(var state : statePlaces.keySet()) {
+            if(state.isStateDOWN()){
+                return statePlaces.get(state);
+            }
+        }
+        return null;
     }
 
     private void transformState(String nodeName, State state) {
@@ -79,7 +93,24 @@ public class PhysicalSegment extends Segment {
         // TODO when properly specified
     }
     
+    private void transformParentFail(String nodeName, StandardPlace place, StandardPlace downStatePlace, StandardPlace parentDownStatePlace) {
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_parent_down", SPNPUtils.prepareName(nodeName, 15)));
+        String guardBody = String.format("return mark(\"%s\");", parentDownStatePlace.getName());
+        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
+
+        var transitionName = SPNPUtils.createTransitionName(nodeName, "parent");
+        var parentFailTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, transitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(parentFailTransition);
+
+        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, downStatePlace, parentFailTransition);
+        petriNet.addArc(outputArc);
+
+        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, place, parentFailTransition);
+        petriNet.addArc(flushInputArc);
+    }
+    
     public void transform() {
+        // TODO really? doesn't this mean the parent will be transformed twice?
         DeploymentTarget dt;
         if(node instanceof DeploymentTarget)
             dt = (DeploymentTarget) node;
@@ -94,5 +125,27 @@ public class PhysicalSegment extends Segment {
         dt.getStateTransitions().forEach(transition -> {
             transformTransition(nodeName, transition);
         });
+    }
+    
+    public void transformPhysicalSegmentDependencies(List<PhysicalSegment> physicalSegments) {
+        // TODO really? doesn't this mean the parent will be transformed twice?
+        DeploymentTarget dt;
+        if(node instanceof DeploymentTarget)
+            dt = (DeploymentTarget) node;
+        else
+            dt = node.getParent();
+        var nodeName = dt.getNameProperty().getValue();
+
+        var parentNode = this.node.getParent();
+        if(parentNode != null) {
+            var downPlace = this.getDownStatePlace();
+            var parentDownPlace = SPNPUtils.getDownPlace(physicalSegments, parentNode);
+            if(downPlace != null && parentDownPlace != null) {
+                statePlaces.forEach((state, place) -> {
+                    if(!state.isStateDOWN())
+                        transformParentFail(nodeName, place, downPlace, parentDownPlace);
+                });
+            }
+        }
     }
 }
