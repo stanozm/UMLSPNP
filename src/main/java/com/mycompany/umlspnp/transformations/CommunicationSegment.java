@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.transformations;
 
+import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
@@ -21,14 +22,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javafx.util.Pair;
 
 /**
  *
  * @author 10ondr
  */
 public class CommunicationSegment extends Segment {
-    private final ServiceCallNode treeRoot;
     protected UsageSegment usageSegment = null;
+    protected List<PhysicalSegment> physicalSegments = null;
+
+    protected final ServiceCallNode treeRoot;
     protected final CommunicationLink communicationLink;
     
     protected List<ServiceCall> topLevelServiceCalls = new ArrayList<>();
@@ -39,8 +43,11 @@ public class CommunicationSegment extends Segment {
     protected TimedTransition endTransition = null;
     protected StandardPlace endPlace = null;
 
-    protected ImmediateTransition failHWTransition = null;
-    protected StandardPlace failHWPlace = null;
+    protected ImmediateTransition failHWTransitionFirst = null;
+    protected StandardPlace failHWPlaceFirst = null;
+
+    protected ImmediateTransition failHWTransitionSecond = null;
+    protected StandardPlace failHWPlaceSecond = null;
     
     protected Map<TimedTransition, StandardPlace> failTypes = new HashMap<>();
 
@@ -66,11 +73,7 @@ public class CommunicationSegment extends Segment {
     public StandardPlace getEndPlace() {
         return endPlace;
     }
-    
-    public void setUsageSegment(UsageSegment usageSegment) {
-        this.usageSegment = usageSegment;
-    }
-    
+
     private void resolveTopLevelServiceCalls(ServiceCallNode node) {
         var message = node.getMessage();
         if(message != null) {
@@ -116,7 +119,8 @@ public class CommunicationSegment extends Segment {
         failTypes.values().forEach(failTypePlace -> {
             guardBody.append(String.format(" || mark(\"%s\")", failTypePlace.getName()));
         });
-        guardBody.append(String.format(" || mark(\"%s\"));", failHWPlace.getName()));
+        guardBody.append(String.format(" || mark(\"%s\")", failHWPlaceFirst.getName()));
+        guardBody.append(String.format(" || mark(\"%s\"));", failHWPlaceSecond.getName()));
 
         var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_comm_start", SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
@@ -148,11 +152,12 @@ public class CommunicationSegment extends Segment {
             guardBody.append(String.format("(%s) && ", getTopLevelServicePlacesString()));
         }
 
-        guardBody.append(String.format("(mark(\"%s\") || ", endPlace.getName()));
+        guardBody.append(String.format("(mark(\"%s\")", endPlace.getName()));
         failTypes.values().forEach(failTypePlace -> {
-            guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
+            guardBody.append(String.format(" || mark(\"%s\")", failTypePlace.getName()));
         });
-        guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
+        guardBody.append(String.format(" || mark(\"%s\")", failHWPlaceFirst.getName()));
+        guardBody.append(String.format(" || mark(\"%s\"));", failHWPlaceSecond.getName()));
 
         var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_comm_flush", SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
@@ -160,19 +165,43 @@ public class CommunicationSegment extends Segment {
         petriNet.addFunction(guard);
         flushTransition.setGuardFunction(guard);
     }
+    
+    private String createGuardBody(Artifact artifact) {
+        for(var physicalSegment : physicalSegments) {
+            if(physicalSegment.getNode() == artifact) {
+                var statePlaces = physicalSegment.getStatePlaces();
+                for(var state : statePlaces.keySet()) {
+                    if(state.isStateDOWN()){
+                        var place = statePlaces.get(state);
+                        return String.format("return mark(\"%s\");", place.getName());
+                    }
+                }
+            }
+        }
+        return "return 0";
+    }
 
-    private void transformFailHW(String communicationLinkName) {
-        var failHWPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "HW_fail");
-        failHWPlace = new StandardPlace(SPNPUtils.placeCounter++, failHWPlaceName);
+    private Pair<ImmediateTransition, StandardPlace> transformFailHW(Artifact artifact, String communicationLinkName) {
+        String failHWPlaceName;
+        String failHWTransitionName;
+        String guardNamePrefix;
+        if(artifact == communicationLink.getFirst()){
+            failHWPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "HWf_st");
+            failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HWf_st");
+            guardNamePrefix = "guard_%s_HW_fail_first";
+        }
+        else {
+            failHWPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "HWf_nd");
+            failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HWf_nd");
+            guardNamePrefix = "guard_%s_HW_fail_second";
+        }
+        var failHWPlace = new StandardPlace(SPNPUtils.placeCounter++, failHWPlaceName);
         petriNet.addPlace(failHWPlace);
 
-        // TODO HW fail guard
-        var failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HW_fail");
-        var guardBody = new StringBuilder();
-        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_HW_fail", SPNPUtils.prepareName(communicationLinkName, 15)));
-        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
+        var guardName = SPNPUtils.createFunctionName(String.format(guardNamePrefix, SPNPUtils.prepareName(communicationLinkName, 15)));
+        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, createGuardBody(artifact), Integer.class);
 
-        failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        var failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(failHWTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failHWTransition);
@@ -183,6 +212,8 @@ public class CommunicationSegment extends Segment {
 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failHWPlace, flushTransition);
         petriNet.addArc(flushInputArc);
+        
+        return new Pair<>(failHWTransition, failHWPlace);
     }
     
     private ServiceCall findTopLevelServiceCall(HighLevelSegment segment, Message message) {
@@ -215,13 +246,13 @@ public class CommunicationSegment extends Segment {
             else
                 rate = 1.0 / (messageSize / transferRate);
 
-//            if(!distributionValues.isEmpty())
-//                distributionValues.append(" + ");
+            if(!distributionValues.isEmpty())
+                distributionValues.append(" + ");
             distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServiceCall.getPlace().getName(), rate));
         });
 
-//        if(distributionValues.isEmpty())
-//            distributionValues.append("0");
+        if(distributionValues.isEmpty())
+            distributionValues.append("0");
         
         String distributionFunctionBody = String.format("return %s;", distributionValues.toString());
         FunctionSPNP<Double> distributionFunction = new FunctionSPNP<>(distributionFunctionName, FunctionType.Distribution, distributionFunctionBody, Double.class);
@@ -274,12 +305,12 @@ public class CommunicationSegment extends Segment {
     }
     
     private String getCommunicationLinkNameSPNP() {
-        var firstNodeName = communicationLink.getFirst().getNameProperty().getValue();
-        var secondNodeName = communicationLink.getSecond().getNameProperty().getValue();
-        return SPNPUtils.getCombinedName(firstNodeName, secondNodeName);
+        return SPNPUtils.prepareName(communicationLink.getLinkType().nameProperty().getValue(), 8);
     }
 
-    public void transform() {
+    public void transformUsageSegmentDependencies(UsageSegment usageSegment) {
+        this.usageSegment = usageSegment;
+        
         String communicationLinkName = getCommunicationLinkNameSPNP();
 
         this.resolveTopLevelServiceCalls(treeRoot);
@@ -292,25 +323,35 @@ public class CommunicationSegment extends Segment {
 
         // Flush transition
         transformFlushTransition(communicationLinkName);
-        
-        // HW fail place and transition
-        transformFailHW(communicationLinkName);
 
         // Fail type places and transitions
         communicationLink.getLinkFailures().forEach(failType -> {
             transformFailType(failType.nameProperty().getValue(), failType.rateProperty().getValue());
         });
 
+        // End transition
+        transformEndTransition(communicationLinkName);
+    }
+    
+    public void transformPhysicalSegmentDependencies(List<PhysicalSegment> physicalSegments) {
+        this.physicalSegments = physicalSegments;
+
+        String communicationLinkName = getCommunicationLinkNameSPNP();
+
+        // HW fail place and transition
+        var firstPair = transformFailHW(this.communicationLink.getFirst(), communicationLinkName);
+        failHWPlaceFirst = firstPair.getValue();
+        failHWTransitionFirst = firstPair.getKey();
+        
+        // HW fail place and transition
+        var secondPair = transformFailHW(this.communicationLink.getSecond(), communicationLinkName);
+        failHWPlaceSecond = secondPair.getValue();
+        failHWTransitionSecond = secondPair.getKey();
+
         // Initial transition guard function
         createInitialTransitionGuard(communicationLinkName);
         
         // Flush transition guard function
         createFlushTransitionGuard(communicationLinkName);
-        
-        // End place
-        // NOTE: trnasformed alredy in constructor due to Service Segment cyclic dependency
-        
-        // End transition
-        transformEndTransition(communicationLinkName);
     }
 }

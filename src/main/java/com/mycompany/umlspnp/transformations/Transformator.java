@@ -105,8 +105,8 @@ public class Transformator {
 
         // Communictaion segment finish Usage Segment dependent transformations
         communicationSegments.forEach(communicationSegment -> {
-            communicationSegment.setUsageSegment(usageSegment);
-            communicationSegment.transform();
+            communicationSegment.transformUsageSegmentDependencies(usageSegment);
+            communicationSegment.transformPhysicalSegmentDependencies(physicalSegments);
         });
     }
 

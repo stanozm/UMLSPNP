@@ -31,6 +31,14 @@ public class PhysicalSegment extends Segment {
         
         this.node = node;
     }
+    
+    public Artifact getNode() {
+        return node;
+    }
+    
+    public Map<State, StandardPlace> getStatePlaces() {
+        return statePlaces;
+    }
 
     private void transformState(String nodeName, State state) {
         var statePlaceName = SPNPUtils.createPlaceName(nodeName, state.nameProperty().getValue());
