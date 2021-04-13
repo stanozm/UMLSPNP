@@ -5,8 +5,6 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
-import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
@@ -44,11 +42,9 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
 
     
     public ServiceLeafSegment(PetriNet petriNet,
-                              DeploymentDiagram deploymentDiagram,
-                              SequenceDiagram sequenceDiagram,
                               List<CommunicationSegment> communicationSegments,
                               ServiceCall serviceCall) {
-        super(petriNet, deploymentDiagram, sequenceDiagram);
+        super(petriNet);
         
         this.communicationSegments = communicationSegments;
         this.serviceCall = serviceCall;

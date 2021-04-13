@@ -5,8 +5,6 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
-import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.functions.FunctionType;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
@@ -20,11 +18,9 @@ public class UsageSegment extends HighLevelSegment {
     private final ServiceCallNode treeRoot;
     
     public UsageSegment(PetriNet petriNet,
-                        DeploymentDiagram deploymentDiagram,
-                        SequenceDiagram sequenceDiagram,
                         ServiceCallNode treeRoot,
                         List<CommunicationSegment> communicationSegments) {
-        super(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, treeRoot);
+        super(petriNet, communicationSegments, treeRoot);
         
         this.treeRoot = treeRoot;
     }

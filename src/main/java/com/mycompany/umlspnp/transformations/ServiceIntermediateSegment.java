@@ -5,8 +5,6 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
-import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.functions.FunctionType;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
@@ -22,12 +20,10 @@ public class ServiceIntermediateSegment extends HighLevelSegment implements Serv
     private final ServiceCall serviceCall;
     
     public ServiceIntermediateSegment(PetriNet petriNet,
-                                      DeploymentDiagram deploymentDiagram,
-                                      SequenceDiagram sequenceDiagram,
                                       List<CommunicationSegment> communicationSegments,
                                       ServiceCallNode serviceCallNode,
                                       ServiceCall serviceCall) {
-        super(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCallNode);
+        super(petriNet, communicationSegments, serviceCallNode);
 
         this.serviceCallNode = serviceCallNode;
         this.serviceCall = serviceCall;

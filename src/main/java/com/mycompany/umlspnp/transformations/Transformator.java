@@ -78,31 +78,29 @@ public class Transformator {
     }
 
     public void transform() {
-        var deploymentDiagram = model.getDeploymentDiagram();
-        var sequenceDiagram = model.getSequenceDiagram();
-
         var treeRoot = serviceCallTree.getRoot();
         if(treeRoot == null) {
             System.err.println("Transformator error: Service call tree is empty (no highest lifeline activation found)");
             return;
         }
-        
+        var deploymentDiagram = model.getDeploymentDiagram();
+
         // Physical segments
         var elements = deploymentDiagram.getElementContainer();
         elements.getNodes().values().forEach(node -> {
-            var physicalSegment = new PhysicalSegment(petriNet, deploymentDiagram, sequenceDiagram, node);
+            var physicalSegment = new PhysicalSegment(petriNet, node);
             physicalSegment.transform();
             physicalSegments.add(physicalSegment);
         });
 
         // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
-            var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, treeRoot, communicationLink);
+            var communicationSegment = new CommunicationSegment(petriNet, treeRoot, communicationLink);
             communicationSegments.add(communicationSegment);
         });
 
         // Usage segment
-        usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram, treeRoot, communicationSegments);
+        usageSegment = new UsageSegment(petriNet, treeRoot, communicationSegments);
         usageSegment.transform();
 
         // Communictaion segment finish Usage Segment dependent transformations

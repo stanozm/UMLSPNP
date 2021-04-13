@@ -5,10 +5,6 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
-import com.mycompany.umlspnp.models.sequencediagram.Activation;
-import com.mycompany.umlspnp.models.sequencediagram.Message;
-import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
@@ -39,11 +35,9 @@ public class HighLevelSegment extends Segment {
     protected final List<ServiceSegment> serviceSegments = new ArrayList<>();
     
     public HighLevelSegment(PetriNet petriNet,
-                            DeploymentDiagram deploymentDiagram,
-                            SequenceDiagram sequenceDiagram,
                             List<CommunicationSegment> communicationSegments,
                             ServiceCallNode treeNode) {
-        super(petriNet, deploymentDiagram, sequenceDiagram);
+        super(petriNet);
 
         this.communicationSegments = communicationSegments;
         this.treeNode = treeNode;
@@ -53,11 +47,11 @@ public class HighLevelSegment extends Segment {
         ServiceSegment serviceSegment;
 
         if(serviceCallNode.isLeaf()) {
-            serviceSegment = new ServiceLeafSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCall);
+            serviceSegment = new ServiceLeafSegment(petriNet, communicationSegments, serviceCall);
             serviceSegment.transform();
         }
         else{
-            serviceSegment = new ServiceIntermediateSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCallNode, serviceCall);
+            serviceSegment = new ServiceIntermediateSegment(petriNet, communicationSegments, serviceCallNode, serviceCall);
             serviceSegment.transform();
         }
         return serviceSegment;

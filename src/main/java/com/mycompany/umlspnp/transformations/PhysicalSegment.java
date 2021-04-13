@@ -6,11 +6,9 @@
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.deploymentdiagram.State;
 import com.mycompany.umlspnp.models.deploymentdiagram.StateTransition;
-import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
@@ -28,8 +26,8 @@ public class PhysicalSegment extends Segment {
     protected final Artifact node;
     protected Map<State, StandardPlace> statePlaces = new HashMap<>();
 
-    public PhysicalSegment(PetriNet petriNet, DeploymentDiagram deploymentDiagram, SequenceDiagram sequenceDiagram, Artifact node) {
-        super(petriNet, deploymentDiagram, sequenceDiagram);
+    public PhysicalSegment(PetriNet petriNet, Artifact node) {
+        super(petriNet);
         
         this.node = node;
     }

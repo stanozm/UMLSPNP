@@ -6,9 +6,7 @@
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
-import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
@@ -49,11 +47,9 @@ public class CommunicationSegment extends Segment {
     protected ImmediateTransition flushTransition = null;
 
     public CommunicationSegment(PetriNet petriNet,
-                                DeploymentDiagram deploymentDiagram,
-                                SequenceDiagram sequenceDiagram,
                                 ServiceCallNode treeRoot,
                                 CommunicationLink communicationLink) {
-        super(petriNet, deploymentDiagram, sequenceDiagram);
+        super(petriNet);
 
         this.treeRoot = treeRoot;
         this.communicationLink = communicationLink;
@@ -88,15 +84,6 @@ public class CommunicationSegment extends Segment {
         node.getChildren().forEach(child -> {
             resolveTopLevelServiceCalls(child);
         });
-        
-//        sequenceDiagram.getSortedMessages().forEach(message -> {
-//            var messageCommunicationLink = SPNPUtils.getMessageCommunicationLink(message);
-//            if(communicationLink == messageCommunicationLink) {
-//                var topLevelServiceCall = findTopLevelServiceCall(usageSegment, message);
-//                if(topLevelServiceCall != null)
-//                    topLevelServiceCalls.add(topLevelServiceCall);
-//            }
-//        });
     }
 
     private void transformInitialTransition(String communicationLinkName) {
