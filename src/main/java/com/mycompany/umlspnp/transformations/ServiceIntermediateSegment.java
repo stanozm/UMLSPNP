@@ -18,20 +18,22 @@ import java.util.List;
  * @author 10ondr
  */
 public class ServiceIntermediateSegment extends HighLevelSegment implements ServiceSegment {
+    private final ServiceCallNode serviceCallNode;
     private final ServiceCall serviceCall;
     
     public ServiceIntermediateSegment(PetriNet petriNet,
                                       DeploymentDiagram deploymentDiagram,
                                       SequenceDiagram sequenceDiagram,
                                       List<CommunicationSegment> communicationSegments,
+                                      ServiceCallNode serviceCallNode,
                                       ServiceCall serviceCall) {
-        super(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCall.getMessage().getTo());
+        super(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCallNode);
 
+        this.serviceCallNode = serviceCallNode;
         this.serviceCall = serviceCall;
     }
 
-    private void transformInitialTransitionGuard() {
-        var lifelineName = activation.getLifeline().nameProperty().getValue();
+    private void transformInitialTransitionGuard(String lifelineName) {
         var startGuardBody = new StringBuilder();
 
         var tokenStrings = getTokenStrings();
@@ -49,8 +51,8 @@ public class ServiceIntermediateSegment extends HighLevelSegment implements Serv
             });
             startGuardBody.append(");");
         }
-        FunctionSPNP<Integer> startGuard = new FunctionSPNP<>("guard_" + SPNPUtils.prepareName(lifelineName, 15) + "_usage_start", FunctionType.Guard,
-                                                              startGuardBody.toString(), Integer.class);
+        String guardName = SPNPUtils.createFunctionName(String.format("guard_%s_usage_start", SPNPUtils.prepareName(lifelineName, 15)));
+        FunctionSPNP<Integer> startGuard = new FunctionSPNP<>(guardName, FunctionType.Guard, startGuardBody.toString(), Integer.class);
         petriNet.addFunction(startGuard);
         initialTransition.setGuardFunction(startGuard);
     }
@@ -58,8 +60,10 @@ public class ServiceIntermediateSegment extends HighLevelSegment implements Serv
     @Override
     public void transform() {
         super.transform();
-
-        transformInitialTransitionGuard();
+        
+        var lifelineName = serviceCallNode.getArtifact().getNameProperty().getValue();
+        
+        transformInitialTransitionGuard(lifelineName);
     }
 
     @Override

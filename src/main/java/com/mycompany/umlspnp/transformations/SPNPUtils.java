@@ -18,9 +18,12 @@ import javafx.util.Pair;
  * @author 10ondr
  */
 public class SPNPUtils {
+    public static final int SPNP_MAX_NAME_LENGTH = 20;
     public static int placeCounter = 0;
     public static int transitionCounter = 0;
     public static int arcCounter = 0;
+
+    public static int functionCounter = 0;
 
     public static Place getPlaceFromNet(PetriNet petriNet, String placeName) {
         for(Place place : petriNet.getPlaces()) {
@@ -40,11 +43,25 @@ public class SPNPUtils {
     }
     
     public static String createPlaceName(String nodeName, String placeName) {
-        return "PL_" + prepareName(nodeName, 8) + "_" + prepareName(placeName, 8);
+        var suffix = String.format("_%d", placeCounter);
+        var prefix = String.format("%s_%s", prepareName(nodeName, 8), prepareName(placeName, 8));
+        return String.format("%s%s", prepareName(prefix, SPNP_MAX_NAME_LENGTH - suffix.length()), suffix);
     }
     
     public static String createTransitionName(String nodeName, String transitionName) {
-        return "TR_" + prepareName(nodeName, 8) + "_" + prepareName(transitionName, 8);
+        var suffix = String.format("_%d", transitionCounter);
+        var prefix = String.format("%s_%s", prepareName(nodeName, 8), prepareName(transitionName, 8));
+        return String.format("%s%s", prepareName(prefix, SPNP_MAX_NAME_LENGTH - suffix.length()), suffix);
+    } 
+
+    public static String createTransitionName(String transitionName) {
+        var suffix = String.format("_%d", transitionCounter);
+        var prefix = prepareName(transitionName, SPNP_MAX_NAME_LENGTH - suffix.length());
+        return String.format("%s%s", prefix, suffix);
+    }
+    
+    public static String createFunctionName(String functionName) {
+        return String.format("_%d_%s", functionCounter++, functionName);
     }
 
     public static String getCombinedName(String firstNodeName, String secondNodeName) {

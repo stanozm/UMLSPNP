@@ -82,7 +82,7 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         }
         guardBody.append(";");
         
-        var startGuardName = "guard_" + SPNPUtils.prepareName(messageName, 15) + "_leaf_start";
+        var startGuardName = SPNPUtils.createFunctionName(String.format("guard_%s_leaf_start", SPNPUtils.prepareName(messageName, 15)));
         FunctionSPNP<Integer> startGuard = new FunctionSPNP<>(startGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 
         petriNet.addFunction(startGuard);
@@ -115,7 +115,7 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         });
         guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
 
-        var flushGuardName = "guard_" + SPNPUtils.prepareName(messageName, 15) + "_leaf_flush";
+        var flushGuardName = SPNPUtils.createFunctionName(String.format("guard_%s_leaf_flush", SPNPUtils.prepareName(messageName, 15)));
         FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 
         petriNet.addFunction(flushGuard);

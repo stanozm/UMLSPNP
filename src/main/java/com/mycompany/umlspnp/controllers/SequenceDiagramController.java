@@ -59,6 +59,127 @@ public class SequenceDiagramController {
         sequenceDiagramInit(this.model.getSequenceDiagram());
     }
     
+    /***  ONLY FOR TESTING  ***/
+    public void createSampleData() {
+        var deployment = model.getDeploymentDiagram();
+        var sequence = model.getSequenceDiagram();
+        var sequenceView = view.getSequenceDiagramView();
+        
+        var A = deployment.getDeploymentTarget(1);
+        var AA = deployment.getDeploymentTarget(2);
+        var AAA = deployment.getDeploymentTarget(3);
+        var B = deployment.getDeploymentTarget(4);
+        var BB = deployment.getDeploymentTarget(5);
+        var BBB = deployment.getDeploymentTarget(6);
+        
+        var lifelineA = sequence.createLifeline(A);
+        var lifelineAA = sequence.createLifeline(AA);
+        var lifelineAAA = sequence.createLifeline(AAA);
+        var lifelineB = sequence.createLifeline(B);
+        
+        var activationA = lifelineA.createActivation();
+        var activationAA = lifelineAA.createActivation();
+        var activationAAA = lifelineAAA.createActivation();
+        var activationB = lifelineB.createActivation();
+
+        // Sequence diagram for tree building algorithm
+        AA.getNameProperty().setValue("B");
+        AAA.getNameProperty().setValue("C");
+        B.getNameProperty().setValue("D");
+
+        var lifeA = lifelineA;
+        var lifeA_view = sequenceView.getLifelineView(lifeA.getObjectInfo().getID());
+
+        var lifeB = lifelineAA;
+        var lifeB_view = sequenceView.getLifelineView(lifeB.getObjectInfo().getID());
+        lifeB_view.setTranslateX(300);
+        
+        var lifeC = lifelineAAA;
+        var lifeC_view = sequenceView.getLifelineView(lifeC.getObjectInfo().getID());
+        lifeC_view.setTranslateX(600);
+        
+        var lifeD = lifelineB;
+        var lifeD_view = sequenceView.getLifelineView(lifeD.getObjectInfo().getID());
+        lifeD_view.setTranslateX(900);
+
+        
+        var aA = activationA;
+        var aA_view = sequenceView.getActivationView(aA.getObjectInfo().getID());
+        aA_view.changeDimensions(aA_view.getWidth(), 400);
+        
+        var ACTIVATION_BASE_Y = aA_view.getTranslateY();
+        
+        var aB = activationAA;
+        var aB_view = sequenceView.getActivationView(aB.getObjectInfo().getID());
+        aB_view.changeDimensions(aB_view.getWidth(), 400);
+        
+        var aC1 = activationAAA;
+        var aC1_view = sequenceView.getActivationView(aC1.getObjectInfo().getID());
+        aC1_view.changeDimensions(aC1_view.getWidth(), 150);
+        aC1_view.setTranslateY(aC1_view.getTranslateY() + 20);
+        
+        var aC2 = lifeC.createActivation();
+        var aC2_view = sequenceView.getActivationView(aC2.getObjectInfo().getID());
+        aC2_view.changeDimensions(aC2_view.getWidth(), 75);
+        aC2_view.setTranslateY(aC1_view.getTranslateY() + aC1_view.getHeight() + 40);
+        
+        var aD1 = activationB;
+        var aD1_view = sequenceView.getActivationView(aD1.getObjectInfo().getID());
+        aD1_view.changeDimensions(aD1_view.getWidth(), 30);
+        aD1_view.setTranslateY(aD1_view.getTranslateY() + 40);
+        
+        var aD2 = lifeD.createActivation();
+        var aD2_view = sequenceView.getActivationView(aD2.getObjectInfo().getID());
+        aD2_view.changeDimensions(aD2_view.getWidth(), 75);
+        aD2_view.setTranslateY(aD1_view.getTranslateY() + aD1_view.getHeight() + 40);
+        
+        var aD3 = lifeD.createActivation();
+        var aD3_view = sequenceView.getActivationView(aD3.getObjectInfo().getID());
+        aD3_view.changeDimensions(aD3_view.getWidth(), 30);
+        aD3_view.setTranslateY(aD2_view.getTranslateY() + aD2_view.getHeight() + 30);
+        
+        
+        var mess1 = sequence.createMessage(activationA, activationAA);
+        
+        var mess1_1 = sequence.createMessage(activationAA, activationAAA);
+        var mess1_1_view = sequenceView.getConnection(mess1_1.getObjectInfo().getID());
+        mess1_1_view.getSourceConnectionSlot().setTranslateY(aC1_view.getTranslateY() - ACTIVATION_BASE_Y);
+        
+        var mess1_1_1 = sequence.createMessage(activationAAA, activationB);
+        var mess1_1_1_view = sequenceView.getConnection(mess1_1_1.getObjectInfo().getID());
+        mess1_1_1_view.getSourceConnectionSlot().setTranslateY((aD1_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC1_view.getTranslateY() - ACTIVATION_BASE_Y));
+        
+        var mess1_1_2 = sequence.createMessage(aC1, aC1);
+        var mess1_1_2_view = sequenceView.getConnection(mess1_1_2.getObjectInfo().getID());
+        mess1_1_2_view.getDestinationConnectionSlot().setTranslateY(mess1_1_1_view.getSourceConnectionSlot().getTranslateY() + 30);
+
+        var mess1_1_3 = sequence.createMessage(aC1, aD2);
+        var mess1_1_3_view = sequenceView.getConnection(mess1_1_3.getObjectInfo().getID());
+        mess1_1_3_view.getSourceConnectionSlot().setTranslateY((aD2_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC1_view.getTranslateY() - ACTIVATION_BASE_Y));
+
+        var mess1_1_3_1 = sequence.createMessage(aD2, aD2);
+        var mess1_1_3_1_view = sequenceView.getConnection(mess1_1_3_1.getObjectInfo().getID());
+        mess1_1_3_1_view.getDestinationConnectionSlot().setTranslateY(20);
+
+        var mess1_2 = sequence.createMessage(aB, aC2);
+        var mess1_2_view = sequenceView.getConnection(mess1_2.getObjectInfo().getID());
+        mess1_2_view.getSourceConnectionSlot().setTranslateY((aC2_view.getTranslateY() - ACTIVATION_BASE_Y));
+        
+        var mess1_2_1 = sequence.createMessage(aC2, aD3);
+        var mess1_2_1_view = sequenceView.getConnection(mess1_2_1.getObjectInfo().getID());
+        mess1_2_1_view.getSourceConnectionSlot().setTranslateY((aD3_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC2_view.getTranslateY() - ACTIVATION_BASE_Y) + 10);
+        mess1_2_1_view.getDestinationConnectionSlot().setTranslateY(mess1_2_1_view.getSourceConnectionSlot().getTranslateY());
+        
+        var mess2 = sequence.createMessage(aA, aB);
+        var mess2_view = sequenceView.getConnection(mess2.getObjectInfo().getID());
+        mess2_view.getSourceConnectionSlot().setTranslateY((aA_view.getTranslateY() - ACTIVATION_BASE_Y) + (aA_view.getHeight()) - 40);
+        mess2_view.getDestinationConnectionSlot().setTranslateY(mess2_view.getSourceConnectionSlot().getTranslateY());
+
+        var mess2_1 = sequence.createMessage(aB, aB);
+        var mess2_1_view = sequenceView.getConnection(mess2_1.getObjectInfo().getID());
+        mess2_1_view.getDestinationConnectionSlot().setTranslateY(mess2_view.getSourceConnectionSlot().getTranslateY() + 15);
+    }
+
     private void sequenceDiagramInit(SequenceDiagram sequence){
         var sequenceDiagramView = view.getSequenceDiagramView();
         
@@ -417,23 +538,20 @@ public class SequenceDiagramController {
         });
 
         // Needs to be run async, otherwise it breaks because of not fully initialized view
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                message.orderProperty().addListener(new ChangeListener() {
-                    @Override
-                    public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                        if(message.isLeafMessage()) {
-                            messageView.getExecutionTimeAnnotation().setDisplayed(true);
-                            messageView.getFailureTypesAnnotation().setDisplayed(true);
-                        }
-                        else {
-                            messageView.getExecutionTimeAnnotation().setDisplayed(false);
-                            messageView.getFailureTypesAnnotation().setDisplayed(false);
-                        }
+        Platform.runLater(() -> {
+            message.orderProperty().addListener(new ChangeListener() {
+                @Override
+                public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                    if(message.isLeafMessage()) {
+                        messageView.getExecutionTimeAnnotation().setDisplayed(true);
+                        messageView.getFailureTypesAnnotation().setDisplayed(true);
                     }
-                });
-            }
+                    else {
+                        messageView.getExecutionTimeAnnotation().setDisplayed(false);
+                        messageView.getFailureTypesAnnotation().setDisplayed(false);
+                    }
+                }
+            });
         });
 
         messageView.nameProperty().bind(message.orderProperty().asString().concat(". ").concat(message.nameProperty()));

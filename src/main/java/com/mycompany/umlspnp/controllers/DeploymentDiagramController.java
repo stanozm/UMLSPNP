@@ -81,7 +81,7 @@ public class DeploymentDiagramController {
     }
     
     /***  ONLY FOR TESTING  ***/
-    public void createSampleNodes() {
+    public void createSampleData() {
         var deployment = model.getDeploymentDiagram();
         
         var A = deployment.createDeploymentTarget(null);
@@ -97,6 +97,8 @@ public class DeploymentDiagramController {
         BB.getNameProperty().setValue("BB");
         var BBB = deployment.createDeploymentTarget(BB);
         BBB.getNameProperty().setValue("BBB");
+        
+        deployment.createCommunicationLink(A, B);
     }
     
     

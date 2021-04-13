@@ -103,13 +103,20 @@ public class ConnectionView extends BasicElement {
     public void refreshLinePosition(){
         var line = arrow.getLine();
         
-        Point2D startPosition;
+
         Point2D endPosition = calculatePosition(diagramRoot, (Transform) destination.localToSceneTransformProperty().getValue());
+        if(endPosition == null)
+            return;
+
+        Point2D startPosition;
         if(sourceIsDestination)
             startPosition = new Point2D(endPosition.getX() + 70, endPosition.getY());
         else
             startPosition = calculatePosition(diagramRoot, (Transform) source.localToSceneTransformProperty().getValue());
         
+        if(startPosition == null)
+            return;
+
         double angle =  Utils.getAngle(startPosition, endPosition);
 
         // The line should start/end on the edge of the ConnectionSlot circle

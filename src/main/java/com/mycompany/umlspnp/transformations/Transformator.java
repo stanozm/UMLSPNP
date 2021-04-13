@@ -26,9 +26,11 @@ public class Transformator {
     private final SPNPOptions options;
     private final PetriNet petriNet;
 
-    private List<PhysicalSegment> physicalSegments = new ArrayList<>();
-    private List<CommunicationSegment> communicationSegments = new ArrayList<>();
+    private final List<PhysicalSegment> physicalSegments = new ArrayList<>();
+    private final List<CommunicationSegment> communicationSegments = new ArrayList<>();
     private UsageSegment usageSegment = null;
+
+    private final ServiceCallTree serviceCallTree;
 
     public Transformator(MainModel mainModel){
         this.model = mainModel;
@@ -37,6 +39,12 @@ public class Transformator {
         this.options = createOptions();
         this.petriNet = createPetriNet();
         this.transformator = new SPNPTransformator(code, options);
+        
+        this.serviceCallTree = new ServiceCallTree(mainModel.getSequenceDiagram());
+        
+        // TODO remove
+        System.err.println(String.format("Service Call Tree:%n"));
+        System.err.println(serviceCallTree);
     }
 
     protected final SPNPCode createCode() {
@@ -73,6 +81,12 @@ public class Transformator {
         var deploymentDiagram = model.getDeploymentDiagram();
         var sequenceDiagram = model.getSequenceDiagram();
 
+        var treeRoot = serviceCallTree.getRoot();
+        if(treeRoot == null) {
+            System.err.println("Transformator error: Service call tree is empty (no highest lifeline activation found)");
+            return;
+        }
+        
         // Physical segments
         var elements = deploymentDiagram.getElementContainer();
         elements.getNodes().values().forEach(node -> {
@@ -83,12 +97,12 @@ public class Transformator {
 
         // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
-            var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationLink);
+            var communicationSegment = new CommunicationSegment(petriNet, deploymentDiagram, sequenceDiagram, treeRoot, communicationLink);
             communicationSegments.add(communicationSegment);
         });
 
         // Usage segment
-        usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments);
+        usageSegment = new UsageSegment(petriNet, deploymentDiagram, sequenceDiagram, treeRoot, communicationSegments);
         usageSegment.transform();
 
         // Communictaion segment finish Usage Segment dependent transformations

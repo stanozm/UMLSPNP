@@ -29,6 +29,7 @@ import java.util.Map;
  * @author 10ondr
  */
 public class CommunicationSegment extends Segment {
+    private final ServiceCallNode treeRoot;
     protected UsageSegment usageSegment = null;
     protected final CommunicationLink communicationLink;
     
@@ -50,9 +51,11 @@ public class CommunicationSegment extends Segment {
     public CommunicationSegment(PetriNet petriNet,
                                 DeploymentDiagram deploymentDiagram,
                                 SequenceDiagram sequenceDiagram,
+                                ServiceCallNode treeRoot,
                                 CommunicationLink communicationLink) {
         super(petriNet, deploymentDiagram, sequenceDiagram);
 
+        this.treeRoot = treeRoot;
         this.communicationLink = communicationLink;
 
         String communicationLinkName = getCommunicationLinkNameSPNP();
@@ -72,15 +75,28 @@ public class CommunicationSegment extends Segment {
         this.usageSegment = usageSegment;
     }
     
-    private void resolveTopLevelServiceCalls() {
-        sequenceDiagram.getSortedMessages().forEach(message -> {
+    private void resolveTopLevelServiceCalls(ServiceCallNode node) {
+        var message = node.getMessage();
+        if(message != null) {
             var messageCommunicationLink = SPNPUtils.getMessageCommunicationLink(message);
-            if(communicationLink == messageCommunicationLink) {
+            if(communicationLink == messageCommunicationLink){
                 var topLevelServiceCall = findTopLevelServiceCall(usageSegment, message);
                 if(topLevelServiceCall != null)
                     topLevelServiceCalls.add(topLevelServiceCall);
             }
+        }
+        node.getChildren().forEach(child -> {
+            resolveTopLevelServiceCalls(child);
         });
+        
+//        sequenceDiagram.getSortedMessages().forEach(message -> {
+//            var messageCommunicationLink = SPNPUtils.getMessageCommunicationLink(message);
+//            if(communicationLink == messageCommunicationLink) {
+//                var topLevelServiceCall = findTopLevelServiceCall(usageSegment, message);
+//                if(topLevelServiceCall != null)
+//                    topLevelServiceCalls.add(topLevelServiceCall);
+//            }
+//        });
     }
 
     private void transformInitialTransition(String communicationLinkName) {
@@ -115,7 +131,7 @@ public class CommunicationSegment extends Segment {
         });
         guardBody.append(String.format(" || mark(\"%s\"));", failHWPlace.getName()));
 
-        var guardName = "guard_" + SPNPUtils.prepareName(communicationLinkName, 15) + "_comm_start";
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_comm_start", SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 
         petriNet.addFunction(guard);
@@ -151,7 +167,7 @@ public class CommunicationSegment extends Segment {
         });
         guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
 
-        var guardName = "guard_" + SPNPUtils.prepareName(communicationLinkName, 15) + "_comm_flush";
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_comm_flush", SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 
         petriNet.addFunction(guard);
@@ -166,7 +182,7 @@ public class CommunicationSegment extends Segment {
         // TODO HW fail guard
         var failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HW_fail");
         var guardBody = new StringBuilder();
-        var guardName = "guard_" + SPNPUtils.prepareName(communicationLinkName, 15) + "_HW_fail";
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_HW_fail", SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 
         failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
@@ -196,7 +212,7 @@ public class CommunicationSegment extends Segment {
     }
     
     private FunctionSPNP<Double> createDistributionFunction(String communicationLinkName) {
-        var distributionFunctionName = "comm_trans_dist_func__" + SPNPUtils.prepareName(communicationLinkName, 15);
+        var distributionFunctionName = SPNPUtils.createFunctionName(String.format("comm_trans_dist_func__%s", SPNPUtils.prepareName(communicationLinkName, 15)));
         var distributionValues = new StringBuilder();
 
         double transferRate = communicationLink.getLinkType().rateProperty().getValue();
@@ -212,13 +228,13 @@ public class CommunicationSegment extends Segment {
             else
                 rate = 1.0 / (messageSize / transferRate);
 
-            if(!distributionValues.isEmpty())
-                distributionValues.append(" + ");
+//            if(!distributionValues.isEmpty())
+//                distributionValues.append(" + ");
             distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServiceCall.getPlace().getName(), rate));
         });
 
-        if(distributionValues.isEmpty())
-            distributionValues.append("0");
+//        if(distributionValues.isEmpty())
+//            distributionValues.append("0");
         
         String distributionFunctionBody = String.format("return %s;", distributionValues.toString());
         FunctionSPNP<Double> distributionFunction = new FunctionSPNP<>(distributionFunctionName, FunctionType.Distribution, distributionFunctionBody, Double.class);
@@ -279,7 +295,7 @@ public class CommunicationSegment extends Segment {
     public void transform() {
         String communicationLinkName = getCommunicationLinkNameSPNP();
 
-        this.resolveTopLevelServiceCalls();
+        this.resolveTopLevelServiceCalls(treeRoot);
 
         // Initial transition
         transformInitialTransition(communicationLinkName);

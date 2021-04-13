@@ -176,15 +176,17 @@ public class Message extends Connection<Activation> {
         return operationTypeList;
     }
 
-    public final boolean isLeafMessage() {
-        var sendingActivation = this.getFrom();
-        var receivingActivation = this.getTo();
+    public final boolean isSelfMessage() {
+        return this.getFrom() == this.getTo();
+    }
 
-        if(sendingActivation == receivingActivation)
+    public final boolean isLeafMessage() {
+        if(this.isSelfMessage())
             return true;
-        
+
+        var receivingActivation = this.getTo();
         for(var message : receivingActivation.getMessages()) {
-            if(message.getFrom() == receivingActivation && message.getTo() != receivingActivation && message.getOrder() >= this.getOrder())
+            if((message.isSelfMessage() || message.getTo() != receivingActivation) && message.getOrder() >= this.getOrder())
                 return false;
         }
         return true;

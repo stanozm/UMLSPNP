@@ -30,7 +30,8 @@ public class App extends Application {
         sequenceDiagramController = new SequenceDiagramController(mainModel, mainView);
         
         // TODO: remove
-        deploymentDiagramController.createSampleNodes();
+        deploymentDiagramController.createSampleData();
+        sequenceDiagramController.createSampleData();
 
         var scene = new Scene(deploymentDiagramController.getView(), 640, 480);
         stage.setTitle("UML2SPNP");

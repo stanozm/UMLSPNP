@@ -30,7 +30,7 @@ import javafx.util.Pair;
 public class HighLevelSegment extends Segment {
     private final List<CommunicationSegment> communicationSegments;
     
-    protected final Activation activation;
+    protected final ServiceCallNode treeNode;
     
     protected final Map<ImmediateTransition, ServiceCall> serviceCalls = new HashMap<>();
     protected ImmediateTransition initialTransition = null;
@@ -42,27 +42,29 @@ public class HighLevelSegment extends Segment {
                             DeploymentDiagram deploymentDiagram,
                             SequenceDiagram sequenceDiagram,
                             List<CommunicationSegment> communicationSegments,
-                            Activation activation) {
+                            ServiceCallNode treeNode) {
         super(petriNet, deploymentDiagram, sequenceDiagram);
-        
+
         this.communicationSegments = communicationSegments;
-        this.activation = activation;
+        this.treeNode = treeNode;
     }
 
-    public ServiceSegment transformServiceCall(ServiceCall serviceCall) {
-        ServiceSegment serviceSegment = null;
-        if(serviceCall.getMessage().isLeafMessage()) {
+    public ServiceSegment transformServiceCall(ServiceCall serviceCall, ServiceCallNode serviceCallNode) {
+        ServiceSegment serviceSegment;
+
+        if(serviceCallNode.isLeaf()) {
             serviceSegment = new ServiceLeafSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCall);
             serviceSegment.transform();
         }
         else{
-            serviceSegment = new ServiceIntermediateSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCall);
+            serviceSegment = new ServiceIntermediateSegment(petriNet, deploymentDiagram, sequenceDiagram, communicationSegments, serviceCallNode, serviceCall);
             serviceSegment.transform();
         }
         return serviceSegment;
     }
 
-    private Pair<ImmediateTransition, ServiceCall> transformHighLevelMessage(ImmediateTransition previousTransition, Message message) {
+    private Pair<ImmediateTransition, ServiceCall> transformHighLevelMessage(ImmediateTransition previousTransition, ServiceCallNode serviceCallNode) {
+        var message = serviceCallNode.getMessage();
         var messageName = message.nameProperty().getValue();
 
         var serviceCallName = SPNPUtils.createPlaceName(messageName, "call");
@@ -73,14 +75,14 @@ public class HighLevelSegment extends Segment {
         petriNet.addArc(outputArc);
 
         var serviceCall = new ServiceCall(message, serviceCallPlace);
-        var serviceSegment = transformServiceCall(serviceCall);
+        var serviceSegment = transformServiceCall(serviceCall, serviceCallNode);
         serviceSegments.add(serviceSegment);
 
-        var guardName = "guard_" + SPNPUtils.prepareName(messageName, 15) + "_ok";
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_ok", SPNPUtils.prepareName(messageName, 15)));
         var guardBody = String.format("return mark(\"%s\");", serviceSegment.getEndPlace().getName());
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
 
-        var serviceCallTransitionName = SPNPUtils.prepareName("TR_" + messageName, 15);
+        var serviceCallTransitionName = SPNPUtils.createTransitionName(messageName);
         var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(serviceCallTransition);
 
@@ -122,10 +124,6 @@ public class HighLevelSegment extends Segment {
         });
         return tokenStrings;
     }
-
-    public Activation getActivation() {
-        return activation;
-    }
     
     public Map<ImmediateTransition, ServiceCall> getServiceCalls() {
         return serviceCalls;
@@ -144,21 +142,17 @@ public class HighLevelSegment extends Segment {
     }
 
     public void transform() {
-        var lifeline = activation.getLifeline();
-        var lifelineName = lifeline.nameProperty().getValue();
-        var sortedMessages = activation.getSortedMessages();
-        
+        var lifelineName = treeNode.getArtifact().getNameProperty().getValue();
+
         // Initial transition
         transformInitialTransition(lifelineName);
 
         // Individual service calls
         var previousTransition = initialTransition;
-        for(var message : sortedMessages){
-            if(lifeline == message.getFrom().getLifeline()) { // Only outgoing messages
-                var transitionPlacePair = transformHighLevelMessage(previousTransition, message);
-                serviceCalls.put(transitionPlacePair.getKey(), transitionPlacePair.getValue());
-                previousTransition = transitionPlacePair.getKey();
-            }
+        for(var serviceCallNode : treeNode.getChildren()) {
+            var transitionPlacePair = transformHighLevelMessage(previousTransition, serviceCallNode);
+            serviceCalls.put(transitionPlacePair.getKey(), transitionPlacePair.getValue());
+            previousTransition = transitionPlacePair.getKey();
         }
 
         // End place and transition
