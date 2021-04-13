@@ -25,6 +25,8 @@ public class StateTransition extends ObservableString {
     private final StringProperty transitionName = new SimpleStringProperty();
     private final DoubleProperty rate = new SimpleDoubleProperty();
     
+    private boolean isLocked = false; // Locked transition can not be edited or removed
+    
     public StateTransition(State from, State to, String name, double rate){
         this.from = new SimpleObjectProperty(from);
         this.to = new SimpleObjectProperty(to);
@@ -44,6 +46,14 @@ public class StateTransition extends ObservableString {
         this.to.addListener(stringChangeListener);
     }
 
+    public void setLocked(boolean value) {
+        this.isLocked = value;
+    }
+    
+    public boolean isLocked() {
+        return this.isLocked;
+    }
+    
     public State getStateFrom(){
         return this.from.getValue();
     }

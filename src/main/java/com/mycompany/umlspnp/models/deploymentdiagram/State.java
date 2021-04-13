@@ -21,6 +21,9 @@ public class State extends ObservableString{
     private final StringProperty stateName = new SimpleStringProperty();
     private final BooleanProperty isDefaultState = new SimpleBooleanProperty();
     
+    private boolean isLocked = false; // Locked state can not be edited or removed
+    private boolean isStateDOWN = false;
+    
     public State(String name){
         this.setName(name);
 
@@ -37,7 +40,23 @@ public class State extends ObservableString{
         isDefaultState.addListener(stringChangeListener);
     }
 
-    public void setName(String name){
+    public void setLocked(boolean value) {
+        this.isLocked = value;
+    }
+    
+    public boolean isLocked() {
+        return this.isLocked;
+    }
+
+    public void setStateDOWN(boolean value) {
+        this.isStateDOWN = value;
+    }
+    
+    public boolean isStateDOWN() {
+        return this.isStateDOWN;
+    }
+    
+    public final void setName(String name){
         this.stateName.setValue(name);
     }
     
@@ -45,7 +64,7 @@ public class State extends ObservableString{
         return this.stateName;
     }
     
-    public void setDefault(boolean value){
+    public final void setDefault(boolean value){
         this.isDefaultState.setValue(value);
     }
     

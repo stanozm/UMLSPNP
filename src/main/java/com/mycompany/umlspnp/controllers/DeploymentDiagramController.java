@@ -54,17 +54,9 @@ public class DeploymentDiagramController {
     
     /***  ONLY FOR TESTING  ***/
     private void createSampleAnnotations(DeploymentTarget DT){
-        State stateUp = new State("UP");
-        State stateDown = new State("DOWN");
-        DT.addState(stateUp);
-        DT.addState(stateDown);
-        DT.setDefaultState(stateUp);
-       
-        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.5);
-        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.2);
-        DT.addStateTransition(upDownTransition);
-        DT.addStateTransition(downUpTransition);
-        
+        var stateUp = DT.getStates().get(0);
+        var stateDown = DT.getStates().get(1);
+
         StateOperation operationsUp = new StateOperation(stateUp);
         operationsUp.addOperationEntry("ReadDeviceData", null);
         operationsUp.addOperationEntry("WriteDeviceData", null);
@@ -227,8 +219,28 @@ public class DeploymentDiagramController {
         DTView.getStatesAnnotation().setItems(DT.getStates());
         DTView.getStateTransitionsAnnotation().setItems(DT.getStateTransitions());
         DTView.getStateOperationsAnnotation().setItems(DT.getStateOperations());
+        
+        State stateUp = new State("UP");
+//        stateUp.setLocked(true);
+
+        State stateDown = new State("DOWN");
+        stateDown.setLocked(true);
+        stateDown.setStateDOWN(true);
+
+        DT.addState(stateUp);
+        DT.addState(stateDown);
+        DT.setDefaultState(stateUp);
+
+        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.01);
+//        upDownTransition.setLocked(true);
+        
+        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.5);
+//        downUpTransition.setLocked(true);
+        
+        DT.addStateTransition(upDownTransition);
+        DT.addStateTransition(downUpTransition);
     }
-    
+
     private void communicationLinkAnnotationsInit(CommunicationLink communicationLink){
         var deploymentDiagramView = view.getDeploymentDiagramView();
         var connectionView = deploymentDiagramView.getConnection(communicationLink.getObjectInfo().getID());
@@ -525,12 +537,18 @@ public class DeploymentDiagramController {
             public void handle(ActionEvent e) {
                 var selected = (State) statesView.getSelected();
                 if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) statesView.getScene().getWindow(), 
-                            "Confirm", "The state \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        states.remove(selected);
+                    if(selected.isLocked()) {
+                        var alert = Utils.createAlertDialog("Operation error", "Operation not allowed!", "This state can not be removed.");
+                        alert.showAndWait();
+                    }
+                    else{
+                        BooleanModalWindow confirmWindow = 
+                                new BooleanModalWindow((Stage) statesView.getScene().getWindow(), 
+                                "Confirm", "The state \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
+                        confirmWindow.showAndWait();
+                        if(confirmWindow.getResult()){
+                            states.remove(selected);
+                        }
                     }
                 }
             }
@@ -541,11 +559,17 @@ public class DeploymentDiagramController {
             public void handle(ActionEvent e) {
                 var selected = (State) statesView.getSelected();
                 if(selected != null){
-                    StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
-                            "Rename state", "Type new name of the state \"" + Utils.shortenString(selected.toString(), 50) + "\":", selected.nameProperty());
-                    renameWindow.setStringRestrictionRegex(Utils.SPNP_NAME_RESTRICTION_REGEX);
-                    renameWindow.showAndWait();
-                    statesView.refresh();
+                    if(selected.isLocked()) {
+                        var alert = Utils.createAlertDialog("Operation error", "Operation not allowed!", "This state can not be edited.");
+                        alert.showAndWait();
+                    }
+                    else {
+                        StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
+                                "Rename state", "Type new name of the state \"" + Utils.shortenString(selected.toString(), 50) + "\":", selected.nameProperty());
+                        renameWindow.setStringRestrictionRegex(Utils.SPNP_NAME_RESTRICTION_REGEX);
+                        renameWindow.showAndWait();
+                        statesView.refresh();
+                    }
                 }
             }
         };
@@ -590,12 +614,18 @@ public class DeploymentDiagramController {
             public void handle(ActionEvent e) {
                 var selected = (StateTransition) transitionsView.getSelected();
                 if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) transitionsView.getScene().getWindow(), 
-                            "Confirm", "The transition \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        transitions.remove(selected);
+                    if(selected.isLocked()) {
+                        var alert = Utils.createAlertDialog("Operation error", "Operation not allowed!", "This transition can not be removed.");
+                        alert.showAndWait();
+                    }
+                    else {
+                        BooleanModalWindow confirmWindow = 
+                                new BooleanModalWindow((Stage) transitionsView.getScene().getWindow(), 
+                                "Confirm", "The transition \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
+                        confirmWindow.showAndWait();
+                        if(confirmWindow.getResult()){
+                            transitions.remove(selected);
+                        }
                     }
                 }
             }

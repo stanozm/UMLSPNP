@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.views.common.layouts;
 
+import com.mycompany.umlspnp.common.Utils;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
@@ -66,16 +67,9 @@ public class ModalWindow extends Stage{
    public Stage getParentStage(){
        return this.parentStage;
    }
-   
-    protected void showAlert(String title, String header, String errorMessage){
-        Alert errorDialog = new Alert(Alert.AlertType.ERROR);
-        errorDialog.setTitle(title);
-        errorDialog.setHeaderText(header);
-        errorDialog.setContentText(errorMessage);
-        errorDialog.showAndWait();
-    }
-    
+
     protected void showAlert(String errorMessage){
-        showAlert("Input error", "Incorrect values!", errorMessage);
+        var alert = Utils.createAlertDialog("Input error", "Incorrect values!", errorMessage);
+        alert.showAndWait();
     }
 }

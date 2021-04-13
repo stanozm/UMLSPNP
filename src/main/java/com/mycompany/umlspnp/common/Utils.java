@@ -9,6 +9,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.text.Text;
 
 /**
@@ -56,5 +57,13 @@ public class Utils {
         if(angleRadians < 0)
             return angleRadians + Math.PI * 2;
         return angleRadians;
+    }
+    
+    public static Alert createAlertDialog(String title, String header, String errorMessage){
+        Alert errorDialog = new Alert(Alert.AlertType.ERROR);
+        errorDialog.setTitle(title);
+        errorDialog.setHeaderText(header);
+        errorDialog.setContentText(errorMessage);
+        return errorDialog;
     }
 }
