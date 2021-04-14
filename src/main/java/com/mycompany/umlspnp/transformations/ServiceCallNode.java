@@ -22,6 +22,8 @@ public class ServiceCallNode {
     private ServiceCallNode parent = null;
     private final List<ServiceCallNode> children = new ArrayList<>();
 
+    private boolean processed = false;
+    
     public ServiceCallNode(Artifact artifact) {
         this.artifact = artifact;
         this.message = null;
@@ -30,6 +32,10 @@ public class ServiceCallNode {
     public ServiceCallNode(Artifact artifact, Message message) {
         this.artifact = artifact;
         this.message = message;
+    }
+    
+    public ServiceCallNode getParent() {
+        return parent;
     }
 
     public void setParent(ServiceCallNode newParent) {
@@ -59,7 +65,7 @@ public class ServiceCallNode {
     public boolean isLeaf() {
         return children.isEmpty();
     }
-
+    
     public int getOrder() {
         return this.order;
     }
@@ -75,7 +81,15 @@ public class ServiceCallNode {
     public Artifact getArtifact() {
         return artifact;
     }
-    
+
+    public boolean isProcessed() {
+        return processed;
+    }
+
+    public void setProcessed(boolean value) {
+        this.processed = value;
+    }
+
     public String getCompoundOrderString() {
         var result = new StringBuilder();
         ServiceCallNode node = this;

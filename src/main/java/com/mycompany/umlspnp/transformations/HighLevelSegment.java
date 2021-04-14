@@ -24,6 +24,7 @@ import javafx.util.Pair;
  * @author 10ondr
  */
 public class HighLevelSegment extends Segment {
+    private final List<PhysicalSegment> physicalSegments;
     private final List<CommunicationSegment> communicationSegments;
     
     protected final ServiceCallNode treeNode;
@@ -35,10 +36,12 @@ public class HighLevelSegment extends Segment {
     protected final List<ServiceSegment> serviceSegments = new ArrayList<>();
     
     public HighLevelSegment(PetriNet petriNet,
+                            List<PhysicalSegment> physicalSegments,
                             List<CommunicationSegment> communicationSegments,
                             ServiceCallNode treeNode) {
         super(petriNet);
 
+        this.physicalSegments = physicalSegments;
         this.communicationSegments = communicationSegments;
         this.treeNode = treeNode;
     }
@@ -47,11 +50,11 @@ public class HighLevelSegment extends Segment {
         ServiceSegment serviceSegment;
 
         if(serviceCallNode.isLeaf()) {
-            serviceSegment = new ServiceLeafSegment(petriNet, communicationSegments, serviceCall);
+            serviceSegment = new ServiceLeafSegment(petriNet, physicalSegments, communicationSegments, serviceCallNode, serviceCall);
             serviceSegment.transform();
         }
         else{
-            serviceSegment = new ServiceIntermediateSegment(petriNet, communicationSegments, serviceCallNode, serviceCall);
+            serviceSegment = new ServiceIntermediateSegment(petriNet, physicalSegments, communicationSegments, serviceCallNode, serviceCall);
             serviceSegment.transform();
         }
         return serviceSegment;

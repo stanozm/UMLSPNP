@@ -20,10 +20,11 @@ public class ServiceIntermediateSegment extends HighLevelSegment implements Serv
     private final ServiceCall serviceCall;
     
     public ServiceIntermediateSegment(PetriNet petriNet,
+                                      List<PhysicalSegment> physicalSegments,
                                       List<CommunicationSegment> communicationSegments,
                                       ServiceCallNode serviceCallNode,
                                       ServiceCall serviceCall) {
-        super(petriNet, communicationSegments, serviceCallNode);
+        super(petriNet, physicalSegments, communicationSegments, serviceCallNode);
 
         this.serviceCallNode = serviceCallNode;
         this.serviceCall = serviceCall;

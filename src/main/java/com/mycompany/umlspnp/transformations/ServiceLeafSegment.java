@@ -5,6 +5,8 @@
  */
 package com.mycompany.umlspnp.transformations;
 
+import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
@@ -16,15 +18,19 @@ import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionP
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
  * @author 10ondr
  */
 public class ServiceLeafSegment extends Segment implements ServiceSegment {
+    private final List<PhysicalSegment> physicalSegments;
     private final List<CommunicationSegment> communicationSegments;
+    private final ServiceCallNode serviceCallNode;
     private final ServiceCall serviceCall;
     
     protected ImmediateTransition initialTransition = null;
@@ -42,11 +48,15 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
 
     
     public ServiceLeafSegment(PetriNet petriNet,
+                              List<PhysicalSegment> physicalSegments,
                               List<CommunicationSegment> communicationSegments,
+                              ServiceCallNode serviceCallNode,
                               ServiceCall serviceCall) {
         super(petriNet);
         
+        this.physicalSegments = physicalSegments;
         this.communicationSegments = communicationSegments;
+        this.serviceCallNode = serviceCallNode;
         this.serviceCall = serviceCall;
     }
     
@@ -138,15 +148,66 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         petriNet.addArc(flushInputArc);
     }
     
+    private DeploymentTarget getDeploymentTargetFromArtifact(Artifact artifact) {
+        if(artifact == null)
+            return null;
+        if(artifact instanceof DeploymentTarget)
+            return (DeploymentTarget) artifact;
+        return artifact.getParent();
+    }
+    
+    private Set<DeploymentTarget> getUnprocessedNodes() {
+        var result = new HashSet<DeploymentTarget>();
+        result.add(getDeploymentTargetFromArtifact(serviceCallNode.getArtifact()));
+
+        var node = serviceCallNode;
+        while(!node.isRoot() && !node.isProcessed()) {
+            node.setProcessed(true);
+            node = node.getParent();
+            result.add(getDeploymentTargetFromArtifact(node.getArtifact()));
+        }
+        return result;
+    }
+    
+    private FunctionSPNP<Integer> createHWFailGuard(String messageName) {
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_HW_fail", SPNPUtils.prepareName(messageName, 15)));
+        var guardBody = new StringBuilder("return ");
+
+        var hwFailNodes = getUnprocessedNodes();
+
+        // TODO remove prints when not needed
+        System.err.println(String.format("%s  %s  checked nodes:", serviceCallNode.getCompoundOrderString(), messageName));
+        hwFailNodes.forEach(node -> { System.err.println(node.getNameProperty().getValue());});
+
+
+        boolean first = true;
+        for(var node : hwFailNodes) {               
+            var downPlace = SPNPUtils.getDownPlace(physicalSegments, node);
+            if(first)
+                first = false;
+            else
+                guardBody.append(" || ");
+            guardBody.append(String.format("mark(\"%s\")", downPlace.getName()));
+        }
+
+        if(hwFailNodes.size() < 1)
+            guardBody.append("0");
+        guardBody.append(";");
+        return new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
+    }
+    
     private void transformFailHW(String messageName) {
         var failHWPlaceName = SPNPUtils.createPlaceName(messageName, "HW_fail");
         failHWPlace = new StandardPlace(SPNPUtils.placeCounter++, failHWPlaceName);
         petriNet.addPlace(failHWPlace);
 
         var failHWTransitionName = SPNPUtils.createTransitionName(messageName, "HW_fail");
-        failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++,
+                                                   failHWTransitionName,
+                                                   1, 
+                                                   createHWFailGuard(messageName),
+                                                   new ConstantTransitionProbability(1.0));
         petriNet.addTransition(failHWTransition);
-        // TODO HW fail guard when specified properly
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failHWTransition);
         petriNet.addArc(inputArc);

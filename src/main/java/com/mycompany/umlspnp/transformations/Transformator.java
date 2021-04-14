@@ -109,7 +109,7 @@ public class Transformator {
         });
 
         // Usage segment
-        usageSegment = new UsageSegment(petriNet, treeRoot, communicationSegments);
+        usageSegment = new UsageSegment(petriNet, treeRoot, physicalSegments, communicationSegments);
         usageSegment.transform();
 
         // Communictaion segment finish Usage Segment dependent transformations

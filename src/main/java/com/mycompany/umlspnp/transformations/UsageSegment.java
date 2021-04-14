@@ -19,8 +19,9 @@ public class UsageSegment extends HighLevelSegment {
     
     public UsageSegment(PetriNet petriNet,
                         ServiceCallNode treeRoot,
+                        List<PhysicalSegment> physicalSegments,
                         List<CommunicationSegment> communicationSegments) {
-        super(petriNet, communicationSegments, treeRoot);
+        super(petriNet, physicalSegments, communicationSegments, treeRoot);
         
         this.treeRoot = treeRoot;
     }
