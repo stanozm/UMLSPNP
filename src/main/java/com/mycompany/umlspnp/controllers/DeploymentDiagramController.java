@@ -77,9 +77,25 @@ public class DeploymentDiagramController {
         var deployment = model.getDeploymentDiagram();
         
         var A = deployment.createDeploymentTarget(null);
+        var ST_A_1 = new State("ST_A_1");
+        A.addState(ST_A_1);
+        A.addState(new State("ST_A_2"));
+        A.addState(new State("ST_A_3"));
+        var ST_A_1_op = new StateOperation(ST_A_1);
+        A.addStateOperation(ST_A_1_op);
+        ST_A_1_op.addOperationEntry(new OperationEntry("A_OP_1", null));
         A.getNameProperty().setValue("A");
+        
         var AA = deployment.createDeploymentTarget(A);
         AA.getNameProperty().setValue("AA");
+        var ST_B_1 = new State("ST_B_1");
+        AA.addState(ST_B_1);
+        AA.addState(new State("ST_B_2"));
+        AA.addState(new State("ST_B_3"));
+        var ST_B_1_op = new StateOperation(ST_B_1);
+        AA.addStateOperation(ST_B_1_op);
+        ST_B_1_op.addOperationEntry(new OperationEntry("B_OP_1", null));
+        
         var AAA = deployment.createDeploymentTarget(AA);
         AAA.getNameProperty().setValue("AAA");
         

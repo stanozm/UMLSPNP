@@ -5,8 +5,11 @@
  */
 package com.mycompany.umlspnp.transformations;
 
+import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
+import com.mycompany.umlspnp.models.deploymentdiagram.State;
+import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
 import cz.muni.fi.spnp.core.models.arcs.StandardArc;
@@ -156,38 +159,81 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         return artifact.getParent();
     }
     
-    private Set<DeploymentTarget> getUnprocessedNodes() {
-        var result = new HashSet<DeploymentTarget>();
-        result.add(getDeploymentTargetFromArtifact(serviceCallNode.getArtifact()));
+    private Set<ServiceCallNode> getMarkedNodesInTree() {
+        var result = new HashSet<ServiceCallNode>();
+        result.add(serviceCallNode);
+        serviceCallNode.setMarkedForLabelCheck(true);
 
         var node = serviceCallNode;
         while(!node.isRoot() && !node.isProcessed()) {
             node.setProcessed(true);
             node = node.getParent();
-            result.add(getDeploymentTargetFromArtifact(node.getArtifact()));
+            node.setMarkedForLabelCheck(true);
+            result.add(node);
         }
+        if(node != serviceCallNode)
+            node.setMarkedForLabelCheck(false);
         return result;
+    }
+    
+    private boolean shouldGenerateLabelGuardCondition(DeploymentTarget dt, State state, OperationEntry operationType) {
+        if(state.isStateDOWN())
+            return false;
+
+        for(var stateOperation : dt.getStateOperations()) {
+            if(stateOperation.getState() == state) {
+                if(stateOperation.getOperationEntries().contains(operationType))
+                    return false;
+            }
+        }
+        return true;
+    }
+    
+    private String getMessageOperationTypesString(DeploymentTarget dt, Message message) {
+        var result = new StringBuilder();
+        if(message != null) {
+            var operationType = message.getOperationType();
+            
+            if(operationType != null) {
+                dt.getStates().forEach(state -> {
+                    if(shouldGenerateLabelGuardCondition(dt, state, operationType)) {
+                        var statePlace = SPNPUtils.getStatePlace(physicalSegments, dt, state);
+                        if(statePlace != null) {
+                            result.append(String.format(" || mark(\"%s\")", statePlace.getName()));
+                        }
+                    }
+                });
+            }
+        }
+        return result.toString();
     }
     
     private FunctionSPNP<Integer> createHWFailGuard(String messageName) {
         var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_HW_fail", SPNPUtils.prepareName(messageName, 15)));
         var guardBody = new StringBuilder("return ");
 
-        var hwFailNodes = getUnprocessedNodes();
+        var hwFailNodes = getMarkedNodesInTree();
 
         // TODO remove prints when not needed
         System.err.println(String.format("%s  %s  checked nodes:", serviceCallNode.getCompoundOrderString(), messageName));
-        hwFailNodes.forEach(node -> { System.err.println(node.getNameProperty().getValue());});
+        hwFailNodes.forEach(node -> { System.err.println(node.getArtifact().getNameProperty().getValue());});
 
-
-        boolean first = true;
-        for(var node : hwFailNodes) {               
-            var downPlace = SPNPUtils.getDownPlace(physicalSegments, node);
-            if(first)
-                first = false;
-            else
-                guardBody.append(" || ");
-            guardBody.append(String.format("mark(\"%s\")", downPlace.getName()));
+        var controlSet = new HashSet<DeploymentTarget>();
+        for(var treeNode : hwFailNodes) {
+            var dt = getDeploymentTargetFromArtifact(treeNode.getArtifact());
+            if(!controlSet.contains(dt)) {
+                var downPlace = SPNPUtils.getDownPlace(physicalSegments, dt);
+                if(!controlSet.isEmpty())
+                    guardBody.append(" || ");
+                guardBody.append(String.format("mark(\"%s\")", downPlace.getName()));
+            }
+            var message = treeNode.getMessage();
+            if(message != null && treeNode.isMarkedForLabelCheck()) {
+                guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getFirst().getLifeline().getArtifact()), message));
+                if(!message.isSelfMessage())
+                    guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getSecond().getLifeline().getArtifact()), message));
+            }
+            controlSet.add(dt);
         }
 
         if(hwFailNodes.size() < 1)

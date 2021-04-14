@@ -140,44 +140,54 @@ public class SequenceDiagramController {
         
         
         var mess1 = sequence.createMessage(activationA, activationAA);
+        mess1.nameProperty().setValue("1");
         
         var mess1_1 = sequence.createMessage(activationAA, activationAAA);
         var mess1_1_view = sequenceView.getConnection(mess1_1.getObjectInfo().getID());
         mess1_1_view.getSourceConnectionSlot().setTranslateY(aC1_view.getTranslateY() - ACTIVATION_BASE_Y);
+        mess1_1.nameProperty().setValue("11");
         
         var mess1_1_1 = sequence.createMessage(activationAAA, activationB);
         var mess1_1_1_view = sequenceView.getConnection(mess1_1_1.getObjectInfo().getID());
         mess1_1_1_view.getSourceConnectionSlot().setTranslateY((aD1_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC1_view.getTranslateY() - ACTIVATION_BASE_Y));
+        mess1_1_1.nameProperty().setValue("111");
         
         var mess1_1_2 = sequence.createMessage(aC1, aC1);
         var mess1_1_2_view = sequenceView.getConnection(mess1_1_2.getObjectInfo().getID());
         mess1_1_2_view.getDestinationConnectionSlot().setTranslateY(mess1_1_1_view.getSourceConnectionSlot().getTranslateY() + 30);
-
+        mess1_1_2.nameProperty().setValue("112");
+        
         var mess1_1_3 = sequence.createMessage(aC1, aD2);
         var mess1_1_3_view = sequenceView.getConnection(mess1_1_3.getObjectInfo().getID());
         mess1_1_3_view.getSourceConnectionSlot().setTranslateY((aD2_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC1_view.getTranslateY() - ACTIVATION_BASE_Y));
-
+        mess1_1_3.nameProperty().setValue("113");
+        
         var mess1_1_3_1 = sequence.createMessage(aD2, aD2);
         var mess1_1_3_1_view = sequenceView.getConnection(mess1_1_3_1.getObjectInfo().getID());
         mess1_1_3_1_view.getDestinationConnectionSlot().setTranslateY(20);
-
+        mess1_1_3_1.nameProperty().setValue("1131");
+        
         var mess1_2 = sequence.createMessage(aB, aC2);
         var mess1_2_view = sequenceView.getConnection(mess1_2.getObjectInfo().getID());
         mess1_2_view.getSourceConnectionSlot().setTranslateY((aC2_view.getTranslateY() - ACTIVATION_BASE_Y));
+        mess1_2.nameProperty().setValue("12");
         
         var mess1_2_1 = sequence.createMessage(aC2, aD3);
         var mess1_2_1_view = sequenceView.getConnection(mess1_2_1.getObjectInfo().getID());
         mess1_2_1_view.getSourceConnectionSlot().setTranslateY((aD3_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC2_view.getTranslateY() - ACTIVATION_BASE_Y) + 10);
         mess1_2_1_view.getDestinationConnectionSlot().setTranslateY(mess1_2_1_view.getSourceConnectionSlot().getTranslateY());
+        mess1_2_1.nameProperty().setValue("121");
         
         var mess2 = sequence.createMessage(aA, aB);
         var mess2_view = sequenceView.getConnection(mess2.getObjectInfo().getID());
         mess2_view.getSourceConnectionSlot().setTranslateY((aA_view.getTranslateY() - ACTIVATION_BASE_Y) + (aA_view.getHeight()) - 40);
         mess2_view.getDestinationConnectionSlot().setTranslateY(mess2_view.getSourceConnectionSlot().getTranslateY());
-
+        mess2.nameProperty().setValue("2");
+        
         var mess2_1 = sequence.createMessage(aB, aB);
         var mess2_1_view = sequenceView.getConnection(mess2_1.getObjectInfo().getID());
         mess2_1_view.getDestinationConnectionSlot().setTranslateY(mess2_view.getSourceConnectionSlot().getTranslateY() + 15);
+        mess2_1.nameProperty().setValue("21");
     }
 
     private void sequenceDiagramInit(SequenceDiagram sequence){

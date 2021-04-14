@@ -62,11 +62,11 @@ public class StateOperation extends ObservableString {
         return this.state.getValue();
     }
     
-    public ObjectProperty stateProperty(){
+    public ObjectProperty<State> stateProperty(){
         return this.state;
     }
     
-    public ObservableList getOperationEntries(){
+    public ObservableList<OperationEntry> getOperationEntries(){
         return this.operationEntries;
     } 
 

@@ -23,6 +23,7 @@ public class ServiceCallNode {
     private final List<ServiceCallNode> children = new ArrayList<>();
 
     private boolean processed = false;
+    private boolean markedForLabelCheck = false;
     
     public ServiceCallNode(Artifact artifact) {
         this.artifact = artifact;
@@ -88,6 +89,14 @@ public class ServiceCallNode {
 
     public void setProcessed(boolean value) {
         this.processed = value;
+    }
+
+    public boolean isMarkedForLabelCheck() {
+        return markedForLabelCheck;
+    }
+
+    public void setMarkedForLabelCheck(boolean value) {
+        this.markedForLabelCheck = value;
     }
 
     public String getCompoundOrderString() {

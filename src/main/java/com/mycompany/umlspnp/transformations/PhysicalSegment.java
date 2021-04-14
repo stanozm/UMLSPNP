@@ -44,6 +44,15 @@ public class PhysicalSegment extends Segment {
         return statePlaces;
     }
     
+    public StandardPlace getStatePlace(State wantedState) {
+        for(var state : statePlaces.keySet()) {
+            if(state == wantedState){
+                return statePlaces.get(state);
+            }
+        }
+        return null;
+    }
+
     public StandardPlace getDownStatePlace() {
         for(var state : statePlaces.keySet()) {
             if(state.isStateDOWN()){

@@ -8,6 +8,7 @@ package com.mycompany.umlspnp.transformations;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
+import com.mycompany.umlspnp.models.deploymentdiagram.State;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.places.Place;
@@ -96,14 +97,22 @@ public class SPNPUtils {
         }
         return null;
     }
-    
-    public static StandardPlace getDownPlace(List<PhysicalSegment> physicalSegments, DeploymentTarget targetNode) {
+
+    public static StandardPlace getStatePlace(List<PhysicalSegment> physicalSegments, DeploymentTarget targetNode, State state) {
         for(var physicalSegment : physicalSegments) {
             if(physicalSegment.getNode() == targetNode) {
-                var downStatePlace = physicalSegment.getDownStatePlace();
-                if(downStatePlace != null)
-                    return downStatePlace;
+                var statePlace = physicalSegment.getStatePlace(state);
+                if(statePlace != null)
+                    return statePlace;
             }
+        }
+        return null;
+    }
+
+    public static StandardPlace getDownPlace(List<PhysicalSegment> physicalSegments, DeploymentTarget targetNode) {
+        for(var state : targetNode.getStates()) {
+            if(state.isStateDOWN())
+                return getStatePlace(physicalSegments, targetNode, state);
         }
         return null;
     }

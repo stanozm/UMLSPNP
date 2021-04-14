@@ -73,6 +73,7 @@ public class Message extends Connection<Activation> {
                                                item -> item.equals(operationType));
 
         setExecutionTime(1);
+        setOperationType(null);
     }
     
     public Activation getFrom() {
@@ -159,13 +160,13 @@ public class Message extends Connection<Activation> {
         return getFirst().getLifeline().getOperationEntries();
     }
     
-    public void setOperationType(OperationEntry newEntry){
+    public final void setOperationType(OperationEntry newEntry){
         operationType = newEntry;
         operationTypeList.setPredicate(item -> item.equals(operationType)); // Refresh filtered list
     }
     
     public OperationEntry getOperationType(){
-        return operationTypeList.get(0);
+        return operationType;
     }
     
     public void removeOperationType(){
