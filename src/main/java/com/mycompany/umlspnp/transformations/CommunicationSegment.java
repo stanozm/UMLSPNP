@@ -202,7 +202,10 @@ public class CommunicationSegment extends Segment {
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, failHWPlace, failHWTransition);
         petriNet.addArc(outputArc);
 
-        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failHWPlace, flushTransition);
+        var cardinalityFunctionName = SPNPUtils.createFunctionName(String.format("cardinality_%s_HWf_nd_to_flush", SPNPUtils.prepareName(communicationLinkName, 15)));
+        var cardinalityFunctionBody = String.format("return mark(\"%s\");", failHWPlace.getName());
+        var cardinalityFunction = new FunctionSPNP<Integer>(cardinalityFunctionName, FunctionType.ArcCardinality, cardinalityFunctionBody, Integer.class);
+        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failHWPlace, flushTransition, cardinalityFunction);
         petriNet.addArc(flushInputArc);
         
         return new Pair<>(failHWTransition, failHWPlace);
@@ -270,7 +273,10 @@ public class CommunicationSegment extends Segment {
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, endPlace, endTransition);
         petriNet.addArc(outputArc);
 
-        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, endPlace, flushTransition);
+        var cardinalityFunctionName = SPNPUtils.createFunctionName(String.format("cardinality_%s_trEnd_to_flush", SPNPUtils.prepareName(communicationLinkName, 15)));
+        var cardinalityFunctionBody = String.format("return mark(\"%s\");", endPlace.getName());
+        var cardinalityFunction = new FunctionSPNP<Integer>(cardinalityFunctionName, FunctionType.ArcCardinality, cardinalityFunctionBody, Integer.class);
+        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, endPlace, flushTransition, cardinalityFunction);
         petriNet.addArc(flushInputArc);
     }
     
@@ -292,7 +298,10 @@ public class CommunicationSegment extends Segment {
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, failTypePlace, failTypeTransition);
         petriNet.addArc(outputArc);
         
-        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failTypePlace, flushTransition);
+        var cardinalityFunctionName = SPNPUtils.createFunctionName(String.format("cardinality_%s_trFail_to_flush", SPNPUtils.prepareName(failTypeName, 15)));
+        var cardinalityFunctionBody = String.format("return mark(\"%s\");", failTypePlace.getName());
+        var cardinalityFunction = new FunctionSPNP<Integer>(cardinalityFunctionName, FunctionType.ArcCardinality, cardinalityFunctionBody, Integer.class);
+        var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failTypePlace, flushTransition, cardinalityFunction);
         petriNet.addArc(flushInputArc);
     }
     
