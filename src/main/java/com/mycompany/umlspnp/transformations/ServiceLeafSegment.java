@@ -232,9 +232,10 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
             }
             var message = treeNode.getMessage();
             if(message != null && treeNode.isMarkedForLabelCheck()) {
-                guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getFirst().getLifeline().getArtifact()), message));
-                if(!message.isSelfMessage())
-                    guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getSecond().getLifeline().getArtifact()), message));
+                  // NOTE: Uncomment if both sending and receiving nodes should be checked for operation types
+//                guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getFrom().getLifeline().getArtifact()), message));
+//                if(!message.isSelfMessage())
+                guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getTo().getLifeline().getArtifact()), message));
             }
             controlSet.add(dt);
         }
