@@ -130,7 +130,6 @@ public class DeploymentTarget extends Artifact {
 
     public void addInnerNode(Artifact newInnerNode){
         innerNodes.put(newInnerNode.getObjectInfo().getID(), newInnerNode);
-        newInnerNode.getObjectInfo().setTier(this.getObjectInfo().getTier() + 1);
     }
     
     public void removeConnection(CommunicationLink removedConnection){

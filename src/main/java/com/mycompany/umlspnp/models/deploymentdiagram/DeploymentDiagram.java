@@ -127,8 +127,7 @@ public class DeploymentDiagram {
         addNode(newDT);
         if(parent != null)
             parent.addInnerNode(newDT);
-        else
-            newDT.getObjectInfo().setTier(0);
+
         return newDT;
     }
     
