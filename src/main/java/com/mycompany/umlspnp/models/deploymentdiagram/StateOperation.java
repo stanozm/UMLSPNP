@@ -7,6 +7,7 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.common.OperationEntry;
 import com.mycompany.umlspnp.models.common.ObservableString;
+import com.mycompany.umlspnp.models.common.OperationType;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -90,7 +91,7 @@ public class StateOperation extends ObservableString {
         this.updateStringRepresentation();
     }
     
-    public void addOperationEntry(String name, Integer processingSpeed){
-        addOperationEntry(new OperationEntry(name, processingSpeed));
+    public void addOperationEntry(OperationType operationType, Integer processingSpeed){
+        addOperationEntry(new OperationEntry(operationType, processingSpeed));
     }
 }

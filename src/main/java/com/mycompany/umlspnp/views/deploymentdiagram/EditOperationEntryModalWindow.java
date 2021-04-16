@@ -5,9 +5,9 @@
  */
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
-import com.mycompany.umlspnp.views.common.layouts.ModalWindow;
 import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
@@ -21,19 +21,19 @@ import javafx.stage.Stage;
  *
  * @author 10ondr
  */
-public class EditOperationEntryModalWindow extends ModalWindow{
-    private final TextField nameInput;
+public class EditOperationEntryModalWindow extends SelectOperationEntryModalWindow{
     private final TextField speedInput;
     private final CheckBox speedEnabled = new CheckBox();
-    
-    private final Button confirmButton;
-    
-    public EditOperationEntryModalWindow(Stage parentStage, String windowName, StringProperty entryName, IntegerProperty entryProcessingSpeed) {
-        super(parentStage, windowName);
-        
-        var nameLabel = new Label("Operation name:");
-        this.nameInput = new TextField(entryName.getValue());
-        
+
+    public EditOperationEntryModalWindow(Stage parentStage,
+                                         String windowName,
+                                         ObservableList allOperationTypes,
+                                         ObjectProperty operationType,
+                                         IntegerProperty entryProcessingSpeed) {
+        super(parentStage, windowName, allOperationTypes, false);
+
+        operationEntry.getSelectionModel().select(operationType.getValue());
+
         var speedEnabledLabel = new Label("Limit processing speed");
   
         var speedLabel = new Label("Processing speed [%]:");
@@ -50,20 +50,19 @@ public class EditOperationEntryModalWindow extends ModalWindow{
         speedLabel.visibleProperty().bind(this.speedEnabled.selectedProperty());
         this.speedInput.visibleProperty().bind(this.speedEnabled.selectedProperty());
 
-        this.confirmButton = new Button("Confirm");
         this.confirmButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
                 if(checkInputs()){
-                    entryName.setValue(nameInput.textProperty().getValue());
+                    operationType.setValue(operationEntry.getSelectionModel().getSelectedItem());
                     entryProcessingSpeed.setValue(parseProcessingSpeedValue());
                     close();
                 }
             }
         });
-        
+
         this.rootGrid.add(nameLabel, 0, 0);
-        this.rootGrid.add(nameInput, 1, 0);
+        this.rootGrid.add(operationEntry, 1, 0);
         
         this.rootGrid.add(speedEnabled, 0, 1);
         this.rootGrid.add(speedEnabledLabel, 1, 1);
@@ -80,11 +79,12 @@ public class EditOperationEntryModalWindow extends ModalWindow{
         return -1;
     }
 
-    private boolean checkInputs(){
+    @Override
+    protected boolean checkInputs(){
+        if(super.checkInputs() == false)
+            return false;
+
         String errorMessage = null;
-        if(this.nameInput.textProperty().isEmpty().getValue()){
-            errorMessage = "Name is not valid.";
-        }
         
         try {
             int speedLimit = parseProcessingSpeedValue();

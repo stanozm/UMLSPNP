@@ -7,7 +7,7 @@ package com.mycompany.umlspnp.models.deploymentdiagram;
 
 
 import com.mycompany.umlspnp.common.ElementContainer;
-import com.mycompany.umlspnp.models.common.NamedNode;
+import com.mycompany.umlspnp.models.common.OperationType;
 import java.util.Collection;
 import java.util.HashSet;
 import javafx.beans.Observable;
@@ -25,7 +25,19 @@ public class DeploymentDiagram {
     private static final ElementContainer<Artifact, CommunicationLink> allElements = new ElementContainer<>();
     private final ObservableList<LinkType> allLinkTypes;
     
+    private final ObservableList<OperationType> operationTypes;
+    
     public DeploymentDiagram(){
+	operationTypes = FXCollections.observableArrayList(
+                        new Callback<OperationType, Observable[]>() {
+                            @Override
+                            public Observable[] call(OperationType param) {
+                                return new Observable[]{
+                                    param.getStringRepresentation()
+                                };
+                            }
+                        });
+
         allLinkTypes = FXCollections.observableArrayList(
                 new Callback<LinkType, Observable[]>() {
                     @Override
@@ -65,6 +77,18 @@ public class DeploymentDiagram {
     
     public void addCommunicationLinksChangeListener(MapChangeListener listener){
         allElements.addAllConnectionsChangeListener(listener);
+    }
+    
+    public ObservableList<OperationType> getOperationTypes() {
+        return operationTypes;
+    }
+    
+    public void addOperationType(OperationType operationType) {
+        operationTypes.add(operationType);
+    }
+    
+    public boolean removeOperationType(OperationType operationType) {
+        return operationTypes.remove(operationType);
     }
 
     public DeploymentTarget createDeploymentTarget(DeploymentTarget parent){

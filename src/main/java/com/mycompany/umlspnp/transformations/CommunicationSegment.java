@@ -241,13 +241,13 @@ public class CommunicationSegment extends Segment {
             else
                 rate = 1.0 / (messageSize / transferRate);
 
-            if(!distributionValues.isEmpty())
-                distributionValues.append(" + ");
+//            if(!distributionValues.isEmpty())
+//                distributionValues.append(" + ");
             distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServiceCall.getPlace().getName(), rate));
         });
 
-        if(distributionValues.isEmpty())
-            distributionValues.append("0");
+//        if(distributionValues.isEmpty())
+//            distributionValues.append("0");
         
         String distributionFunctionBody = String.format("return %s;", distributionValues.toString());
         FunctionSPNP<Double> distributionFunction = new FunctionSPNP<>(distributionFunctionName, FunctionType.Distribution, distributionFunctionBody, Double.class);

@@ -6,8 +6,9 @@
 package com.mycompany.umlspnp.models.common;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -17,11 +18,12 @@ import javafx.beans.value.ObservableValue;
  * @author 10ondr
  */
 public class OperationEntry extends ObservableString {
-    private final StringProperty name;
+    private final ObjectProperty<OperationType> operationType;
     private final IntegerProperty speedLimit;
     
-    public OperationEntry(String name, Integer speedLimit){
-        this.name = new SimpleStringProperty(name);
+    public OperationEntry(OperationType operationType, Integer speedLimit){
+        this.operationType = new SimpleObjectProperty(operationType);
+
         this.speedLimit = new SimpleIntegerProperty();
         if(speedLimit == null)
             this.speedLimit.setValue(-1);
@@ -34,15 +36,18 @@ public class OperationEntry extends ObservableString {
                 updateStringRepresentation();
             }
         };
-        
-        this.name.addListener(stringChangeListener);
+
+        this.operationType.addListener(stringChangeListener);
         this.speedLimit.addListener(stringChangeListener);
     }
     
     public StringProperty nameProperty(){
-        return this.name;
+        var op = operationType.getValue();
+        if(op != null)
+            return op.nameProperty();
+        return null;
     }
-    
+
     public IntegerProperty speedLimitProperty(){
         return this.speedLimit;
     }
@@ -51,15 +56,31 @@ public class OperationEntry extends ObservableString {
         return nameProperty().getValue();
     }
     
+    public ObjectProperty<OperationType> operationTypeProperty() {
+        return operationType;
+    }
+    
+    public OperationType getOperationType() {
+        return operationType.getValue();
+    }
+    
+    public void setOperationType(OperationType newOp) {
+        operationType.setValue(newOp);
+    }
+    
     public Integer getSpeedLimit(){
         return speedLimitProperty().getValue();
     }
-    
+
     @Override
     public String toString() {
-        if (this.speedLimit.getValue() < 0)
-            return this.name.getValue();
+        String opString = "None";
+        if(operationType.getValue() != null)
+            opString = operationType.getValue().getName();
+
+        if (speedLimit.getValue() < 0)
+            return opString;
         else
-            return this.name.getValue() + "<processing speed " + this.speedLimit.getValue() + "%>";
+            return opString + "<processing speed " + speedLimit.getValue() + "%>";
     }
 }

@@ -7,7 +7,7 @@ package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.models.common.Connection;
 import com.mycompany.umlspnp.models.common.ConnectionFailure;
-import com.mycompany.umlspnp.models.common.OperationEntry;
+import com.mycompany.umlspnp.models.common.OperationType;
 import javafx.beans.Observable;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -15,7 +15,6 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.collections.transformation.FilteredList;
 import javafx.util.Callback;
 
 /**
@@ -29,9 +28,7 @@ public class Message extends Connection<Activation> {
     private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
     private final ObservableList<MessageSize> messageSize; // Exactly 1 item
     private final ObservableList<ConnectionFailure> messageFailures;
-    
-    private OperationEntry operationType;
-    private final FilteredList<OperationEntry> operationTypeList; // At most 1 item
+    private final ObservableList<OperationType> operationTypeList; // At most 1 item
     
     
     public Message(Activation from, Activation to) {
@@ -68,12 +65,18 @@ public class Message extends Connection<Activation> {
                         };
                     }
                 });
-        
-        operationTypeList = new FilteredList<>(from.getLifeline().getOperationEntries(),
-                                               item -> item.equals(operationType));
+
+        operationTypeList = FXCollections.observableArrayList(
+                new Callback<OperationType, Observable[]>() {
+                    @Override
+                    public Observable[] call(OperationType param) {
+                        return new Observable[]{
+                            param.getStringRepresentation()
+                        };
+                    }
+                });
 
         setExecutionTime(1);
-        setOperationType(null);
     }
     
     public Activation getFrom() {
@@ -155,25 +158,23 @@ public class Message extends Connection<Activation> {
     public void addMessageFailure(ConnectionFailure newMessageFailure){
         messageFailures.add(newMessageFailure);
     }
-    
-    public ObservableList<OperationEntry> getOperationEntries(){
-        return getFirst().getLifeline().getOperationEntries();
+
+    public final void setOperationType(OperationType operationType){
+        removeOperationType();
+        operationTypeList.add(operationType);
     }
     
-    public final void setOperationType(OperationEntry newEntry){
-        operationType = newEntry;
-        operationTypeList.setPredicate(item -> item.equals(operationType)); // Refresh filtered list
-    }
-    
-    public OperationEntry getOperationType(){
-        return operationType;
+    public OperationType getOperationType() {
+        if(operationTypeList.size() < 1)
+            return null;
+        return operationTypeList.get(0);
     }
     
     public void removeOperationType(){
-        setOperationType(null);
+        operationTypeList.clear();
     }
     
-    public FilteredList<OperationEntry> getOperationTypeList(){
+    public ObservableList<OperationType> getOperationTypeList(){
         return operationTypeList;
     }
 

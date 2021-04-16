@@ -11,6 +11,7 @@ import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.common.NamedNode;
+import com.mycompany.umlspnp.models.common.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
@@ -28,7 +29,9 @@ import java.util.ArrayList;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
@@ -54,14 +57,21 @@ public class DeploymentDiagramController {
     
     /***  ONLY FOR TESTING  ***/
     private void createSampleAnnotations(DeploymentTarget DT){
+        var deployment = model.getDeploymentDiagram();
+        
+        var opType1 = new OperationType("ReadDeviceData");
+        var opType2 = new OperationType("WriteDeviceData");
+        deployment.addOperationType(opType1);
+        deployment.addOperationType(opType2);
+        
         var stateUp = DT.getStates().get(0);
         var stateDown = DT.getStates().get(1);
 
         StateOperation operationsUp = new StateOperation(stateUp);
-        operationsUp.addOperationEntry("ReadDeviceData", null);
-        operationsUp.addOperationEntry("WriteDeviceData", null);
+        operationsUp.addOperationEntry(opType1, null);
+        operationsUp.addOperationEntry(opType2, null);
         StateOperation operationsDown = new StateOperation(stateDown);
-        operationsDown.addOperationEntry("ReadDeviceData", 50);
+        operationsDown.addOperationEntry(opType2, 50);
         DT.addStateOperation(operationsUp);
         DT.addStateOperation(operationsDown);
     }
@@ -83,7 +93,9 @@ public class DeploymentDiagramController {
         A.addState(new State("ST_A_3"));
         var ST_A_1_op = new StateOperation(ST_A_1);
         A.addStateOperation(ST_A_1_op);
-        ST_A_1_op.addOperationEntry(new OperationEntry("A_OP_1", null));
+        var A_OP_1 = new OperationType("A_OP_1");
+        deployment.addOperationType(A_OP_1);
+        ST_A_1_op.addOperationEntry(new OperationEntry(A_OP_1, null));
         A.getNameProperty().setValue("A");
         
         var AA = deployment.createDeploymentTarget(A);
@@ -94,7 +106,10 @@ public class DeploymentDiagramController {
         AA.addState(new State("ST_B_3"));
         var ST_B_1_op = new StateOperation(ST_B_1);
         AA.addStateOperation(ST_B_1_op);
-        ST_B_1_op.addOperationEntry(new OperationEntry("B_OP_1", null));
+        var B_OP_1 = new OperationType("B_OP_1");
+        deployment.addOperationType(B_OP_1);
+        ST_B_1_op.addOperationEntry(new OperationEntry(B_OP_1, null));
+
         
         var AAA = deployment.createDeploymentTarget(AA);
         AAA.getNameProperty().setValue("AAA");
@@ -224,8 +239,62 @@ public class DeploymentDiagramController {
         
         deviceMenuItem.setOnAction(menuEventHandler);
         addNodeMenu.getItems().addAll(deviceMenuItem);
-        
         deploymentDiagramView.addMenu(addNodeMenu);
+        
+        Menu globalMenu = new Menu("Global");
+        MenuItem operationTypesMenuItem = new MenuItem("Operation types");
+        operationTypesMenuItem.setOnAction((e) -> {
+            var operationTypesView = createOperationTypesView();
+            ArrayList<EditableListView> sections = new ArrayList();
+            sections.add(operationTypesView);
+
+            this.view.createPropertiesModalWindow("Operation types", sections);
+        });
+        globalMenu.getItems().addAll(operationTypesMenuItem);
+        deploymentDiagramView.addMenu(globalMenu);
+    }
+
+   private EditableListView createOperationTypesView(){
+        var deploymentDiagram = model.getDeploymentDiagram();
+        var operationTypes = deploymentDiagram.getOperationTypes();
+        var operationTypesView = new EditableListView("Operation Types:", operationTypes);
+        
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                deploymentDiagram.addOperationType(new OperationType("New operation"));
+            }
+        };
+
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (OperationType) operationTypesView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) operationTypesView.getScene().getWindow(), 
+                            "Confirm", "The operation type \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        deploymentDiagram.removeOperationType(selected);
+                    }
+                }
+            }
+        };
+
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (OperationType) operationTypesView.getSelected();
+                view.createStringModalWindow("Rename", "New name", selected.nameProperty(), null);
+                operationTypesView.refresh();
+            }
+        };
+        
+        operationTypesView.createButton("Add", addBtnHandler, false);
+        operationTypesView.createButton("Remove", removeBtnHandler, true);
+        operationTypesView.createButton("Edit", editBtnHandler, true);
+        return operationTypesView;
     }
 
     private void deploymentTargetAnnotationsInit(DeploymentTarget DT){
@@ -728,17 +797,67 @@ public class DeploymentDiagramController {
         return operationsView;
     }
 
+    private ObservableList getAvailableOperationTypes(ObservableList allOperationTypes, ObservableList<OperationEntry> operationEntries) {
+        var availableOperationTypes = FXCollections.observableArrayList(allOperationTypes);
+        operationEntries.forEach(opEntry -> {
+            availableOperationTypes.remove(opEntry.getOperationType());
+        });
+        return availableOperationTypes;
+    }
+
     private EditableListView createStateOperationEntriesProperties(StateOperation operation){
+        var allOperationTypes = model.getDeploymentDiagram().getOperationTypes();
         var operationEntries = operation.getOperationEntries();
-        
         var operationEntriesView = new EditableListView("Operations:", operation.getOperationEntries());
-        
+
         var addBtnHandler = new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e) {
-                operationEntries.add(new OperationEntry("New operation", -1));
+                var operationEntry = new OperationEntry(null, -1);
+                var availableOperationTypes = getAvailableOperationTypes(allOperationTypes, operationEntries);
+                var editWindow = new EditOperationEntryModalWindow( (Stage) operationEntriesView.getScene().getWindow(),
+                                                    "Edit Operation Entry",
+                                                    availableOperationTypes,
+                                                    operationEntry.operationTypeProperty(),
+                                                    operationEntry.speedLimitProperty()
+                                                    );
+                editWindow.showAndWait();
+                if(operationEntry.getOperationType() != null){
+                    boolean alreadyIn = false;
+                    for(var opEntry : operationEntries){
+                        if(opEntry.getOperationType() == operationEntry.getOperationType()) {
+                            alreadyIn = true;
+                            break;
+                        }
+                    }
+                    if(!alreadyIn)
+                        operationEntries.add(operationEntry);
+                }
+                operationEntriesView.refresh();
             }
         };
+
+        var editBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (OperationEntry) operationEntriesView.getSelected();
+                var availableOperationTypes = getAvailableOperationTypes(allOperationTypes, operationEntries);
+                var editWindow = new EditOperationEntryModalWindow( (Stage) operationEntriesView.getScene().getWindow(),
+                                                    "Edit Operation Entry",
+                                                    availableOperationTypes,
+                                                    selected.operationTypeProperty(),
+                                                    selected.speedLimitProperty()
+                                                    );
+                editWindow.showAndWait();
+
+                if(selected.getOperationType() == null){
+                    operationEntries.remove(selected);
+                }
+
+                operationEntriesView.refresh();
+            }
+        };
+
         
         var removeBtnHandler = new EventHandler<ActionEvent>(){
             @Override
@@ -755,27 +874,12 @@ public class DeploymentDiagramController {
                 }
             }
         };
+        
+        var addButton = operationEntriesView.createButton("Add", addBtnHandler, false);
+        addButton.disableProperty().bind(Bindings.size(operationEntries).greaterThanOrEqualTo(Bindings.size(allOperationTypes)));
 
-        var editBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (OperationEntry) operationEntriesView.getSelected();
-                
-                EditOperationEntryModalWindow editWindow = 
-                        new EditOperationEntryModalWindow( (Stage) operationEntriesView.getScene().getWindow(),
-                                                            "Edit Operation Entry",
-                                                            selected.nameProperty(),
-                                                            selected.speedLimitProperty()
-                                                            );
-                editWindow.showAndWait();
-
-                operationEntriesView.refresh();
-            }
-        };
-
-        operationEntriesView.createButton("Add", addBtnHandler, false);
-        operationEntriesView.createButton("Remove", removeBtnHandler, true);
         operationEntriesView.createButton("Edit", editBtnHandler, true);
+        operationEntriesView.createButton("Remove", removeBtnHandler, true);
         return operationEntriesView;
     }
 

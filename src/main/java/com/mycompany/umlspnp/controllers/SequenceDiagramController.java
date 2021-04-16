@@ -8,7 +8,7 @@ package com.mycompany.umlspnp.controllers;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.common.ConnectionFailure;
-import com.mycompany.umlspnp.models.common.OperationEntry;
+import com.mycompany.umlspnp.models.common.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
@@ -776,13 +776,13 @@ public class SequenceDiagramController {
     }
     
     private EditableListView createOperationTypeProperties(Message message){
-        var operationEntriesList = message.getOperationEntries();
+        var operationEntriesList = model.getDeploymentDiagram().getOperationTypes();
         var operationEntriesView = new EditableListView("Operation type:", operationEntriesList);
 
         var selectBtnHandler = new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e) {
-                var selected = (OperationEntry) operationEntriesView.getSelected();
+                var selected = (OperationType) operationEntriesView.getSelected();
                 if(selected != null){
                     message.setOperationType(selected);
                 }
@@ -800,7 +800,7 @@ public class SequenceDiagramController {
         
         var clearBtn = operationEntriesView.createButton("Clear", clearBtnHandler, false);
         clearBtn.disableProperty().bind(Bindings.size(message.getOperationTypeList()).lessThan(1));
-        
+
         return operationEntriesView;
     }
 }

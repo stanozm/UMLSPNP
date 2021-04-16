@@ -5,7 +5,7 @@
  */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.common.OperationEntry;
+import com.mycompany.umlspnp.models.common.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.deploymentdiagram.State;
@@ -179,14 +179,16 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         return result;
     }
     
-    private boolean shouldGenerateLabelGuardCondition(DeploymentTarget dt, State state, OperationEntry operationType) {
+    private boolean shouldGenerateLabelGuardCondition(DeploymentTarget dt, State state, OperationType operationType) {
         if(state.isStateDOWN())
             return false;
 
         for(var stateOperation : dt.getStateOperations()) {
             if(stateOperation.getState() == state) {
-                if(stateOperation.getOperationEntries().contains(operationType))
-                    return false;
+                for(var opEntry : stateOperation.getOperationEntries()){
+                    if(opEntry.getOperationType() == operationType)
+                        return false;
+                }
             }
         }
         return true;
