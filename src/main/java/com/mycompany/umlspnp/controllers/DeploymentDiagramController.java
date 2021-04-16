@@ -204,6 +204,7 @@ public class DeploymentDiagramController {
 
                         var newDTView = deploymentDiagramView.createDeploymentTargetView(newDTParent, newDT.getObjectInfo().getID());
                         newDTView.getNameProperty().bind(newDT.getNameProperty());
+                        redundancyGroupInit(newDT, newDTView);
                         deploymentTargetMenuInit(newDTView);
                         deploymentTargetAnnotationsInit(newDT);
                     }
@@ -251,10 +252,36 @@ public class DeploymentDiagramController {
             this.view.createPropertiesModalWindow("Operation types", sections);
         });
         globalMenu.getItems().addAll(operationTypesMenuItem);
+        
+        MenuItem redundancyGroupsMenuItem = new MenuItem("Redundancy groups");
+        redundancyGroupsMenuItem.setOnAction((e) -> {
+            var redundancyGroupsView = createRedundancyGroupsView();
+            ArrayList<EditableListView> sections = new ArrayList();
+            sections.add(redundancyGroupsView);
+
+            this.view.createPropertiesModalWindow("Redundancy groups", sections);
+        });
+        globalMenu.getItems().addAll(redundancyGroupsMenuItem);
+        
         deploymentDiagramView.addMenu(globalMenu);
     }
 
-   private EditableListView createOperationTypesView(){
+    private void redundancyGroupInit(DeploymentTarget newDT, DeploymentTargetView newDTView) {
+        newDT.redundancyGroupProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(newValue == null) {
+                    newDTView.getNameProperty().bind(newDT.getNameProperty());
+                }
+                else{
+                    newDTView.getNameProperty().bind(Bindings.format("[%d.] ", newDT.getRedundancyGroup().getGroupID()).concat(newDT.getNameProperty()));
+                }
+            }
+            
+        });
+    }
+    
+    private EditableListView createOperationTypesView(){
         var deploymentDiagram = model.getDeploymentDiagram();
         var operationTypes = deploymentDiagram.getOperationTypes();
         var operationTypesView = new EditableListView("Operation Types:", operationTypes);
@@ -296,6 +323,40 @@ public class DeploymentDiagramController {
         operationTypesView.createButton("Edit", editBtnHandler, true);
         return operationTypesView;
     }
+
+    private EditableListView createRedundancyGroupsView(){
+        var deploymentDiagram = model.getDeploymentDiagram();
+        var redundancyGroups = deploymentDiagram.getRedundancyGroups();
+        var redundancyGroupsView = new EditableListView("Redundancy Groups:", redundancyGroups);
+        
+        var addBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                deploymentDiagram.createRedundancyGroup();
+            }
+        };
+
+        var removeBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (RedundancyGroup) redundancyGroupsView.getSelected();
+                if(selected != null){
+                    BooleanModalWindow confirmWindow = 
+                            new BooleanModalWindow((Stage) redundancyGroupsView.getScene().getWindow(), 
+                            "Confirm", "The redundancy group \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
+                    confirmWindow.showAndWait();
+                    if(confirmWindow.getResult()){
+                        deploymentDiagram.removeRedundancyGroup(selected);
+                    }
+                }
+            }
+        };
+
+        redundancyGroupsView.createButton("Add", addBtnHandler, false);
+        redundancyGroupsView.createButton("Remove", removeBtnHandler, true);
+        return redundancyGroupsView;
+    }
+
 
     private void deploymentTargetAnnotationsInit(DeploymentTarget DT){
         var deploymentDiagramView = view.getDeploymentDiagramView();
@@ -398,11 +459,13 @@ public class DeploymentDiagramController {
             var statesView = createStatesProperties(deploymentTarget);
             var stateTransitionsView = createStateTransitionsProperties(deploymentTarget);
             var stateOperationsView = createStateOperationsProperties(deploymentTarget);
+            var redundancyGroupView = createRedundancyGroupView(deploymentTarget);
 
             ArrayList<EditableListView> sections = new ArrayList();
             sections.add(statesView);
             sections.add(stateTransitionsView);
             sections.add(stateOperationsView);
+            sections.add(redundancyGroupView);
 
             this.view.createPropertiesModalWindow("\"" + deploymentTarget.getNameProperty().getValue() + "\" properties", sections);
         });
@@ -881,6 +944,43 @@ public class DeploymentDiagramController {
         operationEntriesView.createButton("Edit", editBtnHandler, true);
         operationEntriesView.createButton("Remove", removeBtnHandler, true);
         return operationEntriesView;
+    }
+
+    private EditableListView createRedundancyGroupView(DeploymentTarget deploymentTarget){
+        var deploymentDiagram = model.getDeploymentDiagram();
+        var redundancyGroups = deploymentDiagram.getRedundancyGroups();
+        var redundancyGroupsView = new EditableListView("Redundancy group:", redundancyGroups);
+        
+        var selectBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var selected = (RedundancyGroup) redundancyGroupsView.getSelected();
+                if(selected != null){
+                    var currentRG = deploymentTarget.getRedundancyGroup();
+                    if(currentRG != null)
+                        currentRG.removeNode(deploymentTarget);
+                    deploymentTarget.setRedundancyGroup(selected);
+                    selected.addNode(deploymentTarget);
+                }
+            }
+        };
+        
+        var clearBtnHandler = new EventHandler<ActionEvent>(){
+            @Override
+            public void handle(ActionEvent e) {
+                var currentRG = deploymentTarget.getRedundancyGroup();
+                if(currentRG != null) {
+                    currentRG.removeNode(deploymentTarget);
+                    deploymentTarget.setRedundancyGroup(null);
+                }
+            }
+        };
+
+        redundancyGroupsView.createButton("Select", selectBtnHandler, true);
+        var clearButton = redundancyGroupsView.createButton("Clear", clearBtnHandler, false);
+        clearButton.disableProperty().bind(deploymentTarget.redundancyGroupProperty().isNull());
+        
+        return redundancyGroupsView;
     }
 
 }

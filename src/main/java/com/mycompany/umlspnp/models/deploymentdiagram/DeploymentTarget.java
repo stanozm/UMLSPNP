@@ -11,7 +11,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javafx.beans.Observable;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
@@ -25,7 +30,8 @@ import javafx.util.Pair;
  * @author 10ondr
  */
 public class DeploymentTarget extends Artifact {
-    private final ElementContainer allElements = DeploymentDiagram.getElementContainer();
+    private final ObjectProperty<RedundancyGroup> redundancyGroup = new SimpleObjectProperty<>();
+    private final ElementContainer<Artifact, CommunicationLink> allElements = DeploymentDiagram.getElementContainer();
 
     private final ObservableMap<Number, Artifact> innerNodes;
     private final ObservableMap<Number, CommunicationLink> innerConnections;
@@ -137,6 +143,34 @@ public class DeploymentTarget extends Artifact {
 
     public void addInnerConnection(CommunicationLink newConnection){
         innerConnections.put(newConnection.getObjectInfo().getID(), newConnection);
+    }
+
+    public ObjectProperty<RedundancyGroup> redundancyGroupProperty() {
+        return redundancyGroup;
+    }
+
+    public RedundancyGroup getRedundancyGroup() {
+        return redundancyGroup.getValue();
+    }
+
+    public void setRedundancyGroup(RedundancyGroup newRedundancyGroup) {
+        redundancyGroup.setValue(newRedundancyGroup);
+    }
+
+    public Set<DeploymentTarget> getRedundantNodes() {
+        var nodes = allElements.getNodes().values();
+        var result = new HashSet<DeploymentTarget>();
+        if(this.getRedundancyGroup() == null)
+            return result;
+        nodes.forEach(node -> {
+            if(node instanceof DeploymentTarget) {
+                var dt = (DeploymentTarget) node;
+                if(this.getRedundancyGroup() == dt.getRedundancyGroup()) {
+                    result.add(dt);
+                }
+            }
+        });
+        return result;
     }
 
     public void addStatesChangeListener(ListChangeListener listener){

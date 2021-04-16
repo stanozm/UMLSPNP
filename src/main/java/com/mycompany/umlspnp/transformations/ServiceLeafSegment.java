@@ -213,6 +213,28 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         return result.toString();
     }
     
+    private String getNodeRedundancyGroupString(DeploymentTarget dt) {
+        var downPlace = SPNPUtils.getDownPlace(physicalSegments, dt);
+        var downPlaceString = String.format("mark(\"%s\")", downPlace.getName());
+
+        var redundancyGroup = dt.getRedundancyGroup();
+        if(redundancyGroup == null)
+            return downPlaceString;
+        
+        var result = new StringBuilder("(");
+        result.append(downPlaceString);
+        
+        redundancyGroup.getNodes().forEach(node -> {
+            if(node != dt) {
+                var nodeDownPlace = SPNPUtils.getDownPlace(physicalSegments, node);
+                if(nodeDownPlace != null)
+                    result.append(String.format(" && mark(\"%s\")", nodeDownPlace.getName()));
+            }
+        });
+        result.append(")");
+        return result.toString();
+    }
+    
     private FunctionSPNP<Integer> createHWFailGuard(String messageName) {
         var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_HW_fail", SPNPUtils.prepareName(messageName, 15)));
         var guardBody = new StringBuilder("return ");
@@ -227,10 +249,9 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         for(var treeNode : hwFailNodes) {
             var dt = getDeploymentTargetFromArtifact(treeNode.getArtifact());
             if(!controlSet.contains(dt)) {
-                var downPlace = SPNPUtils.getDownPlace(physicalSegments, dt);
                 if(!controlSet.isEmpty())
                     guardBody.append(" || ");
-                guardBody.append(String.format("mark(\"%s\")", downPlace.getName()));
+                guardBody.append(getNodeRedundancyGroupString(dt));
             }
             var message = treeNode.getMessage();
             if(message != null && treeNode.isMarkedForLabelCheck()) {

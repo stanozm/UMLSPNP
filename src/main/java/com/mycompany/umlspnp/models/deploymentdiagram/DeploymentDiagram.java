@@ -10,6 +10,7 @@ import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.models.common.OperationType;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -26,6 +27,7 @@ public class DeploymentDiagram {
     private final ObservableList<LinkType> allLinkTypes;
     
     private final ObservableList<OperationType> operationTypes;
+    private final ObservableList<RedundancyGroup> redundancyGroups;
     
     public DeploymentDiagram(){
 	operationTypes = FXCollections.observableArrayList(
@@ -37,6 +39,8 @@ public class DeploymentDiagram {
                                 };
                             }
                         });
+
+	redundancyGroups = FXCollections.observableArrayList();
 
         allLinkTypes = FXCollections.observableArrayList(
                 new Callback<LinkType, Observable[]>() {
@@ -91,6 +95,33 @@ public class DeploymentDiagram {
         return operationTypes.remove(operationType);
     }
 
+    public ObservableList<RedundancyGroup> getRedundancyGroups() {
+        return redundancyGroups;
+    }
+    
+    public void createRedundancyGroup() {
+        Integer newGroupID = 1;
+        boolean foundFree = false;
+        while(!foundFree) {
+            foundFree = true;
+            for(var rg : redundancyGroups){
+                if(Objects.equals(rg.getGroupID(), newGroupID)) {
+                    newGroupID += 1;
+                    foundFree = false;
+                    break;
+                }
+            }
+        }
+        redundancyGroups.add(new RedundancyGroup(newGroupID));
+        
+    }
+
+    public boolean removeRedundancyGroup(RedundancyGroup rg) {
+        if(rg != null)
+            return redundancyGroups.remove(rg);
+        return false;
+    }
+    
     public DeploymentTarget createDeploymentTarget(DeploymentTarget parent){
         var newDT = new DeploymentTarget("New deployment target", parent);
         addNode(newDT);
