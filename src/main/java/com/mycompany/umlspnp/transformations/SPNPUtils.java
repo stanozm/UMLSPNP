@@ -29,6 +29,13 @@ public class SPNPUtils {
 
     public static int functionCounter = 0;
 
+    public static void resetCounters() {
+        placeCounter = 0;
+        transitionCounter = 0;
+        arcCounter = 0;
+        functionCounter = 0;
+    }
+    
     public static Place getPlaceFromNet(PetriNet petriNet, String placeName) {
         for(Place place : petriNet.getPlaces()) {
             if(place.getName().equals(placeName))

@@ -80,6 +80,8 @@ public class Transformator {
     }
 
     public void transform() {
+        SPNPUtils.resetCounters();
+        
         var treeRoot = serviceCallTree.getRoot();
         if(treeRoot == null) {
             System.err.println("Transformator error: Service call tree is empty (no highest lifeline activation found)");
