@@ -43,6 +43,13 @@ public class RedundancyGroup extends ObservableString {
     public boolean removeNode(DeploymentTarget node) {
         return nodes.remove(node);
     }
+    
+    public void clear() {
+        nodes.forEach(node -> {
+            node.setRedundancyGroup(null);
+        });
+        nodes.clear();
+    }
 
     public ObservableList<DeploymentTarget> getNodes() {
         return nodes;

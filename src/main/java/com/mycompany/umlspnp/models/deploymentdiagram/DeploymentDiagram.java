@@ -117,8 +117,10 @@ public class DeploymentDiagram {
     }
 
     public boolean removeRedundancyGroup(RedundancyGroup rg) {
-        if(rg != null)
+        if(rg != null) {
+            rg.clear();
             return redundancyGroups.remove(rg);
+        }
         return false;
     }
     
