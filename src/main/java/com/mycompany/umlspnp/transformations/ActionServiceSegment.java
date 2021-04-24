@@ -11,8 +11,7 @@ import cz.muni.fi.spnp.core.models.places.StandardPlace;
  *
  * @author 10ondr
  */
-public interface ServiceSegment {
-    public ServiceCall getServiceCall();
+public interface ActionServiceSegment {
     public StandardPlace getEndPlace();
     public void transform();
 }

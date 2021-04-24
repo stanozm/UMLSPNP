@@ -29,6 +29,9 @@ import java.util.Map;
 public class PhysicalSegment extends Segment {
     protected final DeploymentTarget node;
     protected Map<State, StandardPlace> statePlaces = new HashMap<>();
+    
+    protected Map<StateTransition, TimedTransition> stateTransitions = new HashMap<>();
+    protected Map<State, ImmediateTransition> parentFailTransitions = new HashMap<>();
 
     public PhysicalSegment(PetriNet petriNet, DeploymentTarget node) {
         super(petriNet);
@@ -95,13 +98,18 @@ public class PhysicalSegment extends Segment {
             var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, placeTo, stateTransition);
             petriNet.addArc(outputArc);
         }
+
+        stateTransitions.put(transition, stateTransition);
     }
 
     private void transformServiceGuard() {
         // TODO when properly specified
     }
     
-    private void transformParentFail(String nodeName, StandardPlace place, StandardPlace downStatePlace, StandardPlace parentDownStatePlace) {
+    private void transformParentFail(String nodeName, State state, StandardPlace parentDownStatePlace) {
+        var place = statePlaces.get(state);
+        var downStatePlace = this.getDownStatePlace();
+
         var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_parent_down", SPNPUtils.prepareName(nodeName, 15)));
         String guardBody = String.format("return mark(\"%s\");", parentDownStatePlace.getName());
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
@@ -115,10 +123,13 @@ public class PhysicalSegment extends Segment {
 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, place, parentFailTransition);
         petriNet.addArc(flushInputArc);
+        
+        parentFailTransitions.put(state, parentFailTransition);
     }
     
     public void transform() {
         var nodeName = node.getNameProperty().getValue();
+        // TODO should states be generated if they have no transitions?
         node.getStates().forEach(state -> {
             transformState(nodeName, state);
         });
@@ -138,9 +149,57 @@ public class PhysicalSegment extends Segment {
             if(downPlace != null && parentDownPlace != null) {
                 statePlaces.forEach((state, place) -> {
                     if(!state.isStateDOWN())
-                        transformParentFail(nodeName, place, downPlace, parentDownPlace);
+                        transformParentFail(nodeName, state, parentDownPlace);
                 });
             }
         }
+    }
+    
+    public String getDebugPlaceString(State state, StandardPlace place) {
+        var result = new StringBuilder();
+        result.append("(");
+        if(state.isStateDOWN())
+            result.append("DownState ");
+        result.append(String.format("%s)", place.getName()));
+        if(place.getNumberOfTokens() > 0)
+            result.append("*");
+        return result.toString();
+    }
+    
+    @Override
+    public String toString() {
+        var result = new StringBuilder();
+        
+        stateTransitions.keySet().forEach(stateTransition -> {
+            var stateFrom = stateTransition.getStateFrom();
+            var stateFromPlace = statePlaces.get(stateFrom);
+
+            var stateTo = stateTransition.getStateTo();
+            var stateToPlace = statePlaces.get(stateTo);
+
+            var transition = stateTransitions.get(stateTransition);
+            result.append(getDebugPlaceString(stateFrom, stateFromPlace));
+            result.append(String.format(" -> [%s]", transition.getName()));
+            result.append(" -> ");
+            result.append(getDebugPlaceString(stateTo, stateToPlace));
+            result.append(System.lineSeparator());
+        });
+        
+        var parent = node.getParent();
+        if(parent != null) {
+            result.append(String.format("Parent down transitions for parent \"%s\":%n", parent.getNameProperty().getValue()));
+            parentFailTransitions.keySet().forEach(state -> {
+                var transition = parentFailTransitions.get(state);
+                var place = statePlaces.get(state);
+                var downPlace = this.getDownStatePlace();
+                result.append(getDebugPlaceString(state, place));
+                result.append(String.format(" -> [%s]", transition.getName()));
+                result.append(String.format(" -> (DownState %s)", downPlace.getName()));
+                result.append(System.lineSeparator());
+            });
+        }
+
+        result.insert(0, String.format("Physical Segment - node \"%s\":%n", node.getNameProperty().getValue()));
+        return result.toString();
     }
 }

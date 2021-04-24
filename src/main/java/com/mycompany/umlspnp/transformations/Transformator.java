@@ -30,7 +30,7 @@ public class Transformator {
 
     private final List<PhysicalSegment> physicalSegments = new ArrayList<>();
     private final List<CommunicationSegment> communicationSegments = new ArrayList<>();
-    private UsageSegment usageSegment = null;
+    private ControlServiceSegment controlServiceSegment = null;
 
     private final ServiceCallTree serviceCallTree;
 
@@ -107,17 +107,50 @@ public class Transformator {
         // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
             var communicationSegment = new CommunicationSegment(petriNet, treeRoot, communicationLink);
+            communicationSegment.transform();
             communicationSegments.add(communicationSegment);
         });
 
-        // Usage segment
-        usageSegment = new UsageSegment(petriNet, treeRoot, physicalSegments, communicationSegments);
-        usageSegment.transform();
+        // Control service segment
+        controlServiceSegment = new ControlServiceSegment(petriNet, physicalSegments, communicationSegments, treeRoot);
+        controlServiceSegment.transform();
 
-        // Communictaion segment finish Usage Segment dependent transformations
+        // Communictaion segment finish Control Service Segment dependent transformations
         communicationSegments.forEach(communicationSegment -> {
-            communicationSegment.transformUsageSegmentDependencies(usageSegment);
+            communicationSegment.transformControlServiceSegmentDependencies(controlServiceSegment);
             communicationSegment.transformPhysicalSegmentDependencies(physicalSegments);
+        });
+        
+        printDebugInfo();
+    }
+    
+    private void printDebugInfo() {
+        System.err.println(String.format("Debug info%n------------"));
+
+        // Physical Segments
+        physicalSegments.forEach(physicalSegment -> {
+            System.err.println(physicalSegment.toString());
+            System.err.println(System.lineSeparator());
+        });
+        
+        // Control Service Segment
+        System.err.println(controlServiceSegment.toString());
+        System.err.println(System.lineSeparator());
+
+        // Execution Segments
+        controlServiceSegment.getControlServiceCalls().forEach(controlSegmentPair -> {
+            var serviceCall = controlSegmentPair.getValue();
+            if(serviceCall.isExecutionServiceCall()) {
+                var executionSegment = (ServiceLeafSegment) serviceCall.getActionSegment();
+                System.err.println(executionSegment.toString());
+                System.err.println(System.lineSeparator());
+            }
+        });
+
+        // Communication Segments
+        communicationSegments.forEach(communicationSegment -> {
+            System.err.println(communicationSegment.toString());
+            System.err.println(System.lineSeparator());
         });
     }
 

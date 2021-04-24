@@ -30,7 +30,7 @@ import java.util.Set;
  *
  * @author 10ondr
  */
-public class ServiceLeafSegment extends Segment implements ServiceSegment {
+public class ServiceLeafSegment extends Segment implements ActionServiceSegment {
     private final List<PhysicalSegment> physicalSegments;
     private final List<CommunicationSegment> communicationSegments;
     private final ServiceCallNode serviceCallNode;
@@ -81,14 +81,15 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         guardBody.append(String.format("mark(\"%s\"))", failHWPlace.getName()));
 
         // Remotely invoked through a communication link
-        var communicationLink = SPNPUtils.getMessageCommunicationLink(serviceCall.getMessage());
-        if(communicationLink != null) {
-            communicationSegments.forEach(communicationSegment -> {
-                if(communicationLink == communicationSegment.getCommunicationLink()) {
-                    guardBody.append(String.format(" && mark(\"%s\")", communicationSegment.getEndPlace().getName()));
-                }
-            });
-        }
+        // TODO check whether this is still relevant in the alternative specification
+//        var communicationLink = SPNPUtils.getMessageCommunicationLink(serviceCall.getMessage());
+//        if(communicationLink != null) {
+//            communicationSegments.forEach(communicationSegment -> {
+//                if(communicationLink == communicationSegment.getCommunicationLink()) {
+//                    guardBody.append(String.format(" && mark(\"%s\")", communicationSegment.getEndPlace().getName()));
+//                }
+//            });
+//        }
         guardBody.append(";");
         
         var startGuardName = SPNPUtils.createFunctionName(String.format("guard_%s_leaf_start", SPNPUtils.prepareName(messageName, 15)));
@@ -319,11 +320,6 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failTypePlace, flushTransition, cardinalityFunction);
         petriNet.addArc(flushInputArc);
     }
-    
-    @Override
-    public ServiceCall getServiceCall() {
-        return serviceCall;
-    }
 
     @Override
     public StandardPlace getEndPlace() {
@@ -360,5 +356,36 @@ public class ServiceLeafSegment extends Segment implements ServiceSegment {
 
         // Flush transition guard function
         createFlushTransitionGuard(messageName);
+    }
+    
+    @Override
+    public String toString() {
+        var result = new StringBuilder();
+        result.append(String.format("[InitialTransition %s]", initialTransition.getName()));
+        result.append(String.format(" -> (StartPlace %s)", startPlace.getName()));
+        int offset = result.toString().length();
+        result.append(String.format(" -> [EndTransition %s]", endTransition.getName()));
+        result.append(String.format(" -> (EndPlace %s)", endPlace.getName()));
+        result.append(String.format(" -> [FlushTransition %s]", flushTransition.getName()));
+
+        failTypes.keySet().forEach(failTransition -> {
+            var failPlace = failTypes.get(failTransition);
+            result.append(System.lineSeparator());
+            for(int i = 0; i < offset; i++)
+                result.append(" ");
+            result.append(String.format(" -> [FailTransition %s]", failTransition.getName()));
+            result.append(String.format(" -> (FailPlace %s)", failPlace.getName()));
+            result.append(String.format(" -> [FlushTransition %s]", flushTransition.getName()));
+        });
+
+        result.append(System.lineSeparator());
+        for(int i = 0; i < offset; i++)
+            result.append(" ");
+        result.append(String.format(" -> [FailHWTransition %s]", this.failHWTransition.getName()));
+        result.append(String.format(" -> (FailHWPlace %s)", failHWPlace.getName()));
+        result.append(String.format(" -> [FlushTransition %s]", flushTransition.getName()));
+
+        result.insert(0, String.format("Execution Service Segment - message \"%s\":%n", serviceCall.getMessage().nameProperty().getValue()));
+        return result.toString();
     }
 }

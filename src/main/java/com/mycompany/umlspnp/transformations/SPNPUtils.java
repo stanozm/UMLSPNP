@@ -44,7 +44,6 @@ public class SPNPUtils {
         return null;
     }
 
-    // TODO something to prevent possible same-name collisions
     public static String prepareName(String name, int maxLength) {
         var result = name.replaceAll("\\s+", "").replaceAll(com.mycompany.umlspnp.common.Utils.SPNP_NAME_RESTRICTION_REPLACE_REGEX, "");
         if(result.length() > maxLength) {
@@ -88,9 +87,6 @@ public class SPNPUtils {
     }
 
     public static CommunicationLink getMessageCommunicationLink(Message message) {
-        if(!message.isLeafMessage())
-            return null;
-
         var firstLifeline = message.getFrom().getLifeline();
         var secondLifeline = message.getTo().getLifeline();
         var firstArtifact = firstLifeline.getArtifact();

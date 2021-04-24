@@ -1,0 +1,242 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.mycompany.umlspnp.transformations;
+
+import com.mycompany.umlspnp.models.sequencediagram.Message;
+import cz.muni.fi.spnp.core.models.PetriNet;
+import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
+import cz.muni.fi.spnp.core.models.arcs.StandardArc;
+import cz.muni.fi.spnp.core.models.functions.FunctionType;
+import cz.muni.fi.spnp.core.models.places.StandardPlace;
+import cz.muni.fi.spnp.core.models.transitions.ImmediateTransition;
+import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
+import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
+import java.util.ArrayList;
+import java.util.List;
+import javafx.util.Pair;
+
+/**
+ *
+ * @author 10ondr
+ */
+public class ControlServiceSegment extends Segment {
+    private final List<PhysicalSegment> physicalSegments;
+    private final List<CommunicationSegment> communicationSegments;
+
+    protected final ServiceCallNode treeRoot;
+
+    protected final List<Pair<ImmediateTransition, ServiceCall>> controlServiceCalls = new ArrayList<>();
+    protected ImmediateTransition initialTransition = null;
+    protected StandardPlace endPlace = null;
+
+    public ControlServiceSegment(PetriNet petriNet,
+                            List<PhysicalSegment> physicalSegments,
+                            List<CommunicationSegment> communicationSegments,
+                            ServiceCallNode treeRoot) {
+        super(petriNet);
+
+        this.physicalSegments = physicalSegments;
+        this.communicationSegments = communicationSegments;
+        this.treeRoot = treeRoot;
+    }
+
+    public ActionServiceSegment transformExecutionServiceSegment(ServiceCall serviceCall, ServiceCallNode serviceCallNode) {
+        var executionServiceSegment = new ServiceLeafSegment(petriNet, physicalSegments, communicationSegments, serviceCallNode, serviceCall);
+        executionServiceSegment.transform();
+        return executionServiceSegment;
+    }
+    
+    private ActionServiceSegment getCommunicationSegment(Message message) {
+        var communicationLink = SPNPUtils.getMessageCommunicationLink(message);
+        for (var segment : communicationSegments) {
+            if(communicationLink == segment.getCommunicationLink())
+                return segment;
+        }
+        return null;
+    }
+
+    private void transformControlServiceCall(ServiceCallNode serviceCallNode, boolean isExecutionCall) {
+        var message = serviceCallNode.getMessage();
+        String prefix = "C_";
+        if(isExecutionCall)
+            prefix = "L_";
+        var messageName = prefix + message.nameProperty().getValue();
+
+        var serviceCallPlace = new StandardPlace(SPNPUtils.placeCounter++, messageName);
+        petriNet.addPlace(serviceCallPlace);
+
+        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, serviceCallPlace, getPreviousTransition());
+        petriNet.addArc(outputArc);
+
+        var serviceCall = new ServiceCall(message, serviceCallPlace);
+        ActionServiceSegment actionServiceSegment;
+        if(isExecutionCall)
+            actionServiceSegment = transformExecutionServiceSegment(serviceCall, serviceCallNode);
+        else
+            actionServiceSegment = getCommunicationSegment(message);
+        serviceCall.setActionSegment(actionServiceSegment);
+
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_ok", SPNPUtils.prepareName(messageName, 15)));
+        var guardBody = String.format("return mark(\"%s\");", actionServiceSegment.getEndPlace().getName());
+        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
+
+        var serviceCallTransitionName = SPNPUtils.createTransitionName(messageName);
+        var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(serviceCallTransition);
+
+        var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, serviceCallPlace, serviceCallTransition);
+        petriNet.addArc(inputArc);
+
+        controlServiceCalls.add(new Pair(serviceCallTransition, serviceCall));
+    }
+    
+    private void transformCommunicationControlServiceCall(ServiceCallNode treeNode) {
+        var message = treeNode.getMessage();
+        if(message == null)
+            return;
+        
+        var communicationLink = SPNPUtils.getMessageCommunicationLink(message);
+        if(communicationLink == null)
+            return;
+        
+        transformControlServiceCall(treeNode, false);
+    }
+
+    private void transformExecutionControlServiceCall(ServiceCallNode treeNode) {
+        var message = treeNode.getMessage();
+        if(message == null)
+            return;
+
+        if(treeNode.isLeaf())
+            transformControlServiceCall(treeNode, true);
+    }
+    
+    private void transformServiceCalls(ServiceCallNode treeNode) {
+        for(var serviceCallNode : treeNode.getChildren()) {
+            transformCommunicationControlServiceCall(serviceCallNode);
+            transformExecutionControlServiceCall(serviceCallNode);
+
+            transformServiceCalls(serviceCallNode);
+        }
+    }
+
+    private void transformInitialTransition(String lifelineName) {
+        var initTransitionName = SPNPUtils.createTransitionName(lifelineName, "start");
+        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        petriNet.addTransition(initialTransition);
+    }
+
+    private void transformInitialTransitionGuard(String lifelineName) {
+        var startGuardBody = new StringBuilder();
+
+        var tokenStrings = getTokenStrings();
+
+        if(tokenStrings.size() < 1){
+            startGuardBody.append("return 1;");
+        }
+        else{
+            // TODO also add loop places
+            startGuardBody.append("return !(");
+            tokenStrings.forEach(tokenString -> {
+                startGuardBody.append(tokenString);
+                if(tokenStrings.indexOf(tokenString) < tokenStrings.size() - 1)
+                    startGuardBody.append(" || ");
+            });
+            startGuardBody.append(");");
+        }
+        String guardName = SPNPUtils.createFunctionName(String.format("guard_%s_control_start", SPNPUtils.prepareName(lifelineName, 15)));
+        FunctionSPNP<Integer> startGuard = new FunctionSPNP<>(guardName, FunctionType.Guard,
+                                                              startGuardBody.toString(), Integer.class);
+        petriNet.addFunction(startGuard);
+        initialTransition.setGuardFunction(startGuard);
+    }
+
+    private void transformEnd(String lifelineName) {
+        var endPlaceName = SPNPUtils.createPlaceName(lifelineName, "end");
+        endPlace = new StandardPlace(SPNPUtils.placeCounter++, endPlaceName);
+        petriNet.addPlace(endPlace);
+
+        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, endPlace, getPreviousTransition());
+        petriNet.addArc(outputArc);
+    }
+
+    private void transformEndPlaceHaltingFunction(String lifelineName) {
+        String functionName = SPNPUtils.createFunctionName(String.format("halting_%s", SPNPUtils.prepareName(lifelineName, 15)));
+        FunctionSPNP<Integer> haltingFunction = new FunctionSPNP<>(functionName,
+                                                                   FunctionType.Halting, String.format("return !mark(\"%s\");", endPlace.getName()),
+                                                                   Integer.class);
+        petriNet.addFunction(haltingFunction);
+    }
+    
+    private ImmediateTransition getPreviousTransition() {
+        if(controlServiceCalls.size() < 1)
+            return initialTransition;
+        return controlServiceCalls.get(controlServiceCalls.size() - 1).getKey();
+    }
+
+    public List<StandardPlace> getPlaces() {
+        List<StandardPlace> places = new ArrayList<>();
+        controlServiceCalls.forEach(serviceCallPair -> {
+            places.add(serviceCallPair.getValue().getPlace());
+        });
+        return places;
+    }
+
+    public List<String> getTokenStrings() {
+        List<String> tokenStrings = new ArrayList<>();
+        var places = getPlaces();
+
+        places.forEach(place -> {
+            tokenStrings.add(String.format("mark(\"%s\")", place.getName()));
+        });
+        return tokenStrings;
+    }
+    
+    public List<Pair<ImmediateTransition, ServiceCall>> getControlServiceCalls() {
+        return controlServiceCalls;
+    }
+    
+    public ImmediateTransition getInitialTransition() {
+        return initialTransition;
+    }
+    
+    public StandardPlace getEndPlace() {
+        return endPlace;
+    }
+
+    public void transform() {
+        var lifelineName = treeRoot.getArtifact().getNameProperty().getValue();
+        
+        // Initial transition
+        transformInitialTransition(lifelineName);
+        
+        // Control service calls
+        transformServiceCalls(treeRoot);
+        
+        // Loops
+        // TODO loops
+        
+        // Initial tranision guard
+        transformInitialTransitionGuard(lifelineName);
+        
+        // End place and transition
+        transformEnd(lifelineName);
+        transformEndPlaceHaltingFunction(lifelineName);
+    }
+    
+    @Override
+    public String toString() {
+        var result = new StringBuilder();
+        result.append(String.format("Control Service Segment:%n"));
+        result.append(String.format("[InitialTransition %s]", this.initialTransition.getName()));
+        controlServiceCalls.forEach(pair -> {
+            result.append(String.format(" -> (%s) -> [%s]", pair.getValue().getPlace().getName(), pair.getKey().getName()));
+        });
+        result.append(String.format(" -> (EndPlace %s)", this.endPlace.getName()));
+        // TODO add loops ?
+        return result.toString();
+    }
+}
