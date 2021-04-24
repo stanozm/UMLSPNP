@@ -5,6 +5,7 @@
  */
 package com.mycompany.umlspnp.transformations;
 
+import com.mycompany.umlspnp.models.sequencediagram.Loop;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.arcs.ArcDirection;
@@ -15,6 +16,7 @@ import cz.muni.fi.spnp.core.models.transitions.ImmediateTransition;
 import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javafx.util.Pair;
 
@@ -25,6 +27,7 @@ import javafx.util.Pair;
 public class ControlServiceSegment extends Segment {
     private final List<PhysicalSegment> physicalSegments;
     private final List<CommunicationSegment> communicationSegments;
+    private final Collection<Loop> loops;
 
     protected final ServiceCallNode treeRoot;
 
@@ -35,12 +38,37 @@ public class ControlServiceSegment extends Segment {
     public ControlServiceSegment(PetriNet petriNet,
                             List<PhysicalSegment> physicalSegments,
                             List<CommunicationSegment> communicationSegments,
+                            Collection<Loop> loops,
                             ServiceCallNode treeRoot) {
         super(petriNet);
 
         this.physicalSegments = physicalSegments;
         this.communicationSegments = communicationSegments;
+        this.loops = loops;
         this.treeRoot = treeRoot;
+    }
+
+    public List<ServiceCall> getControlServiceCalls(Message message) {
+        List<ServiceCall> result = new ArrayList<>();
+        for(var pair : controlServiceCalls) {
+            var serviceCall = pair.getValue();
+            if(message == serviceCall.getMessage()) {
+                result.add(serviceCall);
+            }
+        }
+        return result;
+    }
+    
+    public ServiceCall getHighestControlServiceCall(ServiceCallNode serviceCallNode) {
+        for(var pair : controlServiceCalls) {
+            var serviceCall = pair.getValue();
+            var message = serviceCall.getMessage();
+            var node = serviceCallNode.getNodeWithMessage(message);
+            if(node != null) {
+                return serviceCall;
+            }
+        }
+        return null;
     }
 
     public ActionServiceSegment transformExecutionServiceSegment(ServiceCall serviceCall, ServiceCallNode serviceCallNode) {
@@ -171,6 +199,32 @@ public class ControlServiceSegment extends Segment {
         petriNet.addFunction(haltingFunction);
     }
     
+    private boolean validateLoop(List<ServiceCallNode> highestServiceCallNodes) {
+        if(highestServiceCallNodes.size() < 1) {
+            System.err.println("Loop transformation error: unable to find the highest tree node");
+            return false;
+        }
+        else if(highestServiceCallNodes.size() > 1) {
+            var res = new StringBuilder();
+            highestServiceCallNodes.forEach(serviceCall -> {
+                res.append(serviceCall.getMessage().nameProperty().getValue());
+                res.append("   ");
+            });
+            System.err.println(String.format("Loop transformation error: loop contains unrelated messages with the following highest messages: %s", res.toString()));
+            return false;
+        }
+        return true;
+    }
+    
+    private void transformLoop(Loop loop) {
+        var highestServiceCallNodes = SPNPUtils.getLoopHighestControlServiceCall(this, treeRoot, loop);
+        if(!validateLoop(highestServiceCallNodes))
+            return;
+
+        var loopSegment = new LoopSegment(petriNet, this, highestServiceCallNodes.get(0), loop);
+        loopSegment.transform();
+    }
+    
     private ImmediateTransition getPreviousTransition() {
         if(controlServiceCalls.size() < 1)
             return initialTransition;
@@ -215,16 +269,18 @@ public class ControlServiceSegment extends Segment {
         
         // Control service calls
         transformServiceCalls(treeRoot);
-        
-        // Loops
-        // TODO loops
-        
+
         // Initial tranision guard
         transformInitialTransitionGuard(lifelineName);
         
         // End place and transition
         transformEnd(lifelineName);
         transformEndPlaceHaltingFunction(lifelineName);
+        
+        // Loops
+        loops.forEach(loop -> {
+            transformLoop(loop);
+        });
     }
     
     @Override

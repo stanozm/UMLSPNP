@@ -6,6 +6,7 @@
 package com.mycompany.umlspnp.transformations;
 
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
+import java.util.Collection;
 
 /**
  *
@@ -13,5 +14,6 @@ import cz.muni.fi.spnp.core.models.places.StandardPlace;
  */
 public interface ActionServiceSegment {
     public StandardPlace getEndPlace();
+    public Collection<StandardPlace> getFailPlaces();
     public void transform();
 }

@@ -22,7 +22,7 @@ public class LoopView extends NamedRectangle {
     }
 
     public void addChangeListener(ChangeListener cl){
-        this.localToSceneTransformProperty().addListener(cl);
+        this.boundsInParentProperty().addListener(cl);
     }
     
     public Rectangle getRectangle(){

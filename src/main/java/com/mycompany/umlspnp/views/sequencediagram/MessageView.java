@@ -9,6 +9,8 @@ import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import com.mycompany.umlspnp.views.common.ConnectionView;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -32,6 +34,8 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     private boolean annotationsDisplayed = true;
     
     private final boolean sourceIsDestination;
+    
+    private ObjectProperty<LoopView> loopProperty = new SimpleObjectProperty<>(null);
     
     public MessageView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, boolean sourceIsDestination, Group diagramRoot) {
         super(modelObjectID, source, destination, diagramRoot, true, sourceIsDestination);
@@ -113,6 +117,10 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         messageLabel.setText(newName);
     }
     
+    public ObjectProperty<LoopView> loopProperty() {
+        return loopProperty;
+    }
+    
     public Annotation getExecutionTimeAnnotation(){
         return executionTimeAnnotation;
     }
@@ -167,8 +175,10 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         return annotationsDisplayed;
     }
     
-    public void setInLoop(boolean value){
-        if(value){
+    public void setInLoop(LoopView loopView){
+        loopProperty.setValue(loopView);
+
+        if(loopView != null){
             this.arrow.setStroke(Color.RED);
         }
         else{

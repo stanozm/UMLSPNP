@@ -172,24 +172,24 @@ public class SequenceDiagramView extends DiagramView{
         return loopViews.remove(objectID) != null;
     }
     
-    private boolean isMessageLoopIntersection(MessageView messageView, LoopView loopView){
+    public boolean isMessageLoopIntersection(MessageView messageView, LoopView loopView){
         var shape = (Path) Shape.intersect(messageView.getArrow().getLine(), loopView.getRectangle());
         if(shape.getElements().size() > 0)
             return true;
         return false;
     }
-    
-    private boolean processMessageLoopIntersect(MessageView messageView, LoopView loopView){
+
+    public boolean processMessageLoopIntersect(MessageView messageView, LoopView loopView){
         if(isMessageLoopIntersection(messageView, loopView)){
-            messageView.setInLoop(true);
+            messageView.setInLoop(loopView);
             return true;
         }
         else{
-            messageView.setInLoop(false);
+            messageView.setInLoop(null);
             return false;
         }
     }
-    
+
     private void checkHighestLifeline() {
         var currentHighest = highestLifelineProperty.getValue();
         

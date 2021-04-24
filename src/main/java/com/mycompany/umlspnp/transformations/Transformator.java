@@ -88,6 +88,7 @@ public class Transformator {
             return;
         }
         var deploymentDiagram = model.getDeploymentDiagram();
+        var sequenceDiagram = model.getSequenceDiagram();
 
         // Physical segments
         var elements = DeploymentDiagram.getElementContainer();
@@ -112,7 +113,8 @@ public class Transformator {
         });
 
         // Control service segment
-        controlServiceSegment = new ControlServiceSegment(petriNet, physicalSegments, communicationSegments, treeRoot);
+        var loops = sequenceDiagram.getLoops();
+        controlServiceSegment = new ControlServiceSegment(petriNet, physicalSegments, communicationSegments, loops, treeRoot);
         controlServiceSegment.transform();
 
         // Communictaion segment finish Control Service Segment dependent transformations

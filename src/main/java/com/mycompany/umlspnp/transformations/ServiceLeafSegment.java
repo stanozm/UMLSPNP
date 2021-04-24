@@ -20,6 +20,7 @@ import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
 import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -324,6 +325,11 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     @Override
     public StandardPlace getEndPlace() {
         return endPlace;
+    }
+    
+    @Override
+    public Collection<StandardPlace> getFailPlaces() {
+        return this.failTypes.values();
     }
 
     @Override

@@ -24,7 +24,8 @@ public class ServiceCallNode {
 
     private boolean processed = false;
     private boolean markedForLabelCheck = false;
-    
+    private boolean markedForLoopCheck = false;
+
     public ServiceCallNode(Artifact artifact) {
         this.artifact = artifact;
         this.message = null;
@@ -99,6 +100,26 @@ public class ServiceCallNode {
         this.markedForLabelCheck = value;
     }
 
+    public boolean isMarkedForLoopCheck() {
+        return markedForLoopCheck;
+    }
+
+    public void setMarkedForLoopCheck(boolean value) {
+        this.markedForLoopCheck = value;
+    }
+
+    public ServiceCallNode getNodeWithMessage(Message message) {
+        if(this.getMessage() == message)
+            return this;
+
+        for(var child : getChildren()) {
+            var serviceCallNode = child.getNodeWithMessage(message);
+            if(serviceCallNode != null)
+                return serviceCallNode;
+        }
+        return null;
+    }
+    
     public String getCompoundOrderString() {
         var result = new StringBuilder();
         ServiceCallNode node = this;

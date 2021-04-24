@@ -374,7 +374,7 @@ public class SequenceDiagramController {
         addNodeMenu.getItems().addAll(lifelineMenu, loopMenuItem);
         sequenceDiagramView.addMenu(addNodeMenu);
     }
-    
+
     private void loopInit(Loop loop, LoopView loopView){
         var sequence = this.model.getSequenceDiagram();
         var loopObjectID = loop.getObjectInfo().getID();
@@ -564,6 +564,24 @@ public class SequenceDiagramController {
             });
         });
 
+        messageView.loopProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(oldValue != null){
+                    var loopID = ((LoopView) oldValue).getObjectInfo().getID();
+                    var loop = model.getSequenceDiagram().getLoop(loopID);
+                    if(loop != null)
+                        loop.removeMessage(message);
+                }
+                if(newValue != null) {
+                    var loopID = ((LoopView) newValue).getObjectInfo().getID();
+                    var loop = model.getSequenceDiagram().getLoop(loopID);
+                    if(loop != null)
+                        loop.addMessage(message);
+                }
+            }
+        });
+                
         messageView.nameProperty().bind(message.orderProperty().asString().concat(". ").concat(message.nameProperty()));
     }
     

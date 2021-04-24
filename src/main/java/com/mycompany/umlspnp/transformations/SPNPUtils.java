@@ -9,10 +9,12 @@ import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.deploymentdiagram.State;
+import com.mycompany.umlspnp.models.sequencediagram.Loop;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.places.Place;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import javafx.util.Pair;
@@ -44,6 +46,7 @@ public class SPNPUtils {
         return null;
     }
 
+    // TODO unique naming for places etc.
     public static String prepareName(String name, int maxLength) {
         var result = name.replaceAll("\\s+", "").replaceAll(com.mycompany.umlspnp.common.Utils.SPNP_NAME_RESTRICTION_REPLACE_REGEX, "");
         if(result.length() > maxLength) {
@@ -118,5 +121,26 @@ public class SPNPUtils {
                 return getStatePlace(physicalSegments, targetNode, state);
         }
         return null;
+    }
+    
+    public static List<ServiceCallNode> getLoopHighestControlServiceCall(ControlServiceSegment controlServiceSegment, ServiceCallNode treeRoot, Loop loop) {
+        List<ServiceCallNode> highestNodes = new ArrayList<>();
+        var messages = loop.getMessages();
+
+        messages.forEach(message -> {
+            var node = treeRoot.getNodeWithMessage(message);
+            ServiceCallNode prevNode = null;
+            var nodeMessage = node.getMessage();
+            
+            while(messages.contains(nodeMessage) && !node.isRoot()) {
+                prevNode = node;
+                node = node.getParent();
+                nodeMessage = node.getMessage();
+            }
+            if(prevNode != null && !highestNodes.contains(prevNode))
+                highestNodes.add(prevNode);
+        });
+
+        return highestNodes;
     }
 }

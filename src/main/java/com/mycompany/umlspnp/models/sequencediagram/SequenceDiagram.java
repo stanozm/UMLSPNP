@@ -173,6 +173,10 @@ public class SequenceDiagram {
         return loops.get(objectID);
     }
     
+    public Collection<Loop> getLoops() {
+        return loops.values();
+    }
+    
     public void addLoopsChangeListener(MapChangeListener listener){
         loops.addListener(listener);
     }

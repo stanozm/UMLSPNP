@@ -18,6 +18,7 @@ import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionP
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,11 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     @Override
     public StandardPlace getEndPlace() {
         return endPlace;
+    }
+    
+    @Override
+    public Collection<StandardPlace> getFailPlaces() {
+        return this.failTypes.values();
     }
 
     private void resolveControlServiceCalls() {
@@ -296,20 +302,6 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
         this.resolveControlServiceCalls();
 
-        // Initial transition
-        transformInitialTransition(communicationLinkName);
-
-        // Start place
-        transformStartPlace(communicationLinkName);
-
-        // Flush transition
-        transformFlushTransition(communicationLinkName);
-
-        // Fail type places and transitions
-        communicationLink.getLinkFailures().forEach(failType -> {
-            transformFailType(failType.nameProperty().getValue(), failType.rateProperty().getValue());
-        });
-
         // End transition
         transformEndTransition(communicationLinkName);
     }
@@ -339,6 +331,21 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     @Override
     public void transform() {
         String communicationLinkName = getCommunicationLinkNameSPNP();
+
+        // Initial transition
+        transformInitialTransition(communicationLinkName);
+
+        // Start place
+        transformStartPlace(communicationLinkName);
+
+        // Flush transition
+        transformFlushTransition(communicationLinkName);
+
+        // Fail type places and transitions
+        communicationLink.getLinkFailures().forEach(failType -> {
+            transformFailType(failType.nameProperty().getValue(), failType.rateProperty().getValue());
+        });
+
         // End place
         transformEndPlace(communicationLinkName);
     }
