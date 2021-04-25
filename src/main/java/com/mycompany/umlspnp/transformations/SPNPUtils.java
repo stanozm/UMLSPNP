@@ -57,13 +57,13 @@ public class SPNPUtils {
     
     public static String createPlaceName(String nodeName, String placeName) {
         var suffix = String.format("_%d", placeCounter);
-        var prefix = String.format("%s_%s", prepareName(nodeName, 8), prepareName(placeName, 8));
+        var prefix = String.format("P%s_%s", prepareName(nodeName, 8), prepareName(placeName, 8));
         return String.format("%s%s", prepareName(prefix, SPNP_MAX_NAME_LENGTH - suffix.length()), suffix);
     }
     
     public static String createTransitionName(String nodeName, String transitionName) {
         var suffix = String.format("_%d", transitionCounter);
-        var prefix = String.format("%s_%s", prepareName(nodeName, 8), prepareName(transitionName, 8));
+        var prefix = String.format("T%s_%s", prepareName(nodeName, 8), prepareName(transitionName, 8));
         return String.format("%s%s", prepareName(prefix, SPNP_MAX_NAME_LENGTH - suffix.length()), suffix);
     } 
 
