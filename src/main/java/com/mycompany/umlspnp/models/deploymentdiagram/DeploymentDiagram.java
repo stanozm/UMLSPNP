@@ -172,6 +172,10 @@ public class DeploymentDiagram {
         return allElements.getNode(objectID);
     }
     
+    public Collection<Artifact> getNodes() {
+        return allElements.getNodes().values();
+    }
+    
     public DeploymentTarget getDeploymentTarget(int objectID){
         var node = allElements.getNode(objectID);
         if(node instanceof DeploymentTarget)

@@ -20,16 +20,14 @@ import javafx.beans.value.ObservableValue;
  * @author 10ondr
  */
 public class StateTransition extends ObservableString {
-    private final ObjectProperty<State> from;
-    private final ObjectProperty<State> to;
+    private final ObjectProperty<State> from = new SimpleObjectProperty<>();
+    private final ObjectProperty<State> to = new SimpleObjectProperty<>();
     private final StringProperty transitionName = new SimpleStringProperty();
     private final DoubleProperty rate = new SimpleDoubleProperty();
     
     private boolean isLocked = false; // Locked transition can not be edited or removed
     
-    public StateTransition(State from, State to, String name, double rate){
-        this.from = new SimpleObjectProperty(from);
-        this.to = new SimpleObjectProperty(to);
+    public StateTransition(State fromState, State toState, String name, double rate){
         this.setName(name);
         this.setRate(rate);
         
@@ -40,10 +38,29 @@ public class StateTransition extends ObservableString {
             }
         };
         
+        var stateChangeListener = new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(oldValue != null) {
+                    var oldState = (State) oldValue;
+                    oldState.getStringRepresentation().removeListener(stringChangeListener);
+                }
+                if(newValue != null) {
+                    var newState = (State) newValue;
+                    newState.getStringRepresentation().addListener(stringChangeListener);
+                }
+            }
+        };
+        
         this.transitionName.addListener(stringChangeListener);
         this.rate.addListener(stringChangeListener);
         this.from.addListener(stringChangeListener);
+        this.from.addListener(stateChangeListener);
         this.to.addListener(stringChangeListener);
+        this.to.addListener(stateChangeListener);
+        
+        this.from.setValue(fromState);
+        this.to.setValue(toState);
     }
 
     public void setLocked(boolean value) {
@@ -85,17 +102,15 @@ public class StateTransition extends ObservableString {
     public DoubleProperty rateProperty(){
         return this.rate;
     }
-    
-    public void setStateFrom(State newState){
-        this.from.setValue(newState);
-    }
-    
-    public void setStateTo(State newState){
-        this.to.setValue(newState);
-    }
-    
+
     @Override
     public String toString() {
-        return String.format("[" + getStateFrom().toString() + "->" + getStateTo().toString() + "]: " + transitionName.getValue() + ", Rate: " + rate.getValue().toString());
+        String fromStateString = "INVALID";
+        String toStateString = "INVALID";
+        if(getStateFrom() != null)
+            fromStateString = getStateFrom().toString();
+        if(getStateTo() != null)
+            toStateString = getStateTo().toString();
+        return String.format("[" + fromStateString + "->" + toStateString + "]: " + transitionName.getValue() + ", Rate: " + rate.getValue().toString());
     }
 }

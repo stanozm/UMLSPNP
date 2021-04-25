@@ -30,6 +30,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -253,6 +254,26 @@ public class DeploymentDiagramController {
         });
         globalMenu.getItems().addAll(operationTypesMenuItem);
         
+        var allOperationTypes = deployment.getOperationTypes();
+        allOperationTypes.addListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasRemoved()) {
+                        change.getRemoved().forEach(removedItem -> {
+                            deployment.getNodes().forEach(node -> {
+                                if(node instanceof DeploymentTarget) {
+                                    ((DeploymentTarget) node).getStateOperations().forEach(stateOperation -> {
+                                        stateOperation.getOperationEntries().removeIf(operationEntry -> removedItem.equals(operationEntry.getOperationType()));
+                                    });
+                                }
+                            });
+                        });
+                    }
+                }
+            }
+        });
+        
         MenuItem redundancyGroupsMenuItem = new MenuItem("Redundancy groups");
         redundancyGroupsMenuItem.setOnAction((e) -> {
             var redundancyGroupsView = createRedundancyGroupsView();
@@ -443,8 +464,8 @@ public class DeploymentDiagramController {
         });
         
         deploymentTargetView.addMenuItem(menuItemAddDT);
-        
-                
+
+
         MenuItem menuItemConnect = new MenuItem("Connect");
         menuItemConnect.setOnAction((e) -> {
             this.view.getDeploymentDiagramView().startConnection(deploymentTargetView);
@@ -456,9 +477,12 @@ public class DeploymentDiagramController {
         
         MenuItem menuProperties = new MenuItem("Properties");
         menuProperties.setOnAction((e) -> {
-            var statesView = createStatesProperties(deploymentTarget);
             var stateTransitionsView = createStateTransitionsProperties(deploymentTarget);
             var stateOperationsView = createStateOperationsProperties(deploymentTarget);
+            var statesView = createStatesProperties(deploymentTarget, () -> {
+                stateTransitionsView.refresh();
+                stateOperationsView.refresh();
+            });
             var redundancyGroupView = createRedundancyGroupView(deploymentTarget);
 
             ArrayList<EditableListView> sections = new ArrayList();
@@ -470,7 +494,25 @@ public class DeploymentDiagramController {
             this.view.createPropertiesModalWindow("\"" + deploymentTarget.getNameProperty().getValue() + "\" properties", sections);
         });
         deploymentTargetView.addMenuItem(menuProperties);
-
+        
+        // Remove State Transitions and State Operations when corresponding State is removed
+        deploymentTarget.addStatesChangeListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasRemoved()) {
+                        change.getRemoved().forEach(removedItem -> {
+                            deploymentTarget.getStateTransitions().removeIf(transition -> 
+                                            transition.getStateFrom().equals(removedItem) || 
+                                            transition.getStateTo().equals(removedItem));
+                            deploymentTarget.getStateOperations().removeIf(operation -> 
+                                            operation.getState().equals(removedItem));
+          
+                        });
+                    }
+                }
+            }
+        });
     }
     
     private void communicationLinkMenuInit(CommunicationLinkView communicationLinkView){
@@ -670,7 +712,7 @@ public class DeploymentDiagramController {
         return failuresView;
     }
     
-    private EditableListView createStatesProperties(DeploymentTarget deploymentTarget){
+    private EditableListView createStatesProperties(DeploymentTarget deploymentTarget, Runnable refreshCallback){
         var states = deploymentTarget.getStates();
         var statesView = new EditableListView("States:", states);
         var addBtnHandler = new EventHandler<ActionEvent>(){
@@ -717,6 +759,7 @@ public class DeploymentDiagramController {
                         renameWindow.setStringRestrictionRegex(Utils.SPNP_NAME_RESTRICTION_REGEX);
                         renameWindow.showAndWait();
                         statesView.refresh();
+                        refreshCallback.run();
                     }
                 }
             }
@@ -729,6 +772,7 @@ public class DeploymentDiagramController {
                 if(selected != null){
                     deploymentTarget.setDefaultState(selected);
                     statesView.refresh();
+                    refreshCallback.run();
                 }
             }
         };
@@ -741,7 +785,7 @@ public class DeploymentDiagramController {
         return statesView;
     }
 
-    
+
     private EditableListView createStateTransitionsProperties(DeploymentTarget deploymentTarget){
         var states = deploymentTarget.getStates();
         var transitions = deploymentTarget.getStateTransitions();

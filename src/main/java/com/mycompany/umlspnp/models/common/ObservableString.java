@@ -14,7 +14,7 @@ import javafx.beans.property.StringProperty;
  * @author 10ondr
  */
 public class ObservableString {
-    private final StringProperty stringRepresentation = new SimpleStringProperty();
+    protected final StringProperty stringRepresentation = new SimpleStringProperty();
     
     public ObservableString(){
     

@@ -18,12 +18,10 @@ import javafx.beans.value.ObservableValue;
  * @author 10ondr
  */
 public class OperationEntry extends ObservableString {
-    private final ObjectProperty<OperationType> operationType;
+    private final ObjectProperty<OperationType> operationType = new SimpleObjectProperty<>();
     private final IntegerProperty speedLimit;
     
     public OperationEntry(OperationType operationType, Integer speedLimit){
-        this.operationType = new SimpleObjectProperty(operationType);
-
         this.speedLimit = new SimpleIntegerProperty();
         if(speedLimit == null)
             this.speedLimit.setValue(-1);
@@ -37,8 +35,25 @@ public class OperationEntry extends ObservableString {
             }
         };
 
+        var operationTypeChangeListener = new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(oldValue != null) {
+                    var oldOperationType = (OperationType) oldValue;
+                    oldOperationType.getStringRepresentation().removeListener(stringChangeListener);
+                }
+                if(newValue != null) {
+                    var newOperationType = (OperationType) newValue;
+                    newOperationType.getStringRepresentation().addListener(stringChangeListener);
+                }
+            }
+        };
+
         this.operationType.addListener(stringChangeListener);
+        this.operationType.addListener(operationTypeChangeListener);
         this.speedLimit.addListener(stringChangeListener);
+        
+        this.operationType.setValue(operationType);
     }
     
     public StringProperty nameProperty(){
@@ -75,8 +90,8 @@ public class OperationEntry extends ObservableString {
     @Override
     public String toString() {
         String opString = "None";
-        if(operationType.getValue() != null)
-            opString = operationType.getValue().getName();
+        if(getOperationType() != null)
+            opString = getOperationType().getName();
 
         if (speedLimit.getValue() < 0)
             return opString;

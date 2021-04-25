@@ -377,6 +377,23 @@ public class SequenceDiagramController {
         
         addNodeMenu.getItems().addAll(lifelineMenu, loopMenuItem);
         sequenceDiagramView.addMenu(addNodeMenu);
+        
+        var allOperationTypes = deployment.getOperationTypes();
+        allOperationTypes.addListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasRemoved()) {
+                        change.getRemoved().forEach(removedItem -> {
+                            sequence.getSortedMessages().forEach(message -> {
+                                if(removedItem.equals(message.getOperationType()))
+                                    message.removeOperationType();
+                            });
+                        });
+                    }
+                }
+            }
+        });
     }
 
     private void loopInit(Loop loop, LoopView loopView){
@@ -582,7 +599,7 @@ public class SequenceDiagramController {
                 }
             }
         });
-
+        
         messageView.nameProperty().bind(message.orderProperty().asString().concat(". ").concat(message.nameProperty()));
     }
     
