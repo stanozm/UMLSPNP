@@ -87,13 +87,15 @@ public class ControlServiceSegment extends Segment {
     }
 
     private void transformControlServiceCall(ServiceCallNode serviceCallNode, boolean isExecutionCall) {
+        var artifact = serviceCallNode.getArtifact();
         var message = serviceCallNode.getMessage();
         String prefix = "C_";
         if(isExecutionCall)
             prefix = "L_";
         var messageName = prefix + message.nameProperty().getValue();
 
-        var serviceCallPlace = new StandardPlace(SPNPUtils.placeCounter++, messageName);
+        var serviceCallPlaceName = SPNPUtils.createPlaceName(messageName, artifact.getNameProperty().getValue());
+        var serviceCallPlace = new StandardPlace(SPNPUtils.placeCounter++, serviceCallPlaceName);
         petriNet.addPlace(serviceCallPlace);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, serviceCallPlace, getPreviousTransition());

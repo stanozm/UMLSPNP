@@ -69,7 +69,7 @@ public class SPNPUtils {
 
     public static String createTransitionName(String transitionName) {
         var suffix = String.format("_%d", transitionCounter);
-        var prefix = prepareName(transitionName, SPNP_MAX_NAME_LENGTH - suffix.length());
+        var prefix = prepareName("T" + transitionName, SPNP_MAX_NAME_LENGTH - suffix.length());
         return String.format("%s%s", prefix, suffix);
     }
     
