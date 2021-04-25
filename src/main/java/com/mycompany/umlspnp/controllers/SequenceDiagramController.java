@@ -551,21 +551,18 @@ public class SequenceDiagramController {
             }
         });
 
-        // Needs to be run async, otherwise it breaks because of not fully initialized view
-        Platform.runLater(() -> {
-            message.orderProperty().addListener(new ChangeListener() {
-                @Override
-                public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                    if(message.isLeafMessage()) {
-                        messageView.getExecutionTimeAnnotation().setDisplayed(true);
-                        messageView.getFailureTypesAnnotation().setDisplayed(true);
-                    }
-                    else {
-                        messageView.getExecutionTimeAnnotation().setDisplayed(false);
-                        messageView.getFailureTypesAnnotation().setDisplayed(false);
-                    }
+        message.orderProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(message.isLeafMessage()) {
+                    messageView.getExecutionTimeAnnotation().setDisplayed(true);
+                    messageView.getFailureTypesAnnotation().setDisplayed(true);
                 }
-            });
+                else {
+                    messageView.getExecutionTimeAnnotation().setDisplayed(false);
+                    messageView.getFailureTypesAnnotation().setDisplayed(false);
+                }
+            }
         });
 
         messageView.loopProperty().addListener(new ChangeListener() {

@@ -137,9 +137,12 @@ public class Annotation extends NamedRectangle {
     
     private void resizeByContent(){
         Bounds newBounds = this.items.getBoundsInParent();
-        double newWidth = 10.0 + Math.max(nameLabel.getWidth(), newBounds.getWidth());
-        double newHeight = 3.0 + nameLabel.getHeight() + newBounds.getHeight();
-        this.changeDimensions(newWidth, newHeight);
+        double maxWidth = Math.max(nameLabel.getWidth(), newBounds.getWidth());
+        if(maxWidth > 0) {
+            double newWidth = 10.0 + maxWidth;
+            double newHeight = 3.0 + nameLabel.getHeight() + newBounds.getHeight();
+            this.changeDimensions(newWidth, newHeight);
+        }
     }
     
     private void refreshItemsWidth(){
