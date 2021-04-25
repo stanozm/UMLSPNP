@@ -114,7 +114,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
             guardBody.append(String.format("(%s) && ", getTopLevelServicePlacesString()));
 
         guardBody.append(String.format("!(mark(\"%s\")", startPlace.getName()));
-        guardBody.append(String.format(" || (mark(\"%s\")", endPlace.getName()));
+        guardBody.append(String.format(" || mark(\"%s\")", endPlace.getName()));
         failTypes.values().forEach(failTypePlace -> {
             guardBody.append(String.format(" || mark(\"%s\")", failTypePlace.getName()));
         });
