@@ -169,23 +169,37 @@ public class SequenceDiagramView extends DiagramView{
             return false;
 
         root.getChildren().remove(removedLoop);
-        return loopViews.remove(objectID) != null;
+        boolean success = loopViews.remove(objectID) != null;
+        if(success) {
+            allElements.getConnections().values().forEach(messageView -> {
+                processMessageAllLoopsIntersect(messageView);
+            });
+        }
+        return success;
     }
     
     public boolean isMessageLoopIntersection(MessageView messageView, LoopView loopView){
         var shape = (Path) Shape.intersect(messageView.getArrow().getLine(), loopView.getRectangle());
-        if(shape.getElements().size() > 0)
-            return true;
-        return false;
+        return shape.getElements().size() > 0;
     }
 
-    public boolean processMessageLoopIntersect(MessageView messageView, LoopView loopView){
+    private void processMessageAllLoopsIntersect(MessageView messageView) {
+        for(var loopView : loopViews.values()){
+            if(isMessageLoopIntersection(messageView, loopView)){
+                messageView.setInLoop(loopView);
+                return;
+            }
+        }
+        messageView.setInLoop(null);
+    }
+    
+    private boolean processMessageLoopIntersect(MessageView messageView, LoopView loopView){
         if(isMessageLoopIntersection(messageView, loopView)){
             messageView.setInLoop(loopView);
             return true;
         }
         else{
-            messageView.setInLoop(null);
+            processMessageAllLoopsIntersect(messageView);
             return false;
         }
     }
