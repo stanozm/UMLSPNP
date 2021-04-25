@@ -216,8 +216,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
         double transferRate = communicationLink.getLinkType().rateProperty().getValue();
 
-        controlServiceCalls.forEach(topLevelServiceCall -> {
-            var messageSizeObj = topLevelServiceCall.getMessage().getMessageSize();
+        controlServiceCalls.forEach(controlServiceCall -> {
+            var messageSizeObj = controlServiceCall.getMessage().getMessageSize();
             if(messageSizeObj == null)
                 return;
             int messageSize = messageSizeObj.messageSizeProperty().getValue();
@@ -229,7 +229,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
             if(distributionValues.length() > 0)
                 distributionValues.append(" + ");
-            distributionValues.append(String.format("mark(\"%s\") * %f", topLevelServiceCall.getPlace().getName(), rate));
+            distributionValues.append(String.format("mark(\"%s\") * %f", controlServiceCall.getPlace().getName(), rate));
         });
 
         if(distributionValues.length() < 1)
