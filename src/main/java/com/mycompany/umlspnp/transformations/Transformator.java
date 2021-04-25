@@ -9,6 +9,7 @@ import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.transformators.spnp.*;
+import cz.muni.fi.spnp.core.transformators.spnp.code.Include;
 import cz.muni.fi.spnp.core.transformators.spnp.code.SPNPCode;
 import cz.muni.fi.spnp.core.transformators.spnp.options.Option;
 import cz.muni.fi.spnp.core.transformators.spnp.options.SPNPOptions;
@@ -50,7 +51,9 @@ public class Transformator {
     }
 
     protected final SPNPCode createCode() {
-        return new SPNPCode();
+        var spnpCode = new SPNPCode();
+        spnpCode.addInclude(new Include("\"user.h\""));
+        return spnpCode;
     }
 
     protected final SPNPOptions createOptions() {
