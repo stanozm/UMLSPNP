@@ -97,9 +97,9 @@ public class SequenceDiagramView extends DiagramView{
     
     public MessageView createMessage(ActivationView source, ActivationView destination, int messageModelID){
         var connectionSlotSource = source.getEmptySlot();
-        connectionSlotSource.disable(source == destination);
-
         var connectionSlotDestination = destination.getEmptySlot();
+        connectionSlotDestination.disable(source == destination);
+
         connectionSlotSource.setSiblingVertical(connectionSlotDestination);
         connectionSlotDestination.setSiblingVertical(connectionSlotSource);
 

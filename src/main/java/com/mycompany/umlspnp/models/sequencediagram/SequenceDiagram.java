@@ -130,8 +130,8 @@ public class SequenceDiagram {
     public Message createMessage(Activation source, Activation destination){
         var message = new Message(source, destination);
         
-        allElements.addConnection(message, message.getObjectInfo().getID());
         sortedMessages.add(message);
+        allElements.addConnection(message, message.getObjectInfo().getID());
 
         source.addMessage(message);
         destination.addMessage(message);

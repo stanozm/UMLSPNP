@@ -154,6 +154,7 @@ public class SequenceDiagramController {
         
         var mess1_1_2 = sequence.createMessage(aC1, aC1);
         var mess1_1_2_view = sequenceView.getConnection(mess1_1_2.getObjectInfo().getID());
+        mess1_1_2_view.getSourceConnectionSlot().setTranslateY(mess1_1_1_view.getSourceConnectionSlot().getTranslateY() + 30);
         mess1_1_2_view.getDestinationConnectionSlot().setTranslateY(mess1_1_1_view.getSourceConnectionSlot().getTranslateY() + 30);
         mess1_1_2.nameProperty().setValue("112");
         
@@ -164,6 +165,7 @@ public class SequenceDiagramController {
         
         var mess1_1_3_1 = sequence.createMessage(aD2, aD2);
         var mess1_1_3_1_view = sequenceView.getConnection(mess1_1_3_1.getObjectInfo().getID());
+        mess1_1_3_1_view.getSourceConnectionSlot().setTranslateY(20);
         mess1_1_3_1_view.getDestinationConnectionSlot().setTranslateY(20);
         mess1_1_3_1.nameProperty().setValue("1131");
         
@@ -186,6 +188,7 @@ public class SequenceDiagramController {
         
         var mess2_1 = sequence.createMessage(aB, aB);
         var mess2_1_view = sequenceView.getConnection(mess2_1.getObjectInfo().getID());
+        mess2_1_view.getSourceConnectionSlot().setTranslateY(mess2_view.getSourceConnectionSlot().getTranslateY() + 15);
         mess2_1_view.getDestinationConnectionSlot().setTranslateY(mess2_view.getSourceConnectionSlot().getTranslateY() + 15);
         mess2_1.nameProperty().setValue("21");
     }
@@ -222,8 +225,9 @@ public class SequenceDiagramController {
         sequence.getSortedMessages().addListener(new ListChangeListener() {
             @Override
             public void onChanged(ListChangeListener.Change change) {
-                sequence.getSortedMessages().forEach(message -> {
-                    message.setOrder(sequence.getSortedMessages().indexOf(message));
+                var sortedMessages = sequence.getSortedMessages();
+                sortedMessages.forEach(message -> {
+                    message.setOrder(sortedMessages.indexOf(message));
                 });
             }
         });
@@ -241,7 +245,7 @@ public class SequenceDiagramController {
                     messageMenuInit(newMessage, newMessageView);
                     messageAnnotationsInit(newMessage, newMessageView);
 
-                    sortMessages(); // Does not work - should be async after view init. However that results in yet in another JavaFX crash
+                    sortMessages();
 //                    createSampleAnnotations(newConnection);
                 }
                 if(change.wasRemoved()){
@@ -581,7 +585,7 @@ public class SequenceDiagramController {
                 }
             }
         });
-                
+
         messageView.nameProperty().bind(message.orderProperty().asString().concat(". ").concat(message.nameProperty()));
     }
     
