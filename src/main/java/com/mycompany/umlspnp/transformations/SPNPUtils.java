@@ -143,4 +143,12 @@ public class SPNPUtils {
 
         return highestNodes;
     }
+    
+    public static DeploymentTarget getDeploymentTargetFromArtifact(Artifact artifact) {
+        if(artifact == null)
+            return null;
+        if(artifact instanceof DeploymentTarget)
+            return (DeploymentTarget) artifact;
+        return artifact.getParent();
+    }
 }

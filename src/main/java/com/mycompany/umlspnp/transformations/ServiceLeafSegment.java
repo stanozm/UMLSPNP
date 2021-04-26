@@ -124,6 +124,55 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         petriNet.addFunction(flushGuard);
         flushTransition.setGuardFunction(flushGuard);
     }
+    
+    private FunctionSPNP<Double> createEndRateDistributionFunction(String messageName) {
+        var message = serviceCall.getMessage();
+        var activation = message.getFrom();
+        var artifact = activation.getLifeline().getArtifact();
+        var dt = SPNPUtils.getDeploymentTargetFromArtifact(artifact);
+
+        var executionTime = (double) serviceCall.getMessage().getExecutionTimeValue();
+        var operationType = message.getOperationType();
+
+        var functionBody = new StringBuilder();
+        dt.getStates().forEach(state -> {
+            if(!state.isStateDOWN()) {
+                double speedCoefficient = 1.0;
+
+                // Get the speed limit from the appropriate SupportedOperations annotation entry
+                if(operationType != null) {
+                    for(var operation : dt.getStateOperations()) {
+                        if(state == operation.getState()) {
+                            for(var operationEntry : operation.getOperationEntries()) {
+                                if(operationEntry.getOperationType() == operationType && operationEntry.getSpeedLimit() >= 0) {
+                                    speedCoefficient = (((double) operationEntry.getSpeedLimit()) / 100);
+                                    break;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                var statePlace = SPNPUtils.getStatePlace(physicalSegments, dt, state);
+                if(statePlace != null){
+                    if(functionBody.length() > 0)
+                        functionBody.append(" + ");
+                    functionBody.append(String.format("(mark(\"%s\") * %f * %f)", statePlace.getName(), executionTime, speedCoefficient));
+                }
+                else{
+                    System.err.println(String.format("Leaf service segment transformation error: hw place for state %s not found.",
+                                        state.nameProperty().getValue()));
+                }
+            }
+        });
+        if(functionBody.length() < 1)
+            functionBody.append("1");
+        functionBody.insert(0, "return 1 / (");
+        functionBody.append(");");
+        
+        var functionName = SPNPUtils.createFunctionName(String.format("leaf_trans_dist_func__%s", SPNPUtils.prepareName(messageName, 15)));
+        return new FunctionSPNP<>(functionName, FunctionType.Distribution, functionBody.toString(), Double.class);
+    }
 
     private void transformEnd(String messageName) {
         var endPlaceName = SPNPUtils.createPlaceName(messageName, "end");
@@ -131,7 +180,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         petriNet.addPlace(endPlace);
 
         var endTransitionName = SPNPUtils.createTransitionName(messageName, "end");
-        var distribution = new ExponentialTransitionDistribution(1 / (double) serviceCall.getMessage().getExecutionTimeValue());
+        var distributionFunction = createEndRateDistributionFunction(messageName);
+        var distribution = new ExponentialTransitionDistribution(distributionFunction);
         endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, this.transitionPriority, null, distribution);
         petriNet.addTransition(endTransition);
 
@@ -147,15 +197,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, endPlace, flushTransition, cardinalityFunction);
         petriNet.addArc(flushInputArc);
     }
-    
-    private DeploymentTarget getDeploymentTargetFromArtifact(Artifact artifact) {
-        if(artifact == null)
-            return null;
-        if(artifact instanceof DeploymentTarget)
-            return (DeploymentTarget) artifact;
-        return artifact.getParent();
-    }
-    
+
     private Set<ServiceCallNode> getMarkedNodesInTree() {
         var result = new HashSet<ServiceCallNode>();
         result.add(serviceCallNode);
@@ -241,7 +283,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         var controlSet = new HashSet<DeploymentTarget>();
         for(var treeNode : hwFailNodes) {
-            var dt = getDeploymentTargetFromArtifact(treeNode.getArtifact());
+            var dt = SPNPUtils.getDeploymentTargetFromArtifact(treeNode.getArtifact());
             if(!controlSet.contains(dt)) {
                 if(!controlSet.isEmpty())
                     guardBody.append(" || ");
@@ -252,7 +294,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
                   // NOTE: Uncomment if both sending and receiving nodes should be checked for operation types
 //                guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getFrom().getLifeline().getArtifact()), message));
 //                if(!message.isSelfMessage())
-                guardBody.append(getMessageOperationTypesString(getDeploymentTargetFromArtifact(message.getTo().getLifeline().getArtifact()), message));
+                guardBody.append(getMessageOperationTypesString(SPNPUtils.getDeploymentTargetFromArtifact(message.getTo().getLifeline().getArtifact()), message));
             }
             controlSet.add(dt);
         }
