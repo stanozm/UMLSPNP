@@ -151,6 +151,7 @@ public class SequenceDiagramController {
         var mess1_1_1_view = sequenceView.getConnection(mess1_1_1.getObjectInfo().getID());
         mess1_1_1_view.getSourceConnectionSlot().setTranslateY((aD1_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC1_view.getTranslateY() - ACTIVATION_BASE_Y));
         mess1_1_1.nameProperty().setValue("111");
+        mess1_1_1.setMessageSize(10);
         
         var mess1_1_2 = sequence.createMessage(aC1, aC1);
         var mess1_1_2_view = sequenceView.getConnection(mess1_1_2.getObjectInfo().getID());
@@ -162,6 +163,7 @@ public class SequenceDiagramController {
         var mess1_1_3_view = sequenceView.getConnection(mess1_1_3.getObjectInfo().getID());
         mess1_1_3_view.getSourceConnectionSlot().setTranslateY((aD2_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC1_view.getTranslateY() - ACTIVATION_BASE_Y));
         mess1_1_3.nameProperty().setValue("113");
+        mess1_1_3.setMessageSize(10);
         
         var mess1_1_3_1 = sequence.createMessage(aD2, aD2);
         var mess1_1_3_1_view = sequenceView.getConnection(mess1_1_3_1.getObjectInfo().getID());
@@ -179,6 +181,7 @@ public class SequenceDiagramController {
         mess1_2_1_view.getSourceConnectionSlot().setTranslateY((aD3_view.getTranslateY() - ACTIVATION_BASE_Y) - (aC2_view.getTranslateY() - ACTIVATION_BASE_Y) + 10);
         mess1_2_1_view.getDestinationConnectionSlot().setTranslateY(mess1_2_1_view.getSourceConnectionSlot().getTranslateY());
         mess1_2_1.nameProperty().setValue("121");
+        mess1_2_1.setMessageSize(10);
         
         var mess2 = sequence.createMessage(aA, aB);
         var mess2_view = sequenceView.getConnection(mess2.getObjectInfo().getID());
