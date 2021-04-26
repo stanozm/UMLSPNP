@@ -15,5 +15,6 @@ import java.util.Collection;
 public interface ActionServiceSegment {
     public StandardPlace getEndPlace();
     public Collection<StandardPlace> getFailPlaces();
+    public void setFlushTransitionGuardDependentPlace(StandardPlace dependentPlace);
     public void transform();
 }

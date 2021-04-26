@@ -138,6 +138,14 @@ public class LoopSegment extends Segment{
         petriNet.addArc(inhibitorArc);
     }
 
+    public boolean containsControlServiceCall(ServiceCall controlServiceCall) {
+        return controlServiceCalls.contains(controlServiceCall);
+    }
+    
+    public StandardPlace getFlushPlace() {
+        return flushPlace;
+    }
+
     public void transform() {
         var serviceCall = controlServiceSegment.getHighestControlServiceCall(highestTreeNode);
         if(serviceCall != null) {

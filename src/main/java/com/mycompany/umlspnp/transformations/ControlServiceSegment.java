@@ -34,6 +34,8 @@ public class ControlServiceSegment extends Segment {
     protected final List<Pair<ImmediateTransition, ServiceCall>> controlServiceCalls = new ArrayList<>();
     protected ImmediateTransition initialTransition = null;
     protected StandardPlace endPlace = null;
+    
+    private final List<LoopSegment> loopSegments = new ArrayList<>();
 
     public ControlServiceSegment(PetriNet petriNet,
                             List<PhysicalSegment> physicalSegments,
@@ -108,14 +110,15 @@ public class ControlServiceSegment extends Segment {
         else
             actionServiceSegment = getCommunicationSegment(message);
         serviceCall.setActionSegment(actionServiceSegment);
-
-        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_ok", SPNPUtils.prepareName(messageName, 15)));
-        var guardBody = String.format("return mark(\"%s\");", actionServiceSegment.getEndPlace().getName());
-        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
-
+        
         var serviceCallTransitionName = SPNPUtils.createTransitionName(messageName);
-        var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName, 1, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(serviceCallTransition);
+        
+        // Arc from the execution/communication segment end place to the control segment transition
+        var actionSegmentEndPlace = actionServiceSegment.getEndPlace();
+        var endPlaceInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, actionSegmentEndPlace, serviceCallTransition);
+        petriNet.addArc(endPlaceInputArc);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, serviceCallPlace, serviceCallTransition);
         petriNet.addArc(inputArc);
@@ -201,6 +204,15 @@ public class ControlServiceSegment extends Segment {
         petriNet.addFunction(haltingFunction);
     }
     
+    private void transformActionSegmentFlushTransitionGuard(ServiceCall controlServiceCall) {
+        var actionSegment = controlServiceCall.getActionSegment();
+        loopSegments.forEach(loopSegment -> {
+            if(loopSegment.containsControlServiceCall(controlServiceCall)) {
+                actionSegment.setFlushTransitionGuardDependentPlace(loopSegment.getFlushPlace());
+            }
+        });
+    }
+    
     private boolean validateLoop(List<ServiceCallNode> highestServiceCallNodes) {
         if(highestServiceCallNodes.size() < 1) {
             System.err.println("Loop transformation error: unable to find the highest tree node");
@@ -225,6 +237,7 @@ public class ControlServiceSegment extends Segment {
 
         var loopSegment = new LoopSegment(petriNet, this, highestServiceCallNodes.get(0), loop);
         loopSegment.transform();
+        loopSegments.add(loopSegment);
     }
     
     private ImmediateTransition getPreviousTransition() {
@@ -282,6 +295,12 @@ public class ControlServiceSegment extends Segment {
         // Loops
         loops.forEach(loop -> {
             transformLoop(loop);
+        });
+        
+        // Action segments flush transitions (depend on loop segments)
+        controlServiceCalls.forEach(serviceCallPair -> {
+            var serviceCall = serviceCallPair.getValue();
+            transformActionSegmentFlushTransitionGuard(serviceCall);
         });
     }
     

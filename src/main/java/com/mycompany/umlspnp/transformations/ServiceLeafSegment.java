@@ -79,19 +79,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         failTypes.values().forEach(failTypePlace -> {
             guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
         });
-        guardBody.append(String.format("mark(\"%s\"))", failHWPlace.getName()));
-
-        // Remotely invoked through a communication link
-        // TODO check whether this is still relevant in the alternative specification
-//        var communicationLink = SPNPUtils.getMessageCommunicationLink(serviceCall.getMessage());
-//        if(communicationLink != null) {
-//            communicationSegments.forEach(communicationSegment -> {
-//                if(communicationLink == communicationSegment.getCommunicationLink()) {
-//                    guardBody.append(String.format(" && mark(\"%s\")", communicationSegment.getEndPlace().getName()));
-//                }
-//            });
-//        }
-        guardBody.append(";");
+        guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
         
         var startGuardName = SPNPUtils.createFunctionName(String.format("guard_%s_leaf_start", SPNPUtils.prepareName(messageName, 15)));
         FunctionSPNP<Integer> startGuard = new FunctionSPNP<>(startGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
@@ -116,18 +104,20 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         // TODO flush and end transition priorities needs to be configured (not yet specified properly)
     }
 
-    private void createFlushTransitionGuard(String messageName) {
-        var guardBody = new StringBuilder();
-        guardBody.append(String.format("return mark(\"%s\") && (", serviceCall.getPlace().getName()));
-
-        guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
-        failTypes.values().forEach(failTypePlace -> {
-            guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
-        });
-        guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
+    private void createFlushTransitionGuard(String messageName, StandardPlace dependentPlace) {
+        var existingGuard = flushTransition.getGuardFunction();
+        if(existingGuard != null)
+            petriNet.removeFunction(existingGuard);
+        
+        
+        String guardBody;
+        if(dependentPlace != null)
+            guardBody = String.format("return mark(\"%s\");", dependentPlace.getName());
+        else
+            guardBody = "return 0;";
 
         var flushGuardName = SPNPUtils.createFunctionName(String.format("guard_%s_leaf_flush", SPNPUtils.prepareName(messageName, 15)));
-        FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
+        FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody, Integer.class);
 
         petriNet.addFunction(flushGuard);
         flushTransition.setGuardFunction(flushGuard);
@@ -345,6 +335,10 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         // Flush transition
         transformFlushTransition(messageName);
+        
+        // Flush transition guard function
+        // This guard may be altered later after the loops segments are transformed
+        createFlushTransitionGuard(messageName, null);
 
         // End place and transition
         transformEnd(messageName);
@@ -359,9 +353,6 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         // Initial transition guard function
         createInitialTransitionGuard(messageName);
-
-        // Flush transition guard function
-        createFlushTransitionGuard(messageName);
     }
     
     @Override
@@ -394,4 +385,12 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         result.insert(0, String.format("Execution Service Segment - message \"%s\":%n", serviceCall.getMessage().nameProperty().getValue()));
         return result.toString();
     }
+
+    @Override
+    public void setFlushTransitionGuardDependentPlace(StandardPlace dependentPlace) {
+        var message = serviceCall.getMessage();
+        var messageName = message.nameProperty().getValue();
+        createFlushTransitionGuard(messageName, dependentPlace);
+    }
+    
 }
