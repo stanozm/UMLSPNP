@@ -34,7 +34,7 @@ public class PhysicalSegment extends Segment {
     protected Map<State, ImmediateTransition> parentFailTransitions = new HashMap<>();
 
     public PhysicalSegment(PetriNet petriNet, DeploymentTarget node) {
-        super(petriNet);
+        super(petriNet, 10);
         
         this.node = node;
     }
@@ -115,7 +115,8 @@ public class PhysicalSegment extends Segment {
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
 
         var transitionName = SPNPUtils.createTransitionName(nodeName, "parent");
-        var parentFailTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, transitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        var parentFailTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, transitionName,
+                                    this.transitionPriority, guard, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(parentFailTransition);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, downStatePlace, parentFailTransition);

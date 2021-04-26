@@ -42,7 +42,7 @@ public class ControlServiceSegment extends Segment {
                             List<CommunicationSegment> communicationSegments,
                             Collection<Loop> loops,
                             ServiceCallNode treeRoot) {
-        super(petriNet);
+        super(petriNet, 5);
 
         this.physicalSegments = physicalSegments;
         this.communicationSegments = communicationSegments;
@@ -112,7 +112,8 @@ public class ControlServiceSegment extends Segment {
         serviceCall.setActionSegment(actionServiceSegment);
         
         var serviceCallTransitionName = SPNPUtils.createTransitionName(messageName);
-        var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName,
+                                    this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(serviceCallTransition);
         
         // Arc from the execution/communication segment end place to the control segment transition
@@ -158,7 +159,8 @@ public class ControlServiceSegment extends Segment {
 
     private void transformInitialTransition(String lifelineName) {
         var initTransitionName = SPNPUtils.createTransitionName(lifelineName, "start");
-        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initTransitionName,
+                            this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(initialTransition);
     }
 

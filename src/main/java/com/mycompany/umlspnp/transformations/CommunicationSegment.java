@@ -57,7 +57,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     public CommunicationSegment(PetriNet petriNet,
                                 ServiceCallNode treeRoot,
                                 CommunicationLink communicationLink) {
-        super(petriNet);
+        super(petriNet, 1);
 
         this.treeRoot = treeRoot;
         this.communicationLink = communicationLink;
@@ -91,7 +91,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
     private void transformInitialTransition(String communicationLinkName) {
         var initialTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comStart");
-        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName,
+                            this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(initialTransition);
     }
 
@@ -140,7 +141,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     
     private void transformFlushTransition(String communicationLinkName) {
         var flushTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comFlush");
-        flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
+                            this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
     }
 
@@ -200,7 +202,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         var guardName = SPNPUtils.createFunctionName(String.format(guardNameFormatString, SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, createGuardBody(targetNode), Integer.class);
 
-        var failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName, 1, guard, new ConstantTransitionProbability(1.0));
+        var failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName,
+                                this.transitionPriority, guard, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(failHWTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failHWTransition);
@@ -258,7 +261,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         var endTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "trEnd");
   
         var distribution = new ExponentialTransitionDistribution(createDistributionFunction(communicationLinkName));
-        endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, 1, null, distribution);
+        endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName,
+                        this.transitionPriority, null, distribution);
         petriNet.addTransition(endTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, endTransition);
@@ -281,7 +285,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
         var failTypeTransitionName = SPNPUtils.createTransitionName(failTypeName, "trFail");       
         var distribution = new ExponentialTransitionDistribution(failTypeRate);
-        var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, 1, null, distribution);
+        var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName,
+                                    this.transitionPriority, null, distribution);
         petriNet.addTransition(failTypeTransition);
 
         failTypes.put(failTypeTransition, failTypePlace);

@@ -56,7 +56,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
                               List<CommunicationSegment> communicationSegments,
                               ServiceCallNode serviceCallNode,
                               ServiceCall serviceCall) {
-        super(petriNet);
+        super(petriNet, 1);
         
         this.physicalSegments = physicalSegments;
         this.communicationSegments = communicationSegments;
@@ -66,7 +66,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     
     private void transformInitialTransition(String messageName) {
         var initialTransitionName = SPNPUtils.createTransitionName(messageName, "start");
-        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName,
+                            this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(initialTransition);
     }
     
@@ -99,7 +100,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
     private void transformFlushTransition(String messageName) {
         var flushTransitionName = SPNPUtils.createTransitionName(messageName, "flush");
-        flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
+                            this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
         // TODO flush and end transition priorities needs to be configured (not yet specified properly)
     }
@@ -130,7 +132,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         var endTransitionName = SPNPUtils.createTransitionName(messageName, "end");
         var distribution = new ExponentialTransitionDistribution(1 / (double) serviceCall.getMessage().getExecutionTimeValue());
-        endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, 1, null, distribution);
+        endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, this.transitionPriority, null, distribution);
         petriNet.addTransition(endTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, endTransition);
@@ -269,7 +271,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var failHWTransitionName = SPNPUtils.createTransitionName(messageName, "HW_fail");
         failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++,
                                                    failHWTransitionName,
-                                                   1, 
+                                                   this.transitionPriority, 
                                                    createHWFailGuard(messageName),
                                                    new ConstantTransitionProbability(1.0));
         petriNet.addTransition(failHWTransition);
@@ -294,7 +296,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         var failTypeTransitionName = SPNPUtils.createTransitionName(messageName, "FT_" + failureName);
         var distribution = new ExponentialTransitionDistribution(failureRate);
-        var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, 1, null, distribution);
+        var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, this.transitionPriority, null, distribution);
         petriNet.addTransition(failTypeTransition);
 
         failTypes.put(failTypeTransition, failTypePlace);

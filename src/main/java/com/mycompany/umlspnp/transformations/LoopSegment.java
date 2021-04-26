@@ -37,7 +37,7 @@ public class LoopSegment extends Segment{
     private StandardPlace repeatsPlace = null;
     
     public LoopSegment(PetriNet petriNet, ControlServiceSegment controlServiceSegment, ServiceCallNode treeNode, Loop loop) {
-        super(petriNet);
+        super(petriNet, 5);
         
         this.controlServiceSegment = controlServiceSegment;
         this.highestTreeNode = treeNode;
@@ -91,7 +91,8 @@ public class LoopSegment extends Segment{
         var flushGuardName = SPNPUtils.createFunctionName(String.format("guard_loop_flush"));
         FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 
-        flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName, 1, flushGuard, new ConstantTransitionProbability(1.0));
+        flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
+                            this.transitionPriority, flushGuard, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
         
         controlServiceCalls.forEach(serviceCall -> {
@@ -116,7 +117,8 @@ public class LoopSegment extends Segment{
     
     private void transformRestartTransition() {
         var restartTransitionName = SPNPUtils.createTransitionName("loop", "restart");
-        restartTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, restartTransitionName, 1, null, new ConstantTransitionProbability(1.0));
+        restartTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, restartTransitionName,
+                            this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(restartTransition);
 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, flushPlace, restartTransition);
