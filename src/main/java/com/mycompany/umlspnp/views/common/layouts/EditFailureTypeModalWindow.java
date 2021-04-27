@@ -1,23 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common.layouts;
 
-import com.mycompany.umlspnp.views.common.layouts.NameRateModalWindow;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
+ * A modal window which edits a failure type with a name and rate property.
  *
- * @author 10ondr
  */
 public class EditFailureTypeModalWindow extends NameRateModalWindow {
     private final TextField nameInput;
@@ -38,15 +31,12 @@ public class EditFailureTypeModalWindow extends NameRateModalWindow {
         this.rateInput = new TextField(failureRate.getValue().toString());
         
         var confirmButton = new Button("Confirm");
-        confirmButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                if(checkNameRateInputs(nameInput.textProperty(), rateInput.textProperty())){
-                    failureName.setValue(nameInput.textProperty().getValue());
-                    failureRate.setValue(parseRate(rateInput.textProperty()));
-
-                    close();
-                }
+        confirmButton.setOnAction((ActionEvent e) -> {
+            if(checkNameRateInputs(nameInput.textProperty(), rateInput.textProperty())){
+                failureName.setValue(nameInput.textProperty().getValue());
+                failureRate.setValue(parseRate(rateInput.textProperty()));
+                
+                close();
             }
         });
 

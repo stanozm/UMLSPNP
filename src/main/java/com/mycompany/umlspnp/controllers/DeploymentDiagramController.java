@@ -1,17 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.controllers;
 
-import com.mycompany.umlspnp.models.common.ConnectionFailure;
-import com.mycompany.umlspnp.models.common.OperationEntry;
+import com.mycompany.umlspnp.models.ConnectionFailure;
+import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
-import com.mycompany.umlspnp.models.common.NamedNode;
-import com.mycompany.umlspnp.models.common.OperationType;
+import com.mycompany.umlspnp.models.NamedNode;
+import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
@@ -41,8 +36,9 @@ import javafx.scene.control.SeparatorMenuItem;
 import javafx.stage.Stage;
 
 /**
+ *  Controller which handles all functionalities within the deployment diagram
+ * and binds deployment diagram model to its view.
  *
- * @author 10ondr
  */
 public class DeploymentDiagramController {
     private final MainModel model;
@@ -55,8 +51,10 @@ public class DeploymentDiagramController {
         deploymentDiagramInit(this.model.getDeploymentDiagram());
     }
 
-    
-    /***  ONLY FOR TESTING  ***/
+    /**
+     * Creates sample annotations for a specified deployment target.
+     * @param DT Deployment Target to have the sample annotations added.
+     */
     private void createSampleAnnotations(DeploymentTarget DT){
         var deployment = model.getDeploymentDiagram();
         
@@ -77,13 +75,18 @@ public class DeploymentDiagramController {
         DT.addStateOperation(operationsDown);
     }
     
-    /***  ONLY FOR TESTING  ***/
+    /**
+     * Creates sample annotations for a specified communication link.
+     * @param communicationLink Communication Link to have the sample annotations added.
+     */
     private void createSampleAnnotations(CommunicationLink communicationLink){
         communicationLink.addLinkFailure(new ConnectionFailure("PacketLost", 0.02));
         communicationLink.addLinkFailure(new ConnectionFailure("ConnectionDropped", 0.001));
     }
     
-    /***  ONLY FOR TESTING  ***/
+    /**
+     * Creates sample deployment diagram nodes and communications links.
+     */
     public void createSampleData() {
         var deployment = model.getDeploymentDiagram();
         
@@ -124,8 +127,7 @@ public class DeploymentDiagramController {
         
         deployment.createCommunicationLink(A, B);
     }
-    
-    
+
     public MainView getView(){
         return view;
     }

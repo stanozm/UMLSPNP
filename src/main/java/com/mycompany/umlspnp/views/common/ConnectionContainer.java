@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import javafx.beans.property.ObjectProperty;
@@ -10,8 +5,9 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.util.Pair;
 
 /**
+ *  A container which holds the information about two elements which are being
+ * selected for connection.
  *
- * @author 10ondr
  */
 public class ConnectionContainer {
     private BasicElement first;

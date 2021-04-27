@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views;
 
 import com.mycompany.umlspnp.views.common.BasicElement;
@@ -17,12 +12,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 
 /**
- *
- * @author 10ondr
- * GridPane used because in VBox order of elements equals their focus (toFront(), toBack())
- * which is not wanted nor expected.
+ *  Base view for a diagram.
+ * 
  */
-public class DiagramView extends GridPane{
+public abstract class DiagramView extends GridPane{
     protected final MenuBar diagramMenu = new MenuBar();
     protected final Pane diagramPane = new Pane();
     

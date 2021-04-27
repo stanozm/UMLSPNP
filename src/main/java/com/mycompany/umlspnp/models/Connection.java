@@ -1,15 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package com.mycompany.umlspnp.models.common;
+package com.mycompany.umlspnp.models;
 
 /**
+ * A general connection which is further extended in the Deployment and Sequence diagram.
  *
- * @author 10ondr
+ * @param <T> A data type of the connection target nodes.
  */
-public class Connection<T> extends BasicNode {
+
+public abstract class Connection<T> extends BasicNode {
     protected final T target1;
     protected final T target2;
     

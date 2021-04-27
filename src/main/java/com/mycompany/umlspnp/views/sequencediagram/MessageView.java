@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.views.common.Annotation;
@@ -20,8 +15,9 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 
 /**
+ *  View which renders the message in a sequence diagram.
+ * It is a type of connection with an arrow on the destination (target) end.
  *
- * @author 10ondr
  */
 public class MessageView extends ConnectionView implements AnnotationOwner{
     private final Label messageLabel;
@@ -35,7 +31,7 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
     
     private final boolean sourceIsDestination;
     
-    private ObjectProperty<LoopView> loopProperty = new SimpleObjectProperty<>(null);
+    private final ObjectProperty<LoopView> loopProperty = new SimpleObjectProperty<>(null);
     
     public MessageView(int modelObjectID, ConnectionSlot source, ConnectionSlot destination, boolean sourceIsDestination, Group diagramRoot) {
         super(modelObjectID, source, destination, diagramRoot, true, sourceIsDestination);

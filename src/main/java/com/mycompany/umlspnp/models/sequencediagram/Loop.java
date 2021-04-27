@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.sequencediagram;
 
-import com.mycompany.umlspnp.models.common.BasicNode;
+import com.mycompany.umlspnp.models.BasicNode;
 import java.util.HashSet;
 import java.util.Set;
 import javafx.beans.property.IntegerProperty;
@@ -16,14 +11,14 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
+ *  A loop which can encapsulate messages and has a maximal number of iterations.
  *
- * @author 10ondr
  */
 public class Loop extends BasicNode {
     private final StringProperty name = new SimpleStringProperty();
     private final IntegerProperty iterations = new SimpleIntegerProperty();
 
-    private Set<Message> messages = new HashSet<>();
+    private final Set<Message> messages = new HashSet<>();
 
     public Loop() {
         var stringChangeListener = new ChangeListener(){
@@ -51,10 +46,12 @@ public class Loop extends BasicNode {
     }
     
     public final void setIterations(int newValue){
-        if(newValue < 2){
+        if(newValue >= 2){
+            iterations.setValue(newValue);
+        }
+        else {
             System.err.println("Error: iterations has to be greater or equal to 2");
         }
-        iterations.setValue(newValue);
     }
 
     public Set<Message> getMessages() {

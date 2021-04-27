@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import com.mycompany.umlspnp.common.Utils;
@@ -23,10 +18,11 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.transform.Transform;
 
 /**
- *
- * @author 10ondr
+ *  A basic rectangle element rendered in one of the diagrams.
+ * It provides the graphical representation as well as some functionality and 
+ * movement/resize restrictions
  */
-public class BasicRectangle extends BasicElement{
+public abstract class BasicRectangle extends BasicElement{
     protected Rectangle rect;
     private double originalPositionX, originalPositionY;
 
@@ -111,7 +107,6 @@ public class BasicRectangle extends BasicElement{
             this.setTranslateY(moveY);
     }
 
- 
     private double getPositionInGrid(double scenePosition, double originalPosition){
         if(Math.abs(originalPosition - scenePosition) > gridSize){
             return Math.round((scenePosition - originalPosition) / gridSize) * gridSize;
@@ -142,14 +137,12 @@ public class BasicRectangle extends BasicElement{
         resizeBottom.xProperty().bind(rect.xProperty());
         resizeBottom.yProperty().bind(Bindings.add(rect.yProperty(), rect.heightProperty().subtract(size / 2)));
         
-
         resizeRight = new Rectangle(0, rect.getY(), size, rect.getHeight());
         resizeRight.setCursor(Cursor.H_RESIZE);
         resizeRight.setFill(Color.TRANSPARENT);
         resizeRight.heightProperty().bind(rect.heightProperty());
         resizeRight.xProperty().bind(Bindings.add(rect.xProperty(), rect.widthProperty().subtract(size / 2)));
         resizeRight.yProperty().bind(rect.yProperty());
-        
         
         resizeRight.setOnMousePressed((e) -> {
              actionElementClicked(e);
@@ -332,12 +325,12 @@ public class BasicRectangle extends BasicElement{
         return isSelected;
     }
     
-    public void setResizable(boolean vertical, boolean horizontal){
+    public final void setResizable(boolean vertical, boolean horizontal){
         resizeBottom.setDisable(!vertical);
         resizeRight.setDisable(!horizontal);
     }
     
-    public void setDraggable(boolean horizontal, boolean vertical){
+    public final void setDraggable(boolean horizontal, boolean vertical){
         isDraggableHorizontal = horizontal;
         isDraggableVertical = vertical;
     }
@@ -355,11 +348,11 @@ public class BasicRectangle extends BasicElement{
         return this.rect.getHeight();
     }
 
-    public DoubleProperty widthProperty(){
+    public final DoubleProperty widthProperty(){
         return rect.widthProperty();
     }
 
-    public DoubleProperty heightProperty(){
+    public final DoubleProperty heightProperty(){
         return rect.heightProperty();
     }
     

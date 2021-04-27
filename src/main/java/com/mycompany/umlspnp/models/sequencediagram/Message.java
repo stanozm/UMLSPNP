@@ -1,13 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.sequencediagram;
 
-import com.mycompany.umlspnp.models.common.Connection;
-import com.mycompany.umlspnp.models.common.ConnectionFailure;
-import com.mycompany.umlspnp.models.common.OperationType;
+import com.mycompany.umlspnp.models.Connection;
+import com.mycompany.umlspnp.models.ConnectionFailure;
+import com.mycompany.umlspnp.models.OperationType;
 import javafx.beans.Observable;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -15,11 +10,12 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.util.Callback;
 
 /**
+ * A message as described in the sequence diagram specification.
+ * All messages have a global order (representing their relative vertical position),
+ * name and properties as execution time, message size, message failures and operation type.
  *
- * @author 10ondr
  */
 public class Message extends Connection<Activation> {
     private final IntegerProperty order = new SimpleIntegerProperty();
@@ -36,45 +32,21 @@ public class Message extends Connection<Activation> {
         
         name.setValue("newMessage()");
         
-        executionTime = FXCollections.observableArrayList(
-                new Callback<ExecutionTime, Observable[]>() {
-                    @Override
-                    public Observable[] call(ExecutionTime param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        executionTime = FXCollections.observableArrayList((ExecutionTime param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
         
-        messageSize = FXCollections.observableArrayList(
-                new Callback<MessageSize, Observable[]>() {
-                    @Override
-                    public Observable[] call(MessageSize param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        messageSize = FXCollections.observableArrayList((MessageSize param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
         
-        messageFailures = FXCollections.observableArrayList(
-                new Callback<ConnectionFailure, Observable[]>() {
-                    @Override
-                    public Observable[] call(ConnectionFailure param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        messageFailures = FXCollections.observableArrayList((ConnectionFailure param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
 
-        operationTypeList = FXCollections.observableArrayList(
-                new Callback<OperationType, Observable[]>() {
-                    @Override
-                    public Observable[] call(OperationType param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        operationTypeList = FXCollections.observableArrayList((OperationType param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
 
         setExecutionTime(1);
     }

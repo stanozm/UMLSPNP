@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
@@ -11,36 +6,37 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ *  A node in the Service Call tree containing references to the message
+ * and artifact and the order on its parental level (tier) in the tree.
  *
- * @author 10ondr
  */
-public class ServiceCallNode {
+public class ServiceCallTreeNode {
     private final Message message;
     private final Artifact artifact;
     private int order = 0;
 
-    private ServiceCallNode parent = null;
-    private final List<ServiceCallNode> children = new ArrayList<>();
+    private ServiceCallTreeNode parent = null;
+    private final List<ServiceCallTreeNode> children = new ArrayList<>();
 
     private boolean processed = false;
     private boolean markedForLabelCheck = false;
     private boolean markedForLoopCheck = false;
 
-    public ServiceCallNode(Artifact artifact) {
+    public ServiceCallTreeNode(Artifact artifact) {
         this.artifact = artifact;
         this.message = null;
     }
 
-    public ServiceCallNode(Artifact artifact, Message message) {
+    public ServiceCallTreeNode(Artifact artifact, Message message) {
         this.artifact = artifact;
         this.message = message;
     }
     
-    public ServiceCallNode getParent() {
+    public ServiceCallTreeNode getParent() {
         return parent;
     }
 
-    public void setParent(ServiceCallNode newParent) {
+    public void setParent(ServiceCallTreeNode newParent) {
         if(this.parent != null)
             this.parent.removeChild(this);
         if(newParent != null)
@@ -48,15 +44,15 @@ public class ServiceCallNode {
         this.parent = newParent;
     }
 
-    public List<ServiceCallNode> getChildren() {
+    public List<ServiceCallTreeNode> getChildren() {
         return children;
     }
     
-    public void addChild(ServiceCallNode newChild) {
+    public void addChild(ServiceCallTreeNode newChild) {
         this.children.add(newChild);
     }
 
-    public boolean removeChild(ServiceCallNode newChild) {
+    public boolean removeChild(ServiceCallTreeNode newChild) {
         return this.children.remove(newChild);
     }
 
@@ -108,7 +104,7 @@ public class ServiceCallNode {
         this.markedForLoopCheck = value;
     }
 
-    public ServiceCallNode getNodeWithMessage(Message message) {
+    public ServiceCallTreeNode getNodeWithMessage(Message message) {
         if(this.getMessage() == message)
             return this;
 
@@ -122,7 +118,7 @@ public class ServiceCallNode {
     
     public String getCompoundOrderString() {
         var result = new StringBuilder();
-        ServiceCallNode node = this;
+        ServiceCallTreeNode node = this;
         do {
             result.append(String.format(".%d", node.getOrder() + 1));
             node = node.parent;

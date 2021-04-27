@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common.layouts;
 
 import java.util.ArrayList;
@@ -19,8 +14,9 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 
 /**
+ *  A list view which can be edited by adding an arbitrary button (or multiple buttons)
+ * with a specified event handler.
  *
- * @author 10ondr
  */
 public class EditableListView extends GridPane {    
     private final Label headerLabel;

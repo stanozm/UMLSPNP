@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import com.mycompany.umlspnp.common.Utils;
@@ -20,11 +15,11 @@ import javafx.scene.shape.Line;
 import javafx.util.Callback;
 
 /**
+ *  An annotation view used in both deployment and sequence diagrams.
  *
- * @author 10ondr
  */
 public class Annotation extends NamedRectangle {
-    private double cellHeight = 25;
+    private final double cellHeight = 25;
     private final ListView<Object> items = new ListView();
     
     private boolean isDisplayed = true;
@@ -61,6 +56,10 @@ public class Annotation extends NamedRectangle {
             }
         });
         
+        initItemsCellFactory();
+    }
+    
+    private void initItemsCellFactory() {
         this.items.setCellFactory(new Callback<ListView<Object>, ListCell<Object>>() {
             @Override
             public ListCell<Object> call(ListView<Object> param) {
@@ -76,17 +75,14 @@ public class Annotation extends NamedRectangle {
                             setText(String.valueOf(item));
                         }
 
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (!empty){ 
-                                    double strWidth = computePrefWidth(getPrefHeight());
-                                    if(strWidth > items.getPrefWidth()){
-                                        items.setPrefWidth(strWidth + 10);
-                                    }
-                                    else{
-                                        refreshItemsWidth();
-                                    }
+                        Platform.runLater(() -> {
+                            if (!empty){
+                                double strWidth = computePrefWidth(getPrefHeight());
+                                if(strWidth > items.getPrefWidth()){
+                                    items.setPrefWidth(strWidth + 10);
+                                }
+                                else{
+                                    refreshItemsWidth();
                                 }
                             }
                         });
@@ -118,7 +114,7 @@ public class Annotation extends NamedRectangle {
                       + "-fx-control-inner-background-alt: " + newColor.toString().replace("0x", "#") + "; ");
     }
 
-    public void setEmpty(boolean value){
+    public final void setEmpty(boolean value){
         if(this.isVisible() != !value)
             this.setVisible(!value);
         if(this.line.isVisible() != !value)

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.common;
 
 import javafx.collections.FXCollections;
@@ -10,8 +5,11 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 
 /**
- *
- * @author 10ondr
+ * Container for a system of generally defined nodes and connections, each with
+ * its unique number ID.
+ * 
+ * @param <T1>  Data type of the node
+ * @param <T2>  Data type of the connection
  */
 public class ElementContainer<T1, T2> {
     private final ObservableMap<Number, T1> allNodes = FXCollections.observableHashMap();

@@ -1,17 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.*;
+import com.mycompany.umlspnp.models.NamedNode;
 import java.util.HashSet;
+import java.util.Set;
 import javafx.util.Pair;
 
 /**
+ * Artifact (Component) as specified by the formal deployment diagram specification.
+ *  Artifact is the basic node which can have no other children in the deployment diagram
+ * and it must have one itself.
  *
- * @author 10ondr
  */
 public class Artifact extends NamedNode{
     private final DeploymentTarget DTparent;
@@ -26,7 +24,11 @@ public class Artifact extends NamedNode{
         return DTparent;
     }
     
-    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(){
+    /**
+     * 
+     * @return Set of pairs of connected nodes and communication links they are connected with.
+     */
+    public Set<Pair<CommunicationLink, Artifact>> getConnectedNodes(){
         var connectedNodes = new HashSet<Pair<CommunicationLink, Artifact>>();
         if(this.DTparent != null){
             connectedNodes.add(new Pair<>(null, this.DTparent));
@@ -35,15 +37,18 @@ public class Artifact extends NamedNode{
         
         return connectedNodes;
     }
-    
-    // directionUp: true = direction towards children, false = direction towards parent
-    // shallow: true = only children/parents, false = also all connections of children/parents
-    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(boolean directionUp, boolean shallow){
-        // TODO: connected nodes to this artifact if it will be a possibility
-        
+
+    /**
+     * 
+     * @param directionUp True means direction towards children, false means direction towards parent.
+     * @param shallow If true, only the parental hierarchy is considered, otherwise all 
+     * nodes connected via a communication link are also considered.
+     * @return Set of pairs of connected nodes and communication links they are connected with.
+     */
+    public Set<Pair<CommunicationLink, Artifact>> getConnectedNodes(boolean directionUp, boolean shallow){
         if(directionUp) {
             var connectedNodes = new HashSet();
-            // ...
+            // NOTE: Add connected nodes if it will be possible to create artifact connections
             return connectedNodes;
         }
         else {
@@ -51,7 +56,7 @@ public class Artifact extends NamedNode{
         }
     }
     
-    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodesShallow() {
+    public Set<Pair<CommunicationLink, Artifact>> getConnectedNodesShallow() {
         var upwards = getConnectedNodes(true, true);
         var downwards = getConnectedNodes(false, true);
 

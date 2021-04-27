@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import javafx.beans.property.DoubleProperty;
@@ -11,8 +6,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 
 /**
- *
- * @author 10ondr
+ *  Deployment diagram box representing the deployment targets.
+ * It adds a fake third dimension polygon to the underlying rectangle.
  */
 public class Box extends NamedRectangle{
     private final Polygon polygonTop;

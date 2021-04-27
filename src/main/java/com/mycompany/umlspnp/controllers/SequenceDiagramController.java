@@ -7,8 +7,8 @@ package com.mycompany.umlspnp.controllers;
 
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
-import com.mycompany.umlspnp.models.common.ConnectionFailure;
-import com.mycompany.umlspnp.models.common.OperationType;
+import com.mycompany.umlspnp.models.ConnectionFailure;
+import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;

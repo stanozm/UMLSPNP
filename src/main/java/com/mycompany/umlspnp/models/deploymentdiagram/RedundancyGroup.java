@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.ObservableString;
+import com.mycompany.umlspnp.models.ObservableString;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
@@ -14,8 +9,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 /**
+ *  Deployment Target nodes can be part of a Redundancy Group which represents their interchangeability.
  *
- * @author 10ondr
  */
 public class RedundancyGroup extends ObservableString {
     private final IntegerProperty groupID = new SimpleIntegerProperty();

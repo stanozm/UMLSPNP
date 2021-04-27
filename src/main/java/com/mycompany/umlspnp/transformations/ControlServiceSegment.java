@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.sequencediagram.Loop;
@@ -21,15 +16,15 @@ import java.util.List;
 import javafx.util.Pair;
 
 /**
+ * The intermediate control service segment modeling the execution flow.
  *
- * @author 10ondr
  */
 public class ControlServiceSegment extends Segment {
     private final List<PhysicalSegment> physicalSegments;
     private final List<CommunicationSegment> communicationSegments;
     private final Collection<Loop> loops;
 
-    protected final ServiceCallNode treeRoot;
+    protected final ServiceCallTreeNode treeRoot;
 
     protected final List<Pair<ImmediateTransition, ServiceCall>> controlServiceCalls = new ArrayList<>();
     protected ImmediateTransition initialTransition = null;
@@ -41,7 +36,7 @@ public class ControlServiceSegment extends Segment {
                             List<PhysicalSegment> physicalSegments,
                             List<CommunicationSegment> communicationSegments,
                             Collection<Loop> loops,
-                            ServiceCallNode treeRoot) {
+                            ServiceCallTreeNode treeRoot) {
         super(petriNet, 5);
 
         this.physicalSegments = physicalSegments;
@@ -61,7 +56,7 @@ public class ControlServiceSegment extends Segment {
         return result;
     }
     
-    public ServiceCall getHighestControlServiceCall(ServiceCallNode serviceCallNode) {
+    public ServiceCall getHighestControlServiceCall(ServiceCallTreeNode serviceCallNode) {
         for(var pair : controlServiceCalls) {
             var serviceCall = pair.getValue();
             var message = serviceCall.getMessage();
@@ -73,8 +68,8 @@ public class ControlServiceSegment extends Segment {
         return null;
     }
 
-    public ActionServiceSegment transformExecutionServiceSegment(ServiceCall serviceCall, ServiceCallNode serviceCallNode) {
-        var executionServiceSegment = new ServiceLeafSegment(petriNet, physicalSegments, communicationSegments, serviceCallNode, serviceCall);
+    public ActionServiceSegment transformExecutionServiceSegment(ServiceCall serviceCall, ServiceCallTreeNode serviceCallNode) {
+        var executionServiceSegment = new ServiceLeafSegment(petriNet, physicalSegments, serviceCallNode, serviceCall);
         executionServiceSegment.transform();
         return executionServiceSegment;
     }
@@ -88,7 +83,7 @@ public class ControlServiceSegment extends Segment {
         return null;
     }
 
-    private void transformControlServiceCall(ServiceCallNode serviceCallNode, boolean isExecutionCall) {
+    private void transformControlServiceCall(ServiceCallTreeNode serviceCallNode, boolean isExecutionCall) {
         var artifact = serviceCallNode.getArtifact();
         var message = serviceCallNode.getMessage();
         String prefix = "C_";
@@ -127,7 +122,7 @@ public class ControlServiceSegment extends Segment {
         controlServiceCalls.add(new Pair(serviceCallTransition, serviceCall));
     }
     
-    private void transformCommunicationControlServiceCall(ServiceCallNode treeNode) {
+    private void transformCommunicationControlServiceCall(ServiceCallTreeNode treeNode) {
         var message = treeNode.getMessage();
         if(message == null)
             return;
@@ -139,7 +134,7 @@ public class ControlServiceSegment extends Segment {
         transformControlServiceCall(treeNode, false);
     }
 
-    private void transformExecutionControlServiceCall(ServiceCallNode treeNode) {
+    private void transformExecutionControlServiceCall(ServiceCallTreeNode treeNode) {
         var message = treeNode.getMessage();
         if(message == null)
             return;
@@ -148,7 +143,7 @@ public class ControlServiceSegment extends Segment {
             transformControlServiceCall(treeNode, true);
     }
     
-    private void transformServiceCalls(ServiceCallNode treeNode) {
+    private void transformServiceCalls(ServiceCallTreeNode treeNode) {
         for(var serviceCallNode : treeNode.getChildren()) {
             transformCommunicationControlServiceCall(serviceCallNode);
             transformExecutionControlServiceCall(serviceCallNode);
@@ -215,7 +210,7 @@ public class ControlServiceSegment extends Segment {
         });
     }
     
-    private boolean validateLoop(List<ServiceCallNode> highestServiceCallNodes) {
+    private boolean validateLoop(List<ServiceCallTreeNode> highestServiceCallNodes) {
         if(highestServiceCallNodes.size() < 1) {
             System.err.println("Loop transformation error: unable to find the highest tree node");
             return false;
@@ -315,7 +310,7 @@ public class ControlServiceSegment extends Segment {
             result.append(String.format(" -> (%s) -> [%s]", pair.getValue().getPlace().getName(), pair.getKey().getName()));
         });
         result.append(String.format(" -> (EndPlace %s)", this.endPlace.getName()));
-        // TODO add loops ?
+        // TODO add loops? It might actually be too obstructive.
         return result.toString();
     }
 }

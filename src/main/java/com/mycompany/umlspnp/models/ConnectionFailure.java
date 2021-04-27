@@ -1,9 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package com.mycompany.umlspnp.models.common;
+package com.mycompany.umlspnp.models;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -13,8 +8,10 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
- *
- * @author 10ondr
+ * A connection failure type with its name and rate.
+ * Used for a Communication Link failure in deployment diagram and Message failure
+ * in sequence diagram.
+ * 
  */
 public class ConnectionFailure extends ObservableString {
     private final StringProperty failureName = new SimpleStringProperty();
@@ -35,7 +32,7 @@ public class ConnectionFailure extends ObservableString {
         this.rate.addListener(stringChangeListener);
     }
 
-    public void setName(String name){
+    public final void setName(String name){
         this.failureName.setValue(name);
     }
     
@@ -43,7 +40,7 @@ public class ConnectionFailure extends ObservableString {
         return this.failureName;
     }
     
-    public void setRate(double rate){
+    public final void setRate(double rate){
         this.rate.setValue(rate);
     }
     

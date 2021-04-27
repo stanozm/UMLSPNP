@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import com.mycompany.umlspnp.common.Utils;
@@ -17,10 +12,10 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.transform.Transform;
 
 /**
+ * A base class for any connection of elements in either of the diagrams.
  *
- * @author 10ondr
  */
-public class ConnectionView extends BasicElement {
+public abstract class ConnectionView extends BasicElement {
     protected final ConnectionSlot source;
     protected final ConnectionSlot destination;
     protected final Arrow arrow;
@@ -43,9 +38,7 @@ public class ConnectionView extends BasicElement {
         initDestination();
 
         this.diagramRoot = diagramRoot;
-        
         this.arrow = new Arrow(hasArrow);
-        
         this.arrow.setCursor(Cursor.HAND);
 
         this.setOnMouseEntered((e) -> {

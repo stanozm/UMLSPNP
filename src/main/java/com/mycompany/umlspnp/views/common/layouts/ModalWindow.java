@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common.layouts;
 
 import com.mycompany.umlspnp.common.Utils;
@@ -10,17 +5,16 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 /**
+ *  Base class for any modal window.
  *
- * @author 10ondr
  */
-public class ModalWindow extends Stage{
+public abstract class ModalWindow extends Stage{
     protected final Stage parentStage;
     protected final Scene scene;
     protected final GridPane rootGrid;

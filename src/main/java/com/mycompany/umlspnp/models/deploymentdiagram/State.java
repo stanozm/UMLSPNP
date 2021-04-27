@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.ObservableString;
+import com.mycompany.umlspnp.models.ObservableString;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,8 +9,10 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
+ *  A Deployment Target node state.
+ * State can be set as default, be locked to restrict editing and marked
+ * as a DOWN state of the containing node.
  *
- * @author 10ondr
  */
 public class State extends ObservableString{
     private final StringProperty stateName = new SimpleStringProperty();

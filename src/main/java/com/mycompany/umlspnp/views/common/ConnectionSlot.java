@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import javafx.beans.property.BooleanProperty;
@@ -17,8 +12,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 
 /**
+ *  A source/target connection slot of a connection in either on of the diagrams.
+ * Serves as an anchor point for the connection line/arrow on both ends.
  *
- * @author 10ondr
  */
 public class ConnectionSlot extends Circle{
     private final ReadOnlyDoubleProperty parentWidth;

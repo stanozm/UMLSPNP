@@ -1,16 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
 
 /**
+ *  A container which ties a message from the model to its generated
+ * Petri net representation in the control service segment.
  *
- * @author 10ondr
  */
 public class ServiceCall {
     private final Message message;
@@ -42,7 +38,6 @@ public class ServiceCall {
         return actionSegment instanceof ServiceLeafSegment;
     }
 
-    // TODO communication segment does not implement the interface yet
     public boolean isCommunicationServiceCall() {
         return actionSegment instanceof CommunicationSegment;
     }

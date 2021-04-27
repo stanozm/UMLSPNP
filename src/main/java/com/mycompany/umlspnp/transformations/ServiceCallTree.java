@@ -1,19 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 
 /**
+ * An abstract tree which represents the message call hierarchy and is 
+ * constructed for several purposes during the transformation process.
  *
- * @author 10ondr
  */
 public class ServiceCallTree {
-    private ServiceCallNode root = null;
+    private ServiceCallTreeNode root = null;
 
     public ServiceCallTree(SequenceDiagram sequenceDiagram) {
         buildTree(sequenceDiagram);
@@ -32,11 +28,11 @@ public class ServiceCallTree {
         if(messages.size() < 1)
             return;
 
-        root = new ServiceCallNode(highestLifeline.getArtifact());
+        root = new ServiceCallTreeNode(highestLifeline.getArtifact());
         processActivation(root, highestActivation);
     }
 
-    private void processActivation(ServiceCallNode parent, Activation activation) {
+    private void processActivation(ServiceCallTreeNode parent, Activation activation) {
         var parentMessage = parent.getMessage();
         int parentMessageOrder = 0;
         if(parentMessage != null)
@@ -46,7 +42,7 @@ public class ServiceCallTree {
         for (var message : sortedMessages) {
             if(message.getOrder() >= parentMessageOrder) {
                 if(message.isSelfMessage() || message.getTo() != activation) {
-                    var node = new ServiceCallNode(message.getTo().getLifeline().getArtifact(), message);
+                    var node = new ServiceCallTreeNode(message.getTo().getLifeline().getArtifact(), message);
                     node.setParent(parent);
                     int parentOrder;
                     if(parentMessage == null)
@@ -66,7 +62,7 @@ public class ServiceCallTree {
         }
     }
 
-    public ServiceCallNode getRoot() {
+    public ServiceCallTreeNode getRoot() {
         return root;
     }
 

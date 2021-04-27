@@ -1,11 +1,5 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 import com.mycompany.umlspnp.models.MainModel;
-import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentDiagram;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.transformators.spnp.*;
@@ -18,8 +12,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 /**
+ *  Transforms the deployment and sequence models into the appropriate SPNP code.
  *
- * @author 10ondr
  */
 public class Transformator {
     MainModel model = null;
@@ -45,7 +39,7 @@ public class Transformator {
         
         this.serviceCallTree = new ServiceCallTree(mainModel.getSequenceDiagram());
         
-        // TODO remove
+        // TODO: remove prints when not needed
         System.err.println(String.format("Service Call Tree:%n"));
         System.err.println(serviceCallTree);
     }
@@ -72,6 +66,11 @@ public class Transformator {
         return net;
     }
 
+    /**
+     * Performs the transformation into the intermediate Petri net model.
+     * Several segments are transformed in phases because they depend on 
+     * some other segment which needs to be transformed first
+     */
     public void transform() {
         SPNPUtils.resetCounters();
         
@@ -84,7 +83,7 @@ public class Transformator {
         var sequenceDiagram = model.getSequenceDiagram();
 
         // Physical segments
-        var elements = DeploymentDiagram.getElementContainer();
+        var elements = deploymentDiagram.getElementContainer();
         elements.getNodes().values().forEach(node -> {
             if(node instanceof DeploymentTarget) {
                 var physicalSegment = new PhysicalSegment(petriNet, (DeploymentTarget) node);
@@ -149,6 +148,10 @@ public class Transformator {
         });
     }
 
+    /**
+     * Transforms the intermediate Petri net model into SPNP code
+     * @return Final SPNP code representing the modeled system.
+     */
     public String getOutput(){
         return transformator.transform(petriNet);
     }

@@ -1,12 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.sequencediagram;
 
-import com.mycompany.umlspnp.models.common.BasicNode;
-import com.mycompany.umlspnp.models.common.OperationEntry;
+import com.mycompany.umlspnp.models.BasicNode;
+import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import java.util.ArrayList;
@@ -18,8 +13,10 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
+ *  Lifeline which contains activations with messages as 
+ * specified by the sequence diagram specification.
+ * It is uniquely tied with a specific node (Deployment Target or Artifact) in the deployment target.
  *
- * @author 10ondr
  */
 public class Lifeline extends BasicNode {
     private final Artifact artifact;

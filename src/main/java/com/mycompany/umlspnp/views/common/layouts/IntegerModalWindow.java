@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common.layouts;
 
 import javafx.beans.property.IntegerProperty;
@@ -15,8 +10,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
+ * A modal window which edits an integer value.
  *
- * @author 10ondr
  */
 public class IntegerModalWindow extends ModalWindow {
     private final Label stringLabel;
@@ -60,10 +55,10 @@ public class IntegerModalWindow extends ModalWindow {
         
         try {
             int value = parseInteger(this.stringField.textProperty());
-            if(min != null && value < min.intValue()){
+            if(min != null && value < min){
                 errorMessage = "Value is smaller than minimum (" + min.toString() + ").";
             }
-            else if(max != null && value > max.intValue()){
+            else if(max != null && value > max){
                 errorMessage = "Value is larger than maximum (" + max.toString() + ").";
             }
         }

@@ -1,13 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
 import com.mycompany.umlspnp.views.DiagramView;
-import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -22,8 +16,8 @@ import javafx.scene.shape.Path;
 import javafx.scene.shape.Shape;
 
 /**
+ *  View rendering the sequence diagram pane and providing related functionality.
  *
- * @author 10ondr
  */
 public class SequenceDiagramView extends DiagramView{
     private final Group root;

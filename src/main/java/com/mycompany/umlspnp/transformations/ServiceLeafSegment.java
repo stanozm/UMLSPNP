@@ -1,12 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
-import com.mycompany.umlspnp.models.common.OperationType;
-import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import com.mycompany.umlspnp.models.deploymentdiagram.State;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
@@ -28,13 +22,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ *  The execution (leaf) service segment which represents a call to a leaf message.
  *
- * @author 10ondr
  */
 public class ServiceLeafSegment extends Segment implements ActionServiceSegment {
     private final List<PhysicalSegment> physicalSegments;
-    private final List<CommunicationSegment> communicationSegments;
-    private final ServiceCallNode serviceCallNode;
+    private final ServiceCallTreeNode serviceCallNode;
     private final ServiceCall serviceCall;
     
     protected ImmediateTransition initialTransition = null;
@@ -53,13 +46,11 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     
     public ServiceLeafSegment(PetriNet petriNet,
                               List<PhysicalSegment> physicalSegments,
-                              List<CommunicationSegment> communicationSegments,
-                              ServiceCallNode serviceCallNode,
+                              ServiceCallTreeNode serviceCallNode,
                               ServiceCall serviceCall) {
         super(petriNet, 1);
         
         this.physicalSegments = physicalSegments;
-        this.communicationSegments = communicationSegments;
         this.serviceCallNode = serviceCallNode;
         this.serviceCall = serviceCall;
     }
@@ -103,7 +94,6 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
                             this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
-        // TODO flush and end transition priorities needs to be configured (not yet specified properly)
     }
 
     private void createFlushTransitionGuard(String messageName, StandardPlace dependentPlace) {
@@ -125,6 +115,22 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         flushTransition.setGuardFunction(flushGuard);
     }
     
+    private double getOperationSpeedLimit(OperationType operationType, DeploymentTarget dt, State state) {
+        if(operationType != null) {
+            for(var operation : dt.getStateOperations()) {
+                if(state == operation.getState()) {
+                    for(var operationEntry : operation.getOperationEntries()) {
+                        if(operationEntry.getOperationType() == operationType && operationEntry.getSpeedLimit() >= 0) {
+                            return (((double) operationEntry.getSpeedLimit()) / 100);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return 1.0;
+    }
+    
     private FunctionSPNP<Double> createEndRateDistributionFunction(String messageName) {
         var message = serviceCall.getMessage();
         var activation = message.getTo();
@@ -137,22 +143,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var functionBody = new StringBuilder();
         dt.getStates().forEach(state -> {
             if(!state.isStateDOWN()) {
-                double speedCoefficient = 1.0;
+                double speedCoefficient = getOperationSpeedLimit(operationType, dt, state);
 
-                // Get the speed limit from the appropriate SupportedOperations annotation entry
-                if(operationType != null) {
-                    for(var operation : dt.getStateOperations()) {
-                        if(state == operation.getState()) {
-                            for(var operationEntry : operation.getOperationEntries()) {
-                                if(operationEntry.getOperationType() == operationType && operationEntry.getSpeedLimit() >= 0) {
-                                    speedCoefficient = (((double) operationEntry.getSpeedLimit()) / 100);
-                                    break;
-                                }
-                            }
-                            break;
-                        }
-                    }
-                }
                 var statePlace = SPNPUtils.getStatePlace(physicalSegments, dt, state);
                 if(statePlace != null){
                     if(functionBody.length() > 0)
@@ -198,8 +190,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         petriNet.addArc(flushInputArc);
     }
 
-    private Set<ServiceCallNode> getMarkedNodesInTree() {
-        var result = new HashSet<ServiceCallNode>();
+    private Set<ServiceCallTreeNode> getMarkedNodesInTree() {
+        var result = new HashSet<ServiceCallTreeNode>();
         result.add(serviceCallNode);
         serviceCallNode.setMarkedForLabelCheck(true);
 
@@ -277,7 +269,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         var hwFailNodes = getMarkedNodesInTree();
 
-        // TODO remove prints when not needed
+        // TODO: remove prints when not needed
         System.err.println(String.format("%s  %s  checked nodes:", serviceCallNode.getCompoundOrderString(), messageName));
         hwFailNodes.forEach(node -> { System.err.println(node.getArtifact().getNameProperty().getValue());});
 

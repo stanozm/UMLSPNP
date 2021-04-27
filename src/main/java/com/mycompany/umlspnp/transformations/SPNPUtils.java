@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
@@ -20,8 +15,8 @@ import java.util.Set;
 import javafx.util.Pair;
 
 /**
+ *  Constants and functions used during the SPNP transformation process.
  *
- * @author 10ondr
  */
 public class SPNPUtils {
     public static final int SPNP_MAX_NAME_LENGTH = 20;
@@ -46,7 +41,6 @@ public class SPNPUtils {
         return null;
     }
 
-    // TODO unique naming for places etc.
     public static String prepareName(String name, int maxLength) {
         var result = name.replaceAll("\\s+", "").replaceAll(com.mycompany.umlspnp.common.Utils.SPNP_NAME_RESTRICTION_REPLACE_REGEX, "");
         if(result.length() > maxLength) {
@@ -123,13 +117,13 @@ public class SPNPUtils {
         return null;
     }
     
-    public static List<ServiceCallNode> getLoopHighestControlServiceCall(ControlServiceSegment controlServiceSegment, ServiceCallNode treeRoot, Loop loop) {
-        List<ServiceCallNode> highestNodes = new ArrayList<>();
+    public static List<ServiceCallTreeNode> getLoopHighestControlServiceCall(ControlServiceSegment controlServiceSegment, ServiceCallTreeNode treeRoot, Loop loop) {
+        List<ServiceCallTreeNode> highestNodes = new ArrayList<>();
         var messages = loop.getMessages();
 
         messages.forEach(message -> {
             var node = treeRoot.getNodeWithMessage(message);
-            ServiceCallNode prevNode = null;
+            ServiceCallTreeNode prevNode = null;
             var nodeMessage = node.getMessage();
             
             while(messages.contains(nodeMessage) && !node.isRoot()) {

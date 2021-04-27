@@ -1,25 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
+ *  Modal window which edits operation entries of the supported operation
+ * in deployment target.
  *
- * @author 10ondr
  */
 public class EditOperationEntryModalWindow extends SelectOperationEntryModalWindow{
     private final TextField speedInput;
@@ -50,14 +44,11 @@ public class EditOperationEntryModalWindow extends SelectOperationEntryModalWind
         speedLabel.visibleProperty().bind(this.speedEnabled.selectedProperty());
         this.speedInput.visibleProperty().bind(this.speedEnabled.selectedProperty());
 
-        this.confirmButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                if(checkInputs()){
-                    operationType.setValue(operationEntry.getSelectionModel().getSelectedItem());
-                    entryProcessingSpeed.setValue(parseProcessingSpeedValue());
-                    close();
-                }
+        this.confirmButton.setOnAction((ActionEvent e) -> {
+            if(checkInputs()){
+                operationType.setValue(operationEntry.getSelectionModel().getSelectedItem());
+                entryProcessingSpeed.setValue(parseProcessingSpeedValue());
+                close();
             }
         });
 

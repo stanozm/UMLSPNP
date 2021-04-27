@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.common;
 
 import javafx.geometry.Point2D;
@@ -13,8 +8,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.text.Text;
 
 /**
- *
- * @author 10ondr
+ * Constants and functions used in the modeling part of the project.
+ * 
  */
 public class Utils {
     public static String SPNP_NAME_RESTRICTION_REGEX = "^([a-zA-Z])[a-zA-Z0-9\\s_]*$";
@@ -27,7 +22,7 @@ public class Utils {
 
     public static double getStringWidth(String text){
         final Text t = new Text(text);
-        new Scene(new Group(t));
+        Scene _unused = new Scene(new Group(t));
         t.applyCss();
         return t.getLayoutBounds().getWidth();
     }

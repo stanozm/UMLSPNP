@@ -1,25 +1,20 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import com.mycompany.umlspnp.common.ObjectInfo;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.input.MouseEvent;
 
 /**
+ *  Provides a base class for a element that will be rendered in one of the
+ * diagrams.
+ * Each of these elements move in a virtual grid for better alignment.
  *
- * @author 10ondr
  */
-public class BasicElement extends Group{
+public abstract class BasicElement extends Group{
     private final ObjectInfo objectInfo;
     protected double gridSize = 10;
     

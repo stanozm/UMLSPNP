@@ -1,56 +1,39 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
 
 import com.mycompany.umlspnp.common.ElementContainer;
-import com.mycompany.umlspnp.models.common.OperationType;
+import com.mycompany.umlspnp.models.OperationType;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
-import javafx.util.Callback;
 import javafx.util.Pair;
 
 /**
+ *  The deployment diagram representation which holds all deployment targets, artifacts,
+ * communication links and related information and functionality.
  *
- * @author 10ondr
  */
 public class DeploymentDiagram {
-    private static final ElementContainer<Artifact, CommunicationLink> allElements = new ElementContainer<>();
+    private final ElementContainer<Artifact, CommunicationLink> allElements = new ElementContainer<>();
     private final ObservableList<LinkType> allLinkTypes;
     
     private final ObservableList<OperationType> operationTypes;
     private final ObservableList<RedundancyGroup> redundancyGroups;
     
     public DeploymentDiagram(){
-	operationTypes = FXCollections.observableArrayList(
-                        new Callback<OperationType, Observable[]>() {
-                            @Override
-                            public Observable[] call(OperationType param) {
-                                return new Observable[]{
-                                    param.getStringRepresentation()
-                                };
-                            }
-                        });
+	operationTypes = FXCollections.observableArrayList((OperationType param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
 
 	redundancyGroups = FXCollections.observableArrayList();
 
-        allLinkTypes = FXCollections.observableArrayList(
-                new Callback<LinkType, Observable[]>() {
-                    @Override
-                    public Observable[] call(LinkType param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        allLinkTypes = FXCollections.observableArrayList((LinkType param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
         
         allLinkTypes.add(new LinkType("Default", 1.0));
         
@@ -71,7 +54,7 @@ public class DeploymentDiagram {
         });
     }
     
-    public static ElementContainer<Artifact, CommunicationLink> getElementContainer(){
+    public ElementContainer<Artifact, CommunicationLink> getElementContainer(){
         return allElements;
     }
     
@@ -113,7 +96,6 @@ public class DeploymentDiagram {
             }
         }
         redundancyGroups.add(new RedundancyGroup(newGroupID));
-        
     }
 
     public boolean removeRedundancyGroup(RedundancyGroup rg) {
@@ -125,7 +107,7 @@ public class DeploymentDiagram {
     }
     
     public DeploymentTarget createDeploymentTarget(DeploymentTarget parent){
-        var newDT = new DeploymentTarget("New deployment target", parent);
+        var newDT = new DeploymentTarget(allElements, "New deployment target", parent);
         addNode(newDT);
         if(parent != null)
             parent.addInnerNode(newDT);
@@ -224,7 +206,10 @@ public class DeploymentDiagram {
     }
     
     public boolean areNodesConnected(Artifact first, Artifact second){
-        HashSet<Pair<CommunicationLink, Artifact>> connectedNodes;
+        if(first == null || second == null)
+            return false;
+
+        Set<Pair<CommunicationLink, Artifact>> connectedNodes;
         if(first instanceof DeploymentTarget)
             connectedNodes =  ((DeploymentTarget) first).getConnectedNodes();
         else

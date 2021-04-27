@@ -1,18 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package com.mycompany.umlspnp.models.common;
+package com.mycompany.umlspnp.models;
 
 import com.mycompany.umlspnp.common.ObjectInfo;
 import com.mycompany.umlspnp.common.Utils;
 
 /**
+ *  Basic object node which is further extended in Deployment and Sequence diagram models.
  *
- * @author 10ondr
  */
-public class BasicNode {
+public abstract class BasicNode {
     private final ObjectInfo objectInfo;
     
     public BasicNode(){

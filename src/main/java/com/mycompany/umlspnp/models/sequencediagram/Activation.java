@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.sequencediagram;
 
-import com.mycompany.umlspnp.models.common.BasicNode;
+import com.mycompany.umlspnp.models.BasicNode;
 import java.util.ArrayList;
 import java.util.Collection;
 import javafx.collections.FXCollections;
@@ -13,14 +8,15 @@ import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
 
 /**
+ * Lifeline activation which contains the individual messages
+ * as specified by the sequence diagram specification 
  *
- * @author 10ondr
  */
 public class Activation extends BasicNode {
-    private final Lifeline lifeline; // TODO better solution
+    private final Lifeline lifeline;
     private final ObservableMap<Number, Message> messages;
     
-    // Only available while transforming to SPNP
+    // Only available while transforming into SPNP
     private ArrayList<Message> sortedMessages = null;
     
     public Activation(Lifeline lifeline) {

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.controllers;
 
 import com.mycompany.umlspnp.models.MainModel;
@@ -19,8 +14,8 @@ import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 
 /**
+ *  Main controller which handles the main menu functionality.
  *
- * @author 10ondr
  */
 public class MainController {
     private final MainModel model;
@@ -29,11 +24,9 @@ public class MainController {
     public MainController(MainModel mainModel, MainView mainView){
         this.model = mainModel;
         this.view = mainView;
-        
-        init();
     }
     
-    private void init() {
+    public void init() {
         Menu fileMenu = new Menu("File");
         var transformMenuItem = new MenuItem("Transform");
 
@@ -60,9 +53,6 @@ public class MainController {
     }
     
     private void createActivationSortedMessages(Activation activation) {
-        var sequenceDiagram = model.getSequenceDiagram();
-        var sequenceDiagramView = view.getSequenceDiagramView();
-
         var messages = new ArrayList<Message>(activation.getMessages());
         
         Collections.sort(messages, (m1, m2) -> {
@@ -73,17 +63,14 @@ public class MainController {
     }
     
     private void createLifelineSortedActivations(Lifeline lifeline) {
-        var sequenceDiagram = model.getSequenceDiagram();
         var sequenceDiagramView = view.getSequenceDiagramView();
 
         var activationIDs = new ArrayList<Integer>();
-        
-        for(var activation : lifeline.getActivations()){
+        lifeline.getActivations().forEach(activation -> {
             activationIDs.add(activation.getObjectInfo().getID());
-        }
+        });
 
         var sortedActivationViews = sequenceDiagramView.sortActivations(activationIDs);
-
         var sortedActivations = new ArrayList<Activation>();
         for(var activationView : sortedActivationViews){
             var activation = lifeline.getActivation(activationView.getObjectInfo().getID());

@@ -1,20 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common.layouts;
 
 import javafx.beans.property.BooleanProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 /**
+ *  A modal window which edits a boolean value.
  *
- * @author 10ondr
  */
 public class BooleanModalWindow extends ModalWindow{
     private final Label stringLabel;
@@ -29,21 +23,15 @@ public class BooleanModalWindow extends ModalWindow{
         this.stringLabel = new Label(labelText);
         
         this.yesButton = new Button("Yes");
-        this.yesButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                result = true;
-                close();
-            }
+        this.yesButton.setOnAction((ActionEvent e) -> {
+            result = true;
+            close();
         });    
         
         this.noButton = new Button("No");
-        this.noButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                result = false;
-                close();
-            }
+        this.noButton.setOnAction((ActionEvent e) -> {
+            result = false;
+            close();
         });
         
         this.rootGrid.add(stringLabel, 0, 0, 2, 1);
@@ -54,21 +42,15 @@ public class BooleanModalWindow extends ModalWindow{
     public BooleanModalWindow(Stage parentStage, String windowName, String labelText, BooleanProperty output) {
         this(parentStage, windowName, labelText);
 
-        this.yesButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                result = true;
-                output.setValue(true);
-                close();
-            }
+        this.yesButton.setOnAction((ActionEvent e) -> {
+            result = true;
+            output.setValue(true);
+            close();
         });    
-        this.noButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                result = false;
-                output.setValue(false);
-                close();
-            }
+        this.noButton.setOnAction((ActionEvent e) -> {
+            result = false;
+            output.setValue(false);
+            close();
         });
     }
     

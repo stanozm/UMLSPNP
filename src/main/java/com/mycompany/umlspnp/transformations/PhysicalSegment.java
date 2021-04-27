@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.DeploymentTarget;
@@ -23,8 +18,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ *  Physical segment of the net which is modeled for each deployment target node.
  *
- * @author 10ondr
  */
 public class PhysicalSegment extends Segment {
     protected final DeploymentTarget node;

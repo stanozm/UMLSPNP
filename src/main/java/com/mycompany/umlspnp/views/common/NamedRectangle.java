@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
@@ -13,8 +8,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.control.Label;
 
 /**
+ *  A basic rectangle complemented by a string label.
  *
- * @author 10ondr
  */
 public class NamedRectangle extends BasicRectangle{
     protected final Label nameLabel;
@@ -30,20 +25,16 @@ public class NamedRectangle extends BasicRectangle{
         widthProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                Platform.runLater(new Runnable() {
-                     @Override
-                     public void run() {
-                         nameLabel.setMaxWidth(widthProperty().getValue() - 10.0);
-                     }
-                 });     
+                Platform.runLater(() -> {
+                    nameLabel.setMaxWidth(widthProperty().getValue() - 10.0);
+                });     
             }
         });
 
-        
         this.getChildren().add(nameLabel);
     }
 
-    public void setBoldHeader(boolean value){
+    public final void setBoldHeader(boolean value){
         if(value){
             nameLabel.setStyle("-fx-font-weight: bold");
         }
@@ -52,7 +43,7 @@ public class NamedRectangle extends BasicRectangle{
         }
     }
     
-    public void setName(String newName){
+    public final void setName(String newName){
         nameLabel.setText(newName);
     }
     

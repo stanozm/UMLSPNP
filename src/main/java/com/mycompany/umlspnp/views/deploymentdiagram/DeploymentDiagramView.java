@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
@@ -10,13 +5,11 @@ import com.mycompany.umlspnp.views.DiagramView;
 import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.BasicRectangle;
 import com.mycompany.umlspnp.views.common.NamedRectangle;
-import javafx.event.EventHandler;
 import javafx.scene.Group;
-import javafx.scene.input.MouseEvent;
 
 /**
+ * View rendering the deployment diagram pane and providing related functionality.
  *
- * @author 10ondr
  */
 public class DeploymentDiagramView extends DiagramView {
     private final Group root;

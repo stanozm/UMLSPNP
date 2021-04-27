@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.sequencediagram.Loop;
@@ -20,12 +15,12 @@ import java.util.Collection;
 import java.util.List;
 
 /**
+ *  The loop segment which spans multiple control service segment places.
  *
- * @author 10ondr
  */
 public class LoopSegment extends Segment{
     private final ControlServiceSegment controlServiceSegment;
-    private final ServiceCallNode highestTreeNode;
+    private final ServiceCallTreeNode highestTreeNode;
     private final Loop loop;
     private ServiceCall highestControlServiceCall = null;
     private final List<ServiceCall> controlServiceCalls = new ArrayList<>();
@@ -36,7 +31,7 @@ public class LoopSegment extends Segment{
     private ImmediateTransition restartTransition = null;
     private StandardPlace repeatsPlace = null;
     
-    public LoopSegment(PetriNet petriNet, ControlServiceSegment controlServiceSegment, ServiceCallNode treeNode, Loop loop) {
+    public LoopSegment(PetriNet petriNet, ControlServiceSegment controlServiceSegment, ServiceCallTreeNode treeNode, Loop loop) {
         super(petriNet, 5);
         
         this.controlServiceSegment = controlServiceSegment;
@@ -44,7 +39,7 @@ public class LoopSegment extends Segment{
         this.loop = loop;
     }
 
-    private void resolveControlServiceCalls(ServiceCallNode serviceCallNode) {
+    private void resolveControlServiceCalls(ServiceCallTreeNode serviceCallNode) {
         var message = serviceCallNode.getMessage();
 
         if(!serviceCallNode.isMarkedForLoopCheck()) {
@@ -69,9 +64,7 @@ public class LoopSegment extends Segment{
         return result;
     }
     
-    private void transformFlushTransition() {
-        var flushTransitionName = SPNPUtils.createTransitionName("loop", "flush");
-    
+    private FunctionSPNP<Integer> createFlushTransitionGuard() {
         var guardBody = new StringBuilder();
         
         controlServiceCalls.forEach(serviceCall -> {
@@ -89,10 +82,14 @@ public class LoopSegment extends Segment{
         guardBody.append(";");
 
         var flushGuardName = SPNPUtils.createFunctionName(String.format("guard_loop_flush"));
-        FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
-
+        return new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
+    }
+    
+    private void transformFlushTransition() {
+        var flushTransitionName = SPNPUtils.createTransitionName("loop", "flush");
+    
         flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
-                            this.transitionPriority, flushGuard, new ConstantTransitionProbability(1.0));
+                              this.transitionPriority, createFlushTransitionGuard(), new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
         
         controlServiceCalls.forEach(serviceCall -> {

@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.ObservableString;
+import com.mycompany.umlspnp.models.ObservableString;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,8 +9,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
+ *  A Communication Link type which contains a name and probability rate.
  *
- * @author 10ondr
  */
 public class LinkType extends ObservableString {
     private final StringProperty name = new SimpleStringProperty();
@@ -36,7 +31,7 @@ public class LinkType extends ObservableString {
         this.rate.addListener(stringChangeListener);
     }
 
-    public void setName(String name){
+    public final void setName(String name){
         this.name.setValue(name);
     }
     
@@ -44,7 +39,7 @@ public class LinkType extends ObservableString {
         return this.name;
     }
     
-    public void setRate(double rate){
+    public final void setRate(double rate){
         this.rate.setValue(rate);
     }
     

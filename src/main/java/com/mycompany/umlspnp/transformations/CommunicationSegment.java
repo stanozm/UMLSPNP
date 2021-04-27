@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.transformations;
 
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
@@ -25,14 +20,14 @@ import java.util.Map;
 import javafx.util.Pair;
 
 /**
+ *  Communication segment of the net which is modeled once for each communication link.
  *
- * @author 10ondr
  */
 public class CommunicationSegment extends Segment implements ActionServiceSegment {
     protected ControlServiceSegment controlServiceSegment = null;
     protected List<PhysicalSegment> physicalSegments = null;
 
-    protected final ServiceCallNode treeRoot;
+    protected final ServiceCallTreeNode treeRoot;
     protected final CommunicationLink communicationLink;
     
     protected List<ServiceCall> controlServiceCalls = new ArrayList<>();
@@ -55,7 +50,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     protected List<StandardPlace> flushDependentPlaces = new ArrayList<>();
 
     public CommunicationSegment(PetriNet petriNet,
-                                ServiceCallNode treeRoot,
+                                ServiceCallTreeNode treeRoot,
                                 CommunicationLink communicationLink) {
         super(petriNet, 1);
 

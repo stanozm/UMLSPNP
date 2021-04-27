@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.sequencediagram;
 
 import com.mycompany.umlspnp.views.common.NamedRectangle;
@@ -16,8 +11,10 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
 /**
+ *  View which renders the lifeline in a sequence diagram.
+ * It shows as a rectangle with a vertical line (span line) on which 
+ * the individual activations are positioned.
  *
- * @author 10ondr
  */
 public class LifelineView extends NamedRectangle {
     private final Line spanLine;

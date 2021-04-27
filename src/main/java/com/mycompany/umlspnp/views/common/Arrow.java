@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common;
 
 import javafx.beans.property.DoubleProperty;
@@ -15,8 +10,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 
 /**
+ *  Renders a line with an optional arrow at one end.
  *
- * @author 10ondr
  */
 public class Arrow extends Group {
     private final Line line;
@@ -46,10 +41,25 @@ public class Arrow extends Group {
             }
         });
         
-        if(!hasArrowHead)
-            return;
-        
-        ChangeListener cl = new ChangeListener(){
+        if(hasArrowHead) {
+            ChangeListener cl = createRefreshChangeListener();
+            line.startXProperty().addListener(cl);
+            line.endXProperty().addListener(cl);
+            line.startYProperty().addListener(cl);
+            line.endYProperty().addListener(cl);
+
+            this.getChildren().addAll(vertical, horizontal);
+        }
+    }
+    
+    /**
+     * Creates a change listener which refreshes the orientation of the line and
+     * the arrow head.
+     * 
+     * @return The refresh change listener.
+     */
+    private ChangeListener createRefreshChangeListener() {
+        return new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object t, Object t1) {
                 double lineStartX;
@@ -97,13 +107,6 @@ public class Arrow extends Group {
                 horizontal.setEndY(lineEndY);
             }
         };
-
-        line.startXProperty().addListener(cl);
-        line.endXProperty().addListener(cl);
-        line.startYProperty().addListener(cl);
-        line.endYProperty().addListener(cl);
-        
-        this.getChildren().addAll(vertical, horizontal);
     }
     
     public Line getLine(){

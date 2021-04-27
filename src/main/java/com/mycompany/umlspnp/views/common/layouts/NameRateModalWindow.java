@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common.layouts;
 
 import java.util.regex.Pattern;
@@ -10,10 +5,11 @@ import javafx.beans.property.StringProperty;
 import javafx.stage.Stage;
 
 /**
- *
- * @author 10ondr
+ * A modal window framework which provides functionalities to modal 
+ * windows that edit a name and rate pair.
+ * 
  */
-public class NameRateModalWindow extends ModalWindow {
+public abstract class NameRateModalWindow extends ModalWindow {
     private final boolean isNormalized;
     
     public NameRateModalWindow(Stage parentStage, String windowName, boolean normalized) {

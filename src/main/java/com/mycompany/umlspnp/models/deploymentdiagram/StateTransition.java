@@ -1,11 +1,6 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.ObservableString;
+import com.mycompany.umlspnp.models.ObservableString;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -16,8 +11,8 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
+ *  Contains information about the node transition between two states.
  *
- * @author 10ondr
  */
 public class StateTransition extends ObservableString {
     private final ObjectProperty<State> from = new SimpleObjectProperty<>();
@@ -87,7 +82,7 @@ public class StateTransition extends ObservableString {
         return this.to;
     }
 
-    public void setName(String name){
+    public final void setName(String name){
         this.transitionName.setValue(name);
     }
     
@@ -95,7 +90,7 @@ public class StateTransition extends ObservableString {
         return this.transitionName;
     }
     
-    public void setRate(double rate){
+    public final void setRate(double rate){
         this.rate.setValue(rate);
     }
     

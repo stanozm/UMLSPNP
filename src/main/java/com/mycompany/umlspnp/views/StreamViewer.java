@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views;
 
 import java.io.IOException;
@@ -14,8 +9,8 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 
 /**
+ *  A primitive stream viewer to render the stdout and stderr in the application directly.
  *
- * @author 10ondr
  */
 public class StreamViewer extends OutputStream {
     private final VBox container;
@@ -29,7 +24,7 @@ public class StreamViewer extends OutputStream {
         
         this.clearButton = new Button("Clear");
         
-        this.clearButton.setOnAction(actionEvent ->  {
+        this.clearButton.setOnAction(_unused ->  {
             streamView.clear();
         });
         

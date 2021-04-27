@@ -26,6 +26,7 @@ public class App extends Application {
         var mainView = new MainView(stage);
         
         mainController = new MainController(mainModel, mainView);
+        mainController.init();
         deploymentDiagramController = new DeploymentDiagramController(mainModel, mainView);
         sequenceDiagramController = new SequenceDiagramController(mainModel, mainView);
         

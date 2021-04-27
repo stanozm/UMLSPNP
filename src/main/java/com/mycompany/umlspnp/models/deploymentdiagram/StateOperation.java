@@ -1,13 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.OperationEntry;
-import com.mycompany.umlspnp.models.common.ObservableString;
-import com.mycompany.umlspnp.models.common.OperationType;
+import com.mycompany.umlspnp.models.OperationEntry;
+import com.mycompany.umlspnp.models.ObservableString;
+import com.mycompany.umlspnp.models.OperationType;
 import javafx.beans.Observable;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -16,26 +11,19 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.util.Callback;
 
 /**
+ *  Class containing information about the node state's supported operations.
  *
- * @author 10ondr
  */
 public class StateOperation extends ObservableString {
     private final ObjectProperty<State> state = new SimpleObjectProperty<>();
     private final ObservableList<OperationEntry> operationEntries;
     
     public StateOperation(State state){
-        this.operationEntries = FXCollections.observableArrayList(
-                new Callback<OperationEntry, Observable[]>() {
-                    @Override
-                    public Observable[] call(OperationEntry param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        this.operationEntries = FXCollections.observableArrayList((OperationEntry param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
 
         var stringChangeListener = new ChangeListener(){
             @Override

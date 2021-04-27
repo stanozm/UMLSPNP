@@ -1,18 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package com.mycompany.umlspnp.models.common;
+package com.mycompany.umlspnp.models;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
+ *  Represents some named entity in the Deployment and Sequence diagram.
  *
- * @author 10ondr
  */
-public class NamedNode extends BasicNode{
+public abstract class NamedNode extends BasicNode{
     private final StringProperty name = new SimpleStringProperty();
     
     public NamedNode(String name){

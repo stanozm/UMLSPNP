@@ -1,37 +1,31 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
+import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.common.ElementContainer;
-import com.mycompany.umlspnp.models.common.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javafx.beans.Observable;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
-import javafx.util.Callback;
 import javafx.util.Pair;
 
 /**
+ * Deployment Target as specified by the formal deployment diagram specification.
+ * The represented node is some physical or other system which can fail, communicate with other 
+ * systems and have children nodes (Deployment Targets or Artifacts).
  *
- * @author 10ondr
  */
 public class DeploymentTarget extends Artifact {
     private final ObjectProperty<RedundancyGroup> redundancyGroup = new SimpleObjectProperty<>();
-    private final ElementContainer<Artifact, CommunicationLink> allElements = DeploymentDiagram.getElementContainer();
+    private final ElementContainer<Artifact, CommunicationLink> allElements;
 
     private final ObservableMap<Number, Artifact> innerNodes;
     private final ObservableMap<Number, CommunicationLink> innerConnections;
@@ -48,51 +42,28 @@ public class DeploymentTarget extends Artifact {
     private final ObservableList<State> statesWithoutOperations;
     private final ObservableList<OperationEntry> allOperationEntries;
 
-    public DeploymentTarget(String name, DeploymentTarget parent){
+    public DeploymentTarget(ElementContainer<Artifact, CommunicationLink> allElements, String name, DeploymentTarget parent){
         super(name, parent);
         
+        this.allElements = allElements;
         innerNodes = FXCollections.observableHashMap();
         innerConnections = FXCollections.observableHashMap();
         
-        states = FXCollections.observableArrayList(
-                new Callback<State, Observable[]>() {
-                    @Override
-                    public Observable[] call(State param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        states = FXCollections.observableArrayList((State param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
         
-        stateTransitions = FXCollections.observableArrayList(
-                new Callback<StateTransition, Observable[]>() {
-                    @Override
-                    public Observable[] call(StateTransition param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        stateTransitions = FXCollections.observableArrayList((StateTransition param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
 
-        stateOperations = FXCollections.observableArrayList(
-                new Callback<StateOperation, Observable[]>() {
-                    @Override
-                    public Observable[] call(StateOperation param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        stateOperations = FXCollections.observableArrayList((StateOperation param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
 
-        allOperationEntries = FXCollections.observableArrayList(
-                new Callback<OperationEntry, Observable[]>() {
-                    @Override
-                    public Observable[] call(OperationEntry param) {
-                        return new Observable[]{
-                            param.getStringRepresentation()
-                        };
-                    }
-                });
+        allOperationEntries = FXCollections.observableArrayList((OperationEntry param) -> new Observable[]{
+            param.getStringRepresentation()
+        });
         
         statesWithoutOperations = FXCollections.observableArrayList();
         initStatesWithoutOperations();
@@ -109,13 +80,15 @@ public class DeploymentTarget extends Artifact {
 
     public void cleanupRecursive(){
         for(var item : innerNodes.values()){
+            if(item == null)
+                continue;
+
             if(item instanceof DeploymentTarget){
                 var removedDeploymentTarget = (DeploymentTarget) item;
                 removedDeploymentTarget.cleanupRecursive();
             }
             allElements.removeNode(item.getObjectInfo().getID());
         }
-        
         cleanup();
     }
     
@@ -161,6 +134,7 @@ public class DeploymentTarget extends Artifact {
         var result = new HashSet<DeploymentTarget>();
         if(this.getRedundancyGroup() == null)
             return result;
+
         nodes.forEach(node -> {
             if(node instanceof DeploymentTarget) {
                 var dt = (DeploymentTarget) node;
@@ -199,7 +173,7 @@ public class DeploymentTarget extends Artifact {
     public void addStateOperation(StateOperation newOperation){
         stateOperations.add(newOperation);
         
-        var ll = new ListChangeListener(){
+        var operationsListener = new ListChangeListener(){
                 @Override
                 public void onChanged(ListChangeListener.Change change) {
                     while (change.next()) {
@@ -218,8 +192,8 @@ public class DeploymentTarget extends Artifact {
                     }
                 }
             };
-        newOperation.getOperationEntries().addListener(ll);
-        OperationEntriesListeners.put(newOperation, ll);
+        newOperation.getOperationEntries().addListener(operationsListener);
+        OperationEntriesListeners.put(newOperation, operationsListener);
     }
     
     public boolean removeStateOperation(StateOperation removedOperation){
@@ -242,12 +216,12 @@ public class DeploymentTarget extends Artifact {
     }
     
     public void setDefaultState(State newDefaultState){
-        for(var state : states){
+        states.forEach(state -> {
             if(state.equals(newDefaultState))
                 state.setDefault(true);
             else
                 state.setDefault(false);
-        }
+        });
     }
     
     public ObservableList<StateTransition> getStateTransitions(){
@@ -303,7 +277,7 @@ public class DeploymentTarget extends Artifact {
     }
     
     @Override
-    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(){
+    public Set<Pair<CommunicationLink, Artifact>> getConnectedNodes(){
         var connectedNodes = new HashSet<Pair<CommunicationLink, Artifact>>();
         connectedNodes.addAll(getConnectedNodes(true, false));
         connectedNodes.addAll(getConnectedNodes(false, false));
@@ -312,7 +286,7 @@ public class DeploymentTarget extends Artifact {
     }
     
     @Override
-    public HashSet<Pair<CommunicationLink, Artifact>> getConnectedNodes(boolean directionUp, boolean shallow) {
+    public Set<Pair<CommunicationLink, Artifact>> getConnectedNodes(boolean directionUp, boolean shallow) {
         var connectedNodes = new HashSet<Pair<CommunicationLink, Artifact>>();
         if(!shallow){
             innerConnections.values().forEach(connection -> {

@@ -1,12 +1,7 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.deploymentdiagram;
 
-import com.mycompany.umlspnp.models.common.ConnectionFailure;
-import com.mycompany.umlspnp.models.common.Connection;
+import com.mycompany.umlspnp.models.ConnectionFailure;
+import com.mycompany.umlspnp.models.Connection;
 import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
@@ -14,8 +9,8 @@ import javafx.collections.ObservableList;
 import javafx.util.Callback;
 
 /**
+ * Connection between Deployment Targets in Deployment Diagram.
  *
- * @author 10ondr
  */
 public class CommunicationLink extends Connection<DeploymentTarget> {
     private final ObservableList<LinkType> allLinkTypes;

@@ -1,19 +1,14 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.sequencediagram;
 
-import com.mycompany.umlspnp.models.common.ObservableString;
+import com.mycompany.umlspnp.models.ObservableString;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
 /**
+ *  Represents the execution time of a execution (leaf) message.
  *
- * @author 10ondr
  */
 public class ExecutionTime extends ObservableString{
     private final IntegerProperty executionTime = new SimpleIntegerProperty();

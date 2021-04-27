@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.models.sequencediagram;
 
 import com.mycompany.umlspnp.common.ElementContainer;
@@ -15,11 +10,12 @@ import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
 
 /**
+ *  The sequence diagram representation which holds all lifelines, messages and loops
+ * related information and functionality.
  *
- * @author 10ondr
  */
 public class SequenceDiagram {
-    private static final ElementContainer<Lifeline, Message> allElements = new ElementContainer<>();
+    private final ElementContainer<Lifeline, Message> allElements = new ElementContainer<>();
     private final ObservableList<Message> sortedMessages;
     
     private final ObservableMap<Number, Loop> loops;
@@ -46,7 +42,7 @@ public class SequenceDiagram {
         allElements.removeAllConnectionsChangeListener(listener);
     }
     
-    public static ElementContainer getElementContainer(){
+    public ElementContainer getElementContainer(){
         return allElements;
     }
     
@@ -60,7 +56,7 @@ public class SequenceDiagram {
     public boolean removeLifeline(int objectID){
         var removedLifeline = getLifeline(objectID);
         if(removedLifeline != null){
-            new ArrayList<Activation>(removedLifeline.getActivations()).forEach(activation -> {
+            new ArrayList<>(removedLifeline.getActivations()).forEach(activation -> {
                 removeActivation(activation);
             });
             return allElements.removeNode(objectID);
@@ -105,7 +101,7 @@ public class SequenceDiagram {
     }
     
     private boolean removeActivation(Activation activation) {
-        new ArrayList<Message>(activation.getMessages()).forEach(message -> {
+        new ArrayList<>(activation.getMessages()).forEach(message -> {
             removeMessage(message.getObjectInfo().getID());
         });
 

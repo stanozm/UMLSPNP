@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views;
 
 import com.mycompany.umlspnp.views.sequencediagram.SequenceDiagramView;
@@ -25,8 +20,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 /**
- *
- * @author 10ondr
+ *  Main view rendering the main application layout and main menu.
+ * 
  */
 public class MainView extends VBox{
     private final DeploymentDiagramView deploymentDiagramView;

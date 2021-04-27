@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.deploymentdiagram;
 
 import com.mycompany.umlspnp.views.common.layouts.NameRateModalWindow;
@@ -11,7 +6,6 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -19,8 +13,8 @@ import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
+ *  Modal window which edits state transition in deployment target.
  *
- * @author 10ondr
  */
 public class EditTransitionModalWindow extends NameRateModalWindow {
     private final ComboBox fromStateInput;
@@ -49,21 +43,17 @@ public class EditTransitionModalWindow extends NameRateModalWindow {
         this.nameInput = new TextField(transitionName.getValue());
         
         var rateLabel = new Label("Rate:");
-        // TODO: Use TextFormatter or something as a better number input method
         this.rateInput = new TextField(transitionRate.getValue().toString());
         
         var confirmButton = new Button("Confirm");
-        confirmButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                if(checkInputs()){
-                    transitionName.setValue(nameInput.textProperty().getValue());
-                    transitionRate.setValue(parseRate());
-                    fromState.setValue(fromStateInput.getSelectionModel().getSelectedItem());
-                    toState.setValue(toStateInput.getSelectionModel().getSelectedItem());
-
-                    close();
-                }
+        confirmButton.setOnAction((ActionEvent e) -> {
+            if(checkInputs()){
+                transitionName.setValue(nameInput.textProperty().getValue());
+                transitionRate.setValue(parseRate());
+                fromState.setValue(fromStateInput.getSelectionModel().getSelectedItem());
+                toState.setValue(toStateInput.getSelectionModel().getSelectedItem());
+                
+                close();
             }
         });
         

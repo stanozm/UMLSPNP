@@ -1,22 +1,16 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mycompany.umlspnp.views.common.layouts;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 /**
+ * A modal window which edits a double value.
  *
- * @author 10ondr
  */
 public class DoubleModalWindow extends ModalWindow{
     private final Label stringLabel;
@@ -36,13 +30,10 @@ public class DoubleModalWindow extends ModalWindow{
         this.stringField = new TextField(output.getValue().toString());
         
         this.confirmButton = new Button("Confirm");
-        this.confirmButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                if(checkInput()){
-                    output.setValue(parseDouble(stringField.textProperty()));
-                    close();
-                }
+        this.confirmButton.setOnAction((ActionEvent e) -> {
+            if(checkInput()){
+                output.setValue(parseDouble(stringField.textProperty()));
+                close();
             }
         });
         
@@ -60,10 +51,10 @@ public class DoubleModalWindow extends ModalWindow{
         
         try {
             double value = parseDouble(this.stringField.textProperty());
-            if(min != null && value < min.doubleValue()){
+            if(min != null && value < min){
                 errorMessage = "Value is smaller than minimum (" + min.toString() + ").";
             }
-            else if(max != null && value > max.doubleValue()){
+            else if(max != null && value > max){
                 errorMessage = "Value is larger than maximum (" + max.toString() + ").";
             }
         }
