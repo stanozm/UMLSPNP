@@ -15,6 +15,18 @@
             <artifactId>javafx-controls</artifactId>
             <version>13</version>
         </dependency>
+        <dependency>
+            <groupId>cz.muni.fi.spnp</groupId>
+            <artifactId>core.models</artifactId>
+            <version>0.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>cz.muni.fi.spnp</groupId>
+            <artifactId>core.transformators</artifactId>
+            <version>0.0.1</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
