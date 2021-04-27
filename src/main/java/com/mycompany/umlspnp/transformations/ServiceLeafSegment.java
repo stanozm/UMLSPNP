@@ -127,7 +127,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     
     private FunctionSPNP<Double> createEndRateDistributionFunction(String messageName) {
         var message = serviceCall.getMessage();
-        var activation = message.getFrom();
+        var activation = message.getTo();
         var artifact = activation.getLifeline().getArtifact();
         var dt = SPNPUtils.getDeploymentTargetFromArtifact(artifact);
 
