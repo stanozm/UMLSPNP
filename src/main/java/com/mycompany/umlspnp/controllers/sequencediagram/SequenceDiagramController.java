@@ -7,10 +7,8 @@ import com.mycompany.umlspnp.models.sequencediagram.Loop;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
-import com.mycompany.umlspnp.views.common.layouts.IntegerModalWindow;
 import com.mycompany.umlspnp.views.sequencediagram.ActivationView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
-import com.mycompany.umlspnp.views.sequencediagram.LoopView;
 import com.mycompany.umlspnp.views.sequencediagram.SequenceDiagramView;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +24,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.stage.Stage;
 
 /**
  *  Controller which handles all functionalities within the sequence diagram
@@ -199,32 +196,9 @@ public class SequenceDiagramController {
     }
 
     private void sequenceDiagramInit(){
-        var connectionContainer = view.getConnectionContainer();
-        connectionContainer.connectionProperty().addListener(new ChangeListener(){
-            @Override
-            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if(newValue == null)
-                    return;
-                
-                var firstElementID = connectionContainer.getFirstElementID();
-                var secondElementID = connectionContainer.getSecondElementID();
-                if(firstElementID != null){
-                    var firstActivationView = view.getActivationView(firstElementID.intValue());
-                    firstActivationView.setSelected(true);
-                    
-                    if(secondElementID != null){
-                        if(connectionContainer.getFirstElement() instanceof ActivationView){
-                            var firstActivation = model.getActivation(firstElementID.intValue());
-                            var secondActivation = model.getActivation(secondElementID.intValue());
-                            model.createMessage(firstActivation, secondActivation);
-                        }
-                        firstActivationView.setSelected(false);
-                        connectionContainer.clear();
-                    }
-                }
-            }
-        });
+        var deployment = mainModel.getDeploymentDiagram();
         
+        // Reassign orders to messages when their order is supposed to change
         model.getSortedMessages().addListener(new ListChangeListener() {
             @Override
             public void onChanged(ListChangeListener.Change change) {
@@ -234,31 +208,42 @@ public class SequenceDiagramController {
                 });
             }
         });
-        
-        model.addMessagesListener(new MapChangeListener(){
-            @Override
-            public void onChanged(MapChangeListener.Change change) {
-                if(change.wasAdded()){
-                    var newMessage = (Message) change.getValueAdded();
-                    var firstID = newMessage.getFirst().getObjectInfo().getID();
-                    var secondID = newMessage.getSecond().getObjectInfo().getID();
-                    var newMessageView = view.createMessage(firstID, secondID, newMessage.getObjectInfo().getID());
 
-                    var controller = new MessageController(mainModel, mainView, newMessage, newMessageView);
-                    controller.addSortMessagesCallback(() -> sortMessages());
-                    messageControllers.add(controller);
-                    sortMessages();
-                }
-                if(change.wasRemoved()){
-                    var removedMessage = (Message) change.getValueRemoved();
-                    view.removeMessage(removedMessage.getObjectInfo().getID());
-                    messageControllers.removeIf(controller -> controller.getModel().equals(removedMessage));
-                    sortMessages();
+        // Remove operation types from messages if the operation type no longer exists
+        var allOperationTypes = deployment.getOperationTypes();
+        allOperationTypes.addListener(new ListChangeListener(){
+            @Override
+            public void onChanged(ListChangeListener.Change change) {
+                while (change.next()) {
+                    if (change.wasRemoved()) {
+                        change.getRemoved().forEach(removedItem -> {
+                            model.getSortedMessages().forEach(message -> {
+                                if(removedItem.equals(message.getOperationType()))
+                                    message.removeOperationType();
+                            });
+                        });
+                    }
                 }
             }
         });
         
+        // Creation and removal of lifelines
+        lifelineManagerInit();
         
+        // Creation and removal of messages
+        messageManagerInit();
+        
+        // Creation and removal of loops
+        loopManagerInit();
+        
+        // Connection container for connecting two lifeline activations with a message
+        connectionContainerInit();
+        
+        // Lifeline and loop menu
+        nodeMenuInit();
+    }
+
+    private void lifelineManagerInit() {
         model.addLifelinesListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
@@ -289,13 +274,106 @@ public class SequenceDiagramController {
                     model.setHighestLevelLifeline(((LifelineView) newValue).getObjectInfo().getID());
             }
         });
+    }
+    
+    private void messageManagerInit() {
+        model.addMessagesListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newMessage = (Message) change.getValueAdded();
+                    var firstID = newMessage.getFirst().getObjectInfo().getID();
+                    var secondID = newMessage.getSecond().getObjectInfo().getID();
+                    var newMessageView = view.createMessage(firstID, secondID, newMessage.getObjectInfo().getID());
+
+                    var controller = new MessageController(mainModel, mainView, newMessage, newMessageView);
+                    controller.addSortMessagesCallback(() -> sortMessages());
+                    messageControllers.add(controller);
+                    sortMessages();
+                }
+                if(change.wasRemoved()){
+                    var removedMessage = (Message) change.getValueRemoved();
+                    view.removeMessage(removedMessage.getObjectInfo().getID());
+                    messageControllers.removeIf(controller -> controller.getModel().equals(removedMessage));
+                    sortMessages();
+                }
+            }
+        });
+    }
+    
+    private void loopManagerInit() {
+        model.addLoopsChangeListener(new MapChangeListener(){
+            @Override
+            public void onChanged(MapChangeListener.Change change) {
+                if(change.wasAdded()){
+                    var newLoop = (Loop) change.getValueAdded();
+                    var newLoopView = view.createLoop(newLoop.getObjectInfo().getID());
+
+                    var controller = new LoopController(mainModel, mainView, newLoop, newLoopView);
+                    loopControllers.add(controller);
+                }
+                if(change.wasRemoved()){
+                    var removedLoop = (Loop) change.getValueRemoved();
+                    view.removeLoop(removedLoop.getObjectInfo().getID());
+                    loopControllers.removeIf(controller -> controller.getModel().equals(removedLoop));
+                }
+            }
+        });
+    }
+    
+    private void connectionContainerInit() {
+        var connectionContainer = view.getConnectionContainer();
+        connectionContainer.connectionProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
+                if(newValue == null)
+                    return;
+                
+                var firstElementID = connectionContainer.getFirstElementID();
+                var secondElementID = connectionContainer.getSecondElementID();
+                if(firstElementID != null){
+                    var firstActivationView = view.getActivationView(firstElementID.intValue());
+                    firstActivationView.setSelected(true);
+                    
+                    if(secondElementID != null){
+                        if(connectionContainer.getFirstElement() instanceof ActivationView){
+                            var firstActivation = model.getActivation(firstElementID.intValue());
+                            var secondActivation = model.getActivation(secondElementID.intValue());
+                            model.createMessage(firstActivation, secondActivation);
+                        }
+                        firstActivationView.setSelected(false);
+                        connectionContainer.clear();
+                    }
+                }
+            }
+        });
+    }
+    
+    private MenuItem createLifelineSubmenu(SequenceDiagram sequence, Artifact artifact){
+        var submenu = new MenuItem(artifact.getNameProperty().getValue());
+        submenu.textProperty().bind(artifact.getNameProperty());
         
-        Menu addNodeMenu = new Menu("Add Node");
-        Menu lifelineMenu = new Menu("Lifeline");
+        EventHandler<ActionEvent> submenuEventHandler = (ActionEvent tt) -> {
+            if(tt.getSource().equals(submenu)){
+                sequence.createLifeline(artifact);
+            }
+        };
+        submenu.setOnAction(submenuEventHandler);
         
-        ObservableMap<Artifact, MenuItem> lifelineSubmenus = FXCollections.observableHashMap();
-        
+        return submenu;
+    }
+    
+    /**
+     * Creates a collection of available lifeline menuitems which mantains 
+     * itself by checking the added and removed artifact and lifelines.
+     * 
+     * @return The self-maintaining map between artifact and the corresponding lifeline Menu Item.
+     */
+    private ObservableMap<Artifact, MenuItem> createLifelineSubmenus() {
         var deployment = this.mainModel.getDeploymentDiagram();
+        ObservableMap<Artifact, MenuItem> lifelineSubmenus = FXCollections.observableHashMap();
+
+        // Changes in the deployment diagram
         deployment.addAllNodesChangeListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
@@ -313,6 +391,7 @@ public class SequenceDiagramController {
             }
         });
         
+        // Changes in the sequence diagram
         model.addLifelinesListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
@@ -331,6 +410,15 @@ public class SequenceDiagramController {
             }
         });
 
+        return lifelineSubmenus;
+    }
+    
+    private void nodeMenuInit() {
+        Menu addNodeMenu = new Menu("Add Node");
+        Menu lifelineMenu = new Menu("Lifeline");
+        
+        var lifelineSubmenus = createLifelineSubmenus();
+
         lifelineSubmenus.addListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
@@ -343,78 +431,20 @@ public class SequenceDiagramController {
                     lifelineMenu.getItems().remove(removedItem);
                 }
             }
-        
         });
         
+        // Disable menu when the collection of available lifelines is empty
         lifelineMenu.disableProperty().bind(Bindings.isEmpty(lifelineSubmenus));
 
-
         var loopMenuItem = new MenuItem("Add loop");
-
-        loopMenuItem.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent tt) {
-                if(tt.getSource().equals(loopMenuItem)){
-                    model.createLoop();
-                }
+        loopMenuItem.setOnAction((ActionEvent tt) -> {
+            if(tt.getSource().equals(loopMenuItem)){
+                model.createLoop();
             }
         });
-        
-        var loopChangeListener = new MapChangeListener(){
-            @Override
-            public void onChanged(MapChangeListener.Change change) {
-                if(change.wasAdded()){
-                    var newLoop = (Loop) change.getValueAdded();
-                    var newLoopView = view.createLoop(newLoop.getObjectInfo().getID());
-
-                    var controller = new LoopController(mainModel, mainView, newLoop, newLoopView);
-                    loopControllers.add(controller);
-                }
-                if(change.wasRemoved()){
-                    var removedLoop = (Loop) change.getValueRemoved();
-                    view.removeLoop(removedLoop.getObjectInfo().getID());
-                    loopControllers.removeIf(controller -> controller.getModel().equals(removedLoop));
-                }
-            }
-        };
-        model.addLoopsChangeListener(loopChangeListener);
         
         addNodeMenu.getItems().addAll(lifelineMenu, loopMenuItem);
         view.addMenu(addNodeMenu);
-        
-        var allOperationTypes = deployment.getOperationTypes();
-        allOperationTypes.addListener(new ListChangeListener(){
-            @Override
-            public void onChanged(ListChangeListener.Change change) {
-                while (change.next()) {
-                    if (change.wasRemoved()) {
-                        change.getRemoved().forEach(removedItem -> {
-                            model.getSortedMessages().forEach(message -> {
-                                if(removedItem.equals(message.getOperationType()))
-                                    message.removeOperationType();
-                            });
-                        });
-                    }
-                }
-            }
-        });
-    }
-    
-    private MenuItem createLifelineSubmenu(SequenceDiagram sequence, Artifact artifact){
-        var submenu = new MenuItem(artifact.getNameProperty().getValue());
-        submenu.textProperty().bind(artifact.getNameProperty());
-        
-        EventHandler<ActionEvent> submenuEventHandler = new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent tt) {
-                if(tt.getSource().equals(submenu)){
-                    sequence.createLifeline(artifact);
-                }
-            }
-        };
-        submenu.setOnAction(submenuEventHandler);
-        
-        return submenu;
     }
     
     public void sortMessages() {
