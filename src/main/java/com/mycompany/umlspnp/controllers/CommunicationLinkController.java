@@ -43,6 +43,14 @@ public class CommunicationLinkController {
             createSampleAnnotations();
         }
     }
+    
+    public CommunicationLink getModel() {
+        return model;
+    }
+    
+    public CommunicationLinkView getView() {
+        return view;
+    }
 
     private void communicationLinkMenuInit(){
         var deploymentDiagram = this.mainModel.getDeploymentDiagram();

@@ -16,6 +16,7 @@ import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationEntryModalWind
 import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditTransitionModalWindow;
 import java.util.ArrayList;
+import java.util.List;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -39,10 +40,13 @@ public class DeploymentDiagramController {
     private final MainModel model;
     private final MainView view;
     
+    private final List<CommunicationLinkController> communicationLinkContollers;
+    
     public DeploymentDiagramController(MainModel mainModel, MainView mainView){
         this.model = mainModel;
         this.view = mainView;
         
+        communicationLinkContollers = new ArrayList<>();
         deploymentDiagramInit(this.model.getDeploymentDiagram());
     }
 
@@ -163,17 +167,16 @@ public class DeploymentDiagramController {
                         var firstID = newConnection.getFirst().getObjectInfo().getID();
                         var secondID = newConnection.getSecond().getObjectInfo().getID();
                         var newConnectionView = deploymentDiagramView.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
-                        
+
                         var controller = new CommunicationLinkController(model, view, newConnection, newConnectionView);
-//                        communicationLinkMenuInit(newConnectionView);
-//                        communicationLinkAnnotationsInit(newConnection);
-//                        createSampleAnnotations(newConnection);
+                        communicationLinkContollers.add(controller);
                     }
                 }
                 if(change.wasRemoved()){
                     if(change.getValueRemoved() instanceof CommunicationLink) {
                         var removedConnection = (CommunicationLink) change.getValueRemoved();
                         deploymentDiagramView.removeConnection(removedConnection.getObjectInfo().getID());
+                        communicationLinkContollers.removeIf((controller) -> controller.getModel().equals(removedConnection));
                     }
                 }
             }
