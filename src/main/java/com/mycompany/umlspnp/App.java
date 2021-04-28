@@ -1,5 +1,6 @@
 package com.mycompany.umlspnp;
 
+import com.mycompany.umlspnp.controllers.deploymentdiagram.DeploymentDiagramController;
 import com.mycompany.umlspnp.controllers.*;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.views.MainView;

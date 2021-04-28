@@ -1,4 +1,4 @@
-package com.mycompany.umlspnp.controllers;
+package com.mycompany.umlspnp.controllers.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;

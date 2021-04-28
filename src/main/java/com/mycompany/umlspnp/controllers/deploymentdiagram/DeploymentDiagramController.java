@@ -1,5 +1,7 @@
-package com.mycompany.umlspnp.controllers;
+package com.mycompany.umlspnp.controllers.deploymentdiagram;
 
+import com.mycompany.umlspnp.controllers.deploymentdiagram.DeploymentTargetController;
+import com.mycompany.umlspnp.controllers.deploymentdiagram.CommunicationLinkController;
 import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
