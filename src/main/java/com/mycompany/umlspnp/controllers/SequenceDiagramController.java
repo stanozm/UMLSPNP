@@ -652,7 +652,8 @@ public class SequenceDiagramController {
             ArrayList<EditableListView> sections = new ArrayList();
             if(messageIsLeaf)
                 sections.add(executionTimeView);
-            sections.add(messageSizeView);
+            if(message.getCommunicationLink() != null)
+                sections.add(messageSizeView);
             sections.add(operationTypeView);
             if(messageIsLeaf)
                 sections.add(failureTypesView);
@@ -744,7 +745,7 @@ public class SequenceDiagramController {
                     var editWindow = new IntegerModalWindow(   (Stage) messageSizeView.getScene().getWindow(),
                                                                                             "Edit message size",
                                                                                             "Message size",
-                                                                                            0,
+                                                                                            1,
                                                                                             null,
                                                                                             selected.messageSizeProperty());
                     editWindow.showAndWait();

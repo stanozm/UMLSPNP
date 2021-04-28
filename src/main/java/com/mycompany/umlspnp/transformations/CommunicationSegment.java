@@ -76,7 +76,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         controlServiceSegment.getControlServiceCalls().forEach(controlPair -> {
             var controlServiceCall = controlPair.getValue();
             if(controlServiceCall.isCommunicationServiceCall()) {
-                var controlCommunicationLink = SPNPUtils.getMessageCommunicationLink(controlServiceCall.getMessage());
+                var controlCommunicationLink = controlServiceCall.getMessage().getCommunicationLink();
                 if(communicationLink == controlCommunicationLink) {
                     controlServiceCalls.add(controlServiceCall);
                 }

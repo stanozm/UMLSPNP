@@ -138,10 +138,11 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var dt = SPNPUtils.getDeploymentTargetFromArtifact(artifact);
 
         var executionTime = (double) serviceCall.getMessage().getExecutionTimeValue();
+        executionTime = executionTime > 0 ? executionTime : 1.0;
         var operationType = message.getOperationType();
 
         var functionBody = new StringBuilder();
-        dt.getStates().forEach(state -> {
+        for(var state : dt.getStates()) {
             if(!state.isStateDOWN()) {
                 double speedCoefficient = getOperationSpeedLimit(operationType, dt, state);
 
@@ -156,7 +157,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
                                         state.nameProperty().getValue()));
                 }
             }
-        });
+        }
         if(functionBody.length() < 1)
             functionBody.append("1");
         functionBody.insert(0, "return 1 / (");

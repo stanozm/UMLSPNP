@@ -3,6 +3,9 @@ package com.mycompany.umlspnp.models.sequencediagram;
 import com.mycompany.umlspnp.models.Connection;
 import com.mycompany.umlspnp.models.ConnectionFailure;
 import com.mycompany.umlspnp.models.OperationType;
+import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
+import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
+import java.util.Set;
 import javafx.beans.Observable;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -10,6 +13,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.util.Pair;
 
 /**
  * A message as described in the sequence diagram specification.
@@ -165,4 +169,28 @@ public class Message extends Connection<Activation> {
         }
         return true;
     }
+    
+    private static boolean isNodeInConnectedNodes(Artifact node, Set<Pair<CommunicationLink, Artifact>> connectedNodes) {
+        for(var pair : connectedNodes) {
+            if(pair.getValue() == node)
+                return true;
+        }
+        return false;
+    }
+    
+    public CommunicationLink getCommunicationLink() {
+        var firstLifeline = this.getFrom().getLifeline();
+        var secondLifeline = this.getTo().getLifeline();
+        var firstArtifact = firstLifeline.getArtifact();
+        var secondArtifact = secondLifeline.getArtifact();
+
+        for(var pair : firstArtifact.getConnectedNodes()) {
+            var connected = pair.getValue().getConnectedNodesShallow();
+            if(pair.getValue() == secondArtifact || isNodeInConnectedNodes(secondArtifact, connected)) {
+                return pair.getKey();
+            }
+        }
+        return null;
+    }
+
 }

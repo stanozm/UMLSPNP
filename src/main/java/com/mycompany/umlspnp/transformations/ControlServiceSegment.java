@@ -75,7 +75,7 @@ public class ControlServiceSegment extends Segment {
     }
     
     private ActionServiceSegment getCommunicationSegment(Message message) {
-        var communicationLink = SPNPUtils.getMessageCommunicationLink(message);
+        var communicationLink = message.getCommunicationLink();
         for (var segment : communicationSegments) {
             if(communicationLink == segment.getCommunicationLink())
                 return segment;
@@ -127,7 +127,7 @@ public class ControlServiceSegment extends Segment {
         if(message == null)
             return;
         
-        var communicationLink = SPNPUtils.getMessageCommunicationLink(message);
+        var communicationLink = message.getCommunicationLink();
         if(communicationLink == null)
             return;
         
