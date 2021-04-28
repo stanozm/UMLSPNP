@@ -1,6 +1,6 @@
 package com.mycompany.umlspnp.views.common.layouts;
 
-import java.util.ArrayList;
+import java.util.List;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
@@ -12,7 +12,7 @@ import javafx.stage.Stage;
 public class PropertiesModalWindow extends ModalWindow{
     private final Button closeButton;
     
-    public PropertiesModalWindow(Stage parentStage, String windowName, ArrayList<EditableListView> sections) {
+    public PropertiesModalWindow(Stage parentStage, String windowName, List<EditableListView> sections) {
         super(parentStage, windowName);
 
         this.closeButton = new Button("Close");

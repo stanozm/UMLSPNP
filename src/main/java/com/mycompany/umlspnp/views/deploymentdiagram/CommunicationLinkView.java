@@ -79,4 +79,9 @@ public class CommunicationLinkView extends ConnectionView implements AnnotationO
     public boolean areAnnotationsDisplayed(){
         return annotationsDisplayed;
     }
+    
+    public void createToggleAnnotationsMenu() {
+        addMenuItem(createToggleAnnotationsMenuItem());
+    }
+
 }

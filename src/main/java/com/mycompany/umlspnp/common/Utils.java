@@ -12,6 +12,8 @@ import javafx.scene.text.Text;
  * 
  */
 public class Utils {
+    public static boolean __DEBUG_CREATE_SAMPLE_DATA = true;
+    
     public static String SPNP_NAME_RESTRICTION_REGEX = "^([a-zA-Z])[a-zA-Z0-9\\s_]*$";
     public static String SPNP_NAME_RESTRICTION_REPLACE_REGEX = "[^a-zA-Z0-9_]";
     private static int objectIDCounter = 0;

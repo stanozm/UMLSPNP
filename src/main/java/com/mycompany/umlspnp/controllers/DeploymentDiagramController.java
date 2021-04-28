@@ -1,6 +1,5 @@
 package com.mycompany.umlspnp.controllers;
 
-import com.mycompany.umlspnp.models.ConnectionFailure;
 import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
@@ -8,15 +7,11 @@ import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.NamedNode;
 import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
-import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
-import com.mycompany.umlspnp.views.deploymentdiagram.CommunicationLinkView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
-import com.mycompany.umlspnp.views.deploymentdiagram.EditAllLinkTypesModalWindow;
-import com.mycompany.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationEntryModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.EditTransitionModalWindow;
@@ -74,16 +69,7 @@ public class DeploymentDiagramController {
         DT.addStateOperation(operationsUp);
         DT.addStateOperation(operationsDown);
     }
-    
-    /**
-     * Creates sample annotations for a specified communication link.
-     * @param communicationLink Communication Link to have the sample annotations added.
-     */
-    private void createSampleAnnotations(CommunicationLink communicationLink){
-        communicationLink.addLinkFailure(new ConnectionFailure("PacketLost", 0.02));
-        communicationLink.addLinkFailure(new ConnectionFailure("ConnectionDropped", 0.001));
-    }
-    
+
     /**
      * Creates sample deployment diagram nodes and communications links.
      */
@@ -178,9 +164,10 @@ public class DeploymentDiagramController {
                         var secondID = newConnection.getSecond().getObjectInfo().getID();
                         var newConnectionView = deploymentDiagramView.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
                         
-                        communicationLinkMenuInit(newConnectionView);
-                        communicationLinkAnnotationsInit(newConnection);
-                        createSampleAnnotations(newConnection);
+                        var controller = new CommunicationLinkController(model, view, newConnection, newConnectionView);
+//                        communicationLinkMenuInit(newConnectionView);
+//                        communicationLinkAnnotationsInit(newConnection);
+//                        createSampleAnnotations(newConnection);
                     }
                 }
                 if(change.wasRemoved()){
@@ -409,14 +396,6 @@ public class DeploymentDiagramController {
         DT.addStateTransition(upDownTransition);
         DT.addStateTransition(downUpTransition);
     }
-
-    private void communicationLinkAnnotationsInit(CommunicationLink communicationLink){
-        var deploymentDiagramView = view.getDeploymentDiagramView();
-        var connectionView = deploymentDiagramView.getConnection(communicationLink.getObjectInfo().getID());
-        
-        connectionView.getLinkTypeAnnotation().setItems(communicationLink.getLinkTypeList());
-        connectionView.getLinkFailuresAnnotation().setItems(communicationLink.getLinkFailures());
-    }
     
     private void deploymentTargetMenuInit(DeploymentTargetView deploymentTargetView){
         var deploymentDiagram = this.model.getDeploymentDiagram();
@@ -447,9 +426,10 @@ public class DeploymentDiagramController {
         deploymentTargetView.addMenuItem(menuItemRename);
 
         
-        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(deploymentTargetView);
-        deploymentTargetView.addMenuItem(menuItemToggleAnnotations);
-        
+//        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(deploymentTargetView);
+//        deploymentTargetView.addMenuItem(menuItemToggleAnnotations);
+        deploymentTargetView.createToggleAnnotationsMenuItem();
+
 
         MenuItem menuItemAddArtifact = new MenuItem("Add artifact");
 
@@ -517,51 +497,6 @@ public class DeploymentDiagramController {
         });
     }
     
-    private void communicationLinkMenuInit(CommunicationLinkView communicationLinkView){
-        var deploymentDiagram = this.model.getDeploymentDiagram();
-        var communicationLinkObjectID = communicationLinkView.getObjectInfo().getID();
-        var communicationLink = deploymentDiagram.getCommunicationLink(communicationLinkObjectID);
-        
-        if(communicationLink == null){
-            System.err.println("Communication link with id " + communicationLinkObjectID + " was not found!");
-            return;
-        }
-        
-        MenuItem menuItemDelete = new MenuItem("Delete connection");
-        menuItemDelete.setOnAction((e) -> {
-            BooleanModalWindow confirmWindow = 
-                        new BooleanModalWindow((Stage) communicationLinkView.getScene().getWindow(), 
-                        "Confirm", "The communication link will be deleted. Proceed?");
-            confirmWindow.showAndWait();
-            if(confirmWindow.getResult()){
-                deploymentDiagram.removeCommunicationLink(communicationLinkObjectID);
-            }
-        });
-        communicationLinkView.addMenuItem(menuItemDelete);    
-
-
-        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(communicationLinkView);
-        communicationLinkView.addMenuItem(menuItemToggleAnnotations);
-        
-        SeparatorMenuItem separator = new SeparatorMenuItem();
-        communicationLinkView.addMenuItem(separator);
-        
-        MenuItem menuProperties = new MenuItem("Properties");
-        menuProperties.setOnAction((e) -> {
-            var linkTypesView = createLinkTypeProperties(communicationLink);
-            var failuresView = createFailureTypesProperties(communicationLink);
-
-            ArrayList<EditableListView> sections = new ArrayList();
-            sections.add(failuresView);
-            sections.add(linkTypesView);
-
-            this.view.createPropertiesModalWindow("[" + communicationLink.getFirst().getNameProperty().getValue() + 
-                    " > " + communicationLink.getSecond().getNameProperty().getValue() +  "] properties", sections);
-
-        });
-        communicationLinkView.addMenuItem(menuProperties);
-    }
-    
     private void artifactMenuInit(ArtifactView artifactView){
         var deploymentDiagram = model.getDeploymentDiagram();
         var artifact = deploymentDiagram.getNode(artifactView.getObjectInfo().getID());
@@ -584,136 +519,7 @@ public class DeploymentDiagramController {
         });
         artifactView.addMenuItem(menuItemRename);
     }
-    
-    private MenuItem createToggleAnnotationsMenuItem(AnnotationOwner view){
-        String hideAnnotationsString = "Hide annotations";
-        String showAnnotationsString = "Show annotations";
-        MenuItem menuItemToggleAnnotations = new MenuItem(hideAnnotationsString);
-        menuItemToggleAnnotations.setOnAction((e) -> {
-            view.setAnnotationsDisplayed(!view.areAnnotationsDisplayed());
-            if(view.areAnnotationsDisplayed()){
-                menuItemToggleAnnotations.setText(hideAnnotationsString);
-            }
-            else{
-                menuItemToggleAnnotations.setText(showAnnotationsString);
-            }
-        });
-        return menuItemToggleAnnotations;
-    }
 
-    private EditableListView createLinkTypeProperties(CommunicationLink communicationLink){
-        var deploymentDiagram = model.getDeploymentDiagram();
-        var linkTypes = deploymentDiagram.getAllLinkTypes();
-        var linkTypesView = new EditableListView("Link type:", linkTypes);
-        
-        var selectBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (LinkType) linkTypesView.getSelected();
-                if(selected != null){
-                    communicationLink.setLinkType(selected);
-                }
-            }
-        };
-        
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                deploymentDiagram.createLinkType("New link type", 1.0);
-            }
-        };
-
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (LinkType) linkTypesView.getSelected();
-                if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) linkTypesView.getScene().getWindow(), 
-                            "Confirm", "The link type \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        deploymentDiagram.removeLinkType(selected);
-                    }
-                }
-            }
-        };
-
-        var editBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (LinkType) linkTypesView.getSelected();
-                if(selected != null){
-                    var editWindow = new EditAllLinkTypesModalWindow(   (Stage) linkTypesView.getScene().getWindow(),
-                                                                                            "Edit link type",
-                                                                                            selected.nameProperty(),
-                                                                                            selected.rateProperty());
-                    editWindow.showAndWait();
-                    linkTypesView.refresh();
-                }
-            }
-        };
-
-        linkTypesView.createButton("Select", selectBtnHandler, true);
-        linkTypesView.createButton("Add", addBtnHandler, false);
-        
-        var removeButton = linkTypesView.createButton("Remove", removeBtnHandler, false);
-        removeButton.disableProperty().bind(Bindings.size(linkTypes).lessThan(2));
-        
-        linkTypesView.createButton("Edit", editBtnHandler, true);
-        
-        return linkTypesView;
-    }
-    
-    private EditableListView createFailureTypesProperties(CommunicationLink communicationLink){
-        var failures = communicationLink.getLinkFailures();
-        var failuresView = new EditableListView("Failure types:", failures);
-        
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                communicationLink.addLinkFailure(new ConnectionFailure("New failure", 0.01));
-            }
-        };
-
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (ConnectionFailure) failuresView.getSelected();
-                if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) failuresView.getScene().getWindow(), 
-                            "Confirm", "The failure type \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        failures.remove(selected);
-                    }
-                }
-            }
-        };
-
-        var editBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (ConnectionFailure) failuresView.getSelected();
-                if(selected != null){
-                    var editWindow = new EditFailureTypeModalWindow(   (Stage) failuresView.getScene().getWindow(),
-                                                                                            "Edit failure type",
-                                                                                            selected.nameProperty(),
-                                                                                            selected.rateProperty());
-                    editWindow.showAndWait();
-                    failuresView.refresh();
-                }
-            }
-        };
-
-        failuresView.createButton("Add", addBtnHandler, false);
-        failuresView.createButton("Remove", removeBtnHandler, true);
-        failuresView.createButton("Edit", editBtnHandler, true);
-        
-        return failuresView;
-    }
-    
     private EditableListView createStatesProperties(DeploymentTarget deploymentTarget, Runnable refreshCallback){
         var states = deploymentTarget.getStates();
         var statesView = new EditableListView("States:", states);
