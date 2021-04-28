@@ -90,7 +90,7 @@ public class DeploymentTargetController {
         view.createStringMenu("Rename", "Rename deployment target", "New name",
                               model.getNameProperty(), Utils.SPNP_NAME_RESTRICTION_REGEX);
 
-        view.createToggleAnnotationsMenuItem();
+        view.createToggleAnnotationsMenu();
 
         view.createMenuItem("Add artifact", (e) -> {
             deploymentDiagram.createArtifact(model);

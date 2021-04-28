@@ -135,4 +135,8 @@ public class DeploymentTargetView extends Box implements AnnotationOwner {
     public boolean areAnnotationsDisplayed(){
         return annotationsDisplayed;
     }
+    
+    public void createToggleAnnotationsMenu() {
+        addMenuItem(createToggleAnnotationsMenuItem());
+    }
 }
