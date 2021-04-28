@@ -1,5 +1,6 @@
 package com.mycompany.umlspnp;
 
+import com.mycompany.umlspnp.controllers.sequencediagram.SequenceDiagramController;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.controllers.deploymentdiagram.DeploymentDiagramController;
 import com.mycompany.umlspnp.controllers.*;

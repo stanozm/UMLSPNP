@@ -4,15 +4,22 @@ import com.mycompany.umlspnp.views.common.Annotation;
 import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.ConnectionSlot;
 import com.mycompany.umlspnp.views.common.ConnectionView;
+import com.mycompany.umlspnp.views.common.layouts.EditableListView;
+import com.mycompany.umlspnp.views.common.layouts.PropertiesModalWindow;
+import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
+import javafx.stage.Stage;
 
 /**
  *  View which renders the message in a sequence diagram.
@@ -180,5 +187,15 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         else{
             this.arrow.setStroke(Color.BLACK);
         }
+    }
+    
+    public void createToggleAnnotationsMenu() {
+        addMenuItem(createToggleAnnotationsMenuItem());
+    }
+    
+    public void createMessagePropertiesMenu(EventHandler<ActionEvent> handler) {
+        MenuItem menuProperties = new MenuItem("Properties");
+        menuProperties.setOnAction(handler);
+        addMenuItem(menuProperties);
     }
 }

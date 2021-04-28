@@ -4,9 +4,11 @@ import com.mycompany.umlspnp.common.ObjectInfo;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
+import com.mycompany.umlspnp.views.common.layouts.IntegerModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.PropertiesModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import java.util.List;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -63,6 +65,16 @@ public abstract class BasicElement extends Group{
         var modal = new StringModalWindow((Stage) getScene().getWindow(), windowName, promptText, property);
         if(restrictionRegex != null)
             modal.setStringRestrictionRegex(restrictionRegex);
+        modal.showAndWait();
+    }
+    
+    public void createIntegerModalWindow(String windowName,
+                                         String promptText,
+                                         Integer min,
+                                         Integer max,
+                                         IntegerProperty property) {
+        var modal = new IntegerModalWindow((Stage) getScene().getWindow(), windowName,
+                                            promptText, min, max, property);
         modal.showAndWait();
     }
     

@@ -24,7 +24,7 @@ import javafx.stage.Stage;
 
 /**
  *  Controller which handles all functionalities within the deployment diagram
- *  and binds deployment diagram mainModel to its mainView.
+ *  and provides a model-view binding.
  *
  */
 public class DeploymentDiagramController {
@@ -104,7 +104,7 @@ public class DeploymentDiagramController {
         model.addOperationType(B_OP_1);
         ST_B_1_op.addOperationEntry(new OperationEntry(B_OP_1, null));
 
-        
+
         var AAA = model.createDeploymentTarget(AA);
         AAA.getNameProperty().setValue("AAA");
         
