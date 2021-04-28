@@ -224,15 +224,12 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
         controlServiceCalls.forEach(controlServiceCall -> {
             var messageSizeObj = controlServiceCall.getMessage().getMessageSize();
-            double messageSize = 1.0;
+            double messageSize = 0;
             if(messageSizeObj != null)
                 messageSize = messageSizeObj.messageSizeProperty().getValue();
 
-            double rate;
-            if(messageSize <= 0)
-                rate = 0;
-            else
-                rate = 1.0 / (messageSize / transferRate);
+            double transmitTime = transferRate > 0 ? messageSize / transferRate : 0;
+            double rate = transmitTime > 0 ? 1.0 / transmitTime : 1.0;
 
             if(distributionValues.length() > 0)
                 distributionValues.append(" + ");
