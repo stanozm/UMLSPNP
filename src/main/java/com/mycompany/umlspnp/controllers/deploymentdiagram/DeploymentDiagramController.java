@@ -2,6 +2,7 @@ package com.mycompany.umlspnp.controllers.deploymentdiagram;
 
 import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
 import com.mycompany.umlspnp.models.OperationType;
@@ -27,24 +28,14 @@ import javafx.stage.Stage;
  *  and provides a model-view binding.
  *
  */
-public class DeploymentDiagramController {
-    private final MainModel mainModel;
-    private final MainView mainView;
-    
-    private final DeploymentDiagram model;
-    private final DeploymentDiagramView view;
-    
+public class DeploymentDiagramController extends BaseController<DeploymentDiagram, DeploymentDiagramView>{
     private final List<CommunicationLinkController> communicationLinkControllers;
     private final List<DeploymentTargetController> deploymentTargetControllers;
     private final List<ArtifactController> artifactControllers;
     
     public DeploymentDiagramController(MainModel mainModel, MainView mainView){
-        this.mainModel = mainModel;
-        this.mainView = mainView;
-        
-        this.model = mainModel.getDeploymentDiagram();
-        this.view = mainView.getDeploymentDiagramView();
-        
+        super(mainModel, mainView, mainModel.getDeploymentDiagram(), mainView.getDeploymentDiagramView());
+
         communicationLinkControllers = new ArrayList<>();
         deploymentTargetControllers = new ArrayList<>();
         artifactControllers = new ArrayList<>();
@@ -63,14 +54,6 @@ public class DeploymentDiagramController {
         
         // Global properties menu
         globalMenuInit();
-    }
-    
-    public DeploymentDiagram getModel() {
-        return model;
-    }
-    
-    public DeploymentDiagramView getView(){
-        return view;
     }
 
     /**

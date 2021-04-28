@@ -1,6 +1,7 @@
 package com.mycompany.umlspnp.controllers.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.Utils;
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.models.ConnectionFailure;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.deploymentdiagram.CommunicationLink;
@@ -21,35 +22,19 @@ import javafx.stage.Stage;
  * and provides a model-view binding.
  *
  */
-public class CommunicationLinkController {
-    private final MainModel mainModel;
-    private final MainView mainView;
-
-    private final CommunicationLink model;
-    private final CommunicationLinkView view;
+public class CommunicationLinkController extends BaseController<CommunicationLink, CommunicationLinkView>{
     
     public CommunicationLinkController(MainModel mainModel,
                                        MainView mainView,
                                        CommunicationLink model,
                                        CommunicationLinkView view) {
-        this.mainModel = mainModel;
-        this.mainView = mainView;
-        this.model = model;
-        this.view = view;
+        super(mainModel, mainView, model, view);
         
         communicationLinkMenuInit();
         communicationLinkAnnotationsInit();
         if(Utils.__DEBUG_CREATE_SAMPLE_DATA) {
             createSampleAnnotations();
         }
-    }
-    
-    public CommunicationLink getModel() {
-        return model;
-    }
-    
-    public CommunicationLinkView getView() {
-        return view;
     }
 
     private void communicationLinkMenuInit(){

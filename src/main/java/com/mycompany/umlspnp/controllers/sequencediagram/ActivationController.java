@@ -1,6 +1,7 @@
 package com.mycompany.umlspnp.controllers.sequencediagram;
 
 import com.mycompany.umlspnp.common.Utils;
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.views.MainView;
@@ -11,32 +12,16 @@ import com.mycompany.umlspnp.views.sequencediagram.ActivationView;
  * and provides a model-view binding.
  * 
  */
-public class ActivationController {
-    private final MainModel mainModel;
-    private final MainView mainView;
-
-    private final Activation model;
-    private final ActivationView view;
+public class ActivationController extends BaseController<Activation, ActivationView>{
 
     public ActivationController(  MainModel mainModel,
                                 MainView mainView,
                                 Activation model,
                                 ActivationView view) {
-        this.mainModel = mainModel;
-        this.mainView = mainView;
-        this.model = model;
-        this.view = view;
+        super(mainModel, mainView, model, view);
 
         activationInit();
         activationMenuInit();
-    }
-    
-    public Activation getModel() {
-        return model;
-    }
-    
-    public ActivationView getView() {
-        return view;
     }
 
     private void activationInit() {

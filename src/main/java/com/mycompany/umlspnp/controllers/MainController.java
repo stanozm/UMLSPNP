@@ -17,13 +17,10 @@ import javafx.scene.control.MenuItem;
  *  Main controller which handles the main menu functionality.
  *
  */
-public class MainController {
-    private final MainModel model;
-    private final MainView view;
+public class MainController extends BaseController<MainModel, MainView> {
     
-    public MainController(MainModel mainModel, MainView mainView){
-        this.model = mainModel;
-        this.view = mainView;
+    public MainController(MainModel model, MainView view){
+        super(model, view, model, view);
     }
     
     public void init() {

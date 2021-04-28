@@ -1,5 +1,6 @@
 package com.mycompany.umlspnp.controllers.sequencediagram;
 
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
@@ -30,28 +31,19 @@ import javafx.scene.control.MenuItem;
   and provides a mainModel-mainView binding.
  *
  */
-public class SequenceDiagramController {
-    private final MainModel mainModel;
-    private final MainView mainView;
-    
-    private final SequenceDiagram model;
-    private final SequenceDiagramView view;
-    
+public class SequenceDiagramController extends BaseController<SequenceDiagram, SequenceDiagramView>{
+
     private final List<MessageController> messageControllers;
     private final List<LifelineController> lifelineControllers;
     private final List<LoopController> loopControllers;
     
     public SequenceDiagramController(MainModel mainModel, MainView mainView){
-        this.mainModel = mainModel;
-        this.mainView = mainView;
+        super(mainModel, mainView, mainModel.getSequenceDiagram(), mainView.getSequenceDiagramView());
         
         messageControllers = new ArrayList<>();
         lifelineControllers = new ArrayList<>();
         loopControllers = new ArrayList<>();
-        
-        this.model = mainModel.getSequenceDiagram();
-        this.view = mainView.getSequenceDiagramView();
-        
+
         sequenceDiagramInit();
     }
     

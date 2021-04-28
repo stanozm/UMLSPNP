@@ -1,6 +1,7 @@
 package com.mycompany.umlspnp.controllers.sequencediagram;
 
 import com.mycompany.umlspnp.common.Utils;
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
@@ -15,36 +16,20 @@ import javafx.collections.MapChangeListener;
  * and provides a model-view binding.
  * 
  */
-public class LifelineController {
-    private final MainModel mainModel;
-    private final MainView mainView;
+public class LifelineController extends BaseController<Lifeline, LifelineView>{
 
-    private final Lifeline model;
-    private final LifelineView view;
-    
     private final List<ActivationController> activationControllers;
     
     public LifelineController(  MainModel mainModel,
                                 MainView mainView,
                                 Lifeline model,
                                 LifelineView view) {
-        this.mainModel = mainModel;
-        this.mainView = mainView;
-        this.model = model;
-        this.view = view;
+        super(mainModel, mainView, model, view);
         
         activationControllers = new ArrayList<>();
         
         lifelineInit();
         lifelineMenuInit();
-    }
-    
-    public Lifeline getModel() {
-        return model;
-    }
-    
-    public LifelineView getView() {
-        return view;
     }
 
     private void lifelineInit() {

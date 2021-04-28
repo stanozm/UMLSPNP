@@ -1,6 +1,7 @@
 package com.mycompany.umlspnp.controllers.deploymentdiagram;
 
 import com.mycompany.umlspnp.common.Utils;
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.models.OperationType;
@@ -30,34 +31,18 @@ import javafx.stage.Stage;
  * and provides a model-view binding.
  * 
  */
-public class DeploymentTargetController {
-    private final MainModel mainModel;
-    private final MainView mainView;
-
-    private final DeploymentTarget model;
-    private final DeploymentTargetView view;
+public class DeploymentTargetController extends BaseController<DeploymentTarget, DeploymentTargetView> {
     
     public DeploymentTargetController (MainModel mainModel,
                                        MainView mainView,
                                        DeploymentTarget model,
                                        DeploymentTargetView view) {
-        this.mainModel = mainModel;
-        this.mainView = mainView;
-        this.model = model;
-        this.view = view;
+        super(mainModel, mainView, model, view);
         
         view.getNameProperty().bind(model.getNameProperty());
         redundancyGroupInit();
         deploymentTargetMenuInit();
         deploymentTargetAnnotationsInit();
-    }
-    
-    public DeploymentTarget getModel() {
-        return model;
-    }
-    
-    public DeploymentTargetView getView() {
-        return view;
     }
     
     private void redundancyGroupInit() {

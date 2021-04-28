@@ -1,6 +1,7 @@
 package com.mycompany.umlspnp.controllers.sequencediagram;
 
 import com.mycompany.umlspnp.common.Utils;
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.models.ConnectionFailure;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.OperationType;
@@ -27,33 +28,17 @@ import javafx.stage.Stage;
  * 
  */
 
-public class MessageController {
-    private final MainModel mainModel;
-    private final MainView mainView;
-
-    private final Message model;
-    private final MessageView view;
+public class MessageController extends BaseController<Message, MessageView>{
     
     public MessageController(  MainModel mainModel,
                                MainView mainView,
                                Message model,
                                MessageView view) {
-        this.mainModel = mainModel;
-        this.mainView = mainView;
-        this.model = model;
-        this.view = view;
+        super(mainModel, mainView, model, view);
         
         messageInit();
         messageMenuInit();
         messageAnnotationsInit();
-    }
-    
-    public Message getModel() {
-        return model;
-    }
-    
-    public MessageView getView() {
-        return view;
     }
 
     private void messageInit(){

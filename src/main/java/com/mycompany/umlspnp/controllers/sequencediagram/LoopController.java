@@ -1,5 +1,6 @@
 package com.mycompany.umlspnp.controllers.sequencediagram;
 
+import com.mycompany.umlspnp.controllers.BaseController;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.sequencediagram.Loop;
 import com.mycompany.umlspnp.views.MainView;
@@ -11,32 +12,16 @@ import com.mycompany.umlspnp.views.sequencediagram.LoopView;
  *
  */
 
-public class LoopController {
-    private final MainModel mainModel;
-    private final MainView mainView;
-
-    private final Loop model;
-    private final LoopView view;
+public class LoopController extends BaseController<Loop, LoopView>{
     
     public LoopController(  MainModel mainModel,
                                MainView mainView,
                                Loop model,
                                LoopView view) {
-        this.mainModel = mainModel;
-        this.mainView = mainView;
-        this.model = model;
-        this.view = view;
+        super(mainModel, mainView, model, view);
 
         view.getNameProperty().bind(model.nameProperty());
         loopMenuInit();
-    }
-    
-    public Loop getModel() {
-        return model;
-    }
-    
-    public LoopView getView() {
-        return view;
     }
 
     private void loopMenuInit(){
