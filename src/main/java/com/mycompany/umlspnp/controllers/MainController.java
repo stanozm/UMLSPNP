@@ -4,7 +4,7 @@ import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
-import com.mycompany.umlspnp.transformations.Transformator;
+import com.mycompany.umlspnp.transformations.DefaultTransformator;
 import com.mycompany.umlspnp.views.MainView;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +33,7 @@ public class MainController extends BaseController<MainModel, MainView> {
                 if(tt.getSource().equals(transformMenuItem)){
                     performPreTransformActions();
 
-                    var transformator = new Transformator(model);
+                    var transformator = new DefaultTransformator(model);
                     transformator.transform();
                     System.out.println(transformator.getOutput());
                 }
