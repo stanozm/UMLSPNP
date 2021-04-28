@@ -37,7 +37,7 @@ public class App extends Application {
             sequenceDiagramController.createSampleData();
         }
 
-        var scene = new Scene(deploymentDiagramController.getView(), 640, 480);
+        var scene = new Scene(mainView, 640, 480);
         stage.setTitle("UML2SPNP");
         stage.setScene(scene);
         stage.setMinWidth(640);

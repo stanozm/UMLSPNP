@@ -8,6 +8,7 @@ import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
+import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentDiagramView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,37 +24,63 @@ import javafx.stage.Stage;
 
 /**
  *  Controller which handles all functionalities within the deployment diagram
- * and binds deployment diagram model to its view.
+ *  and binds deployment diagram mainModel to its mainView.
  *
  */
 public class DeploymentDiagramController {
-    private final MainModel model;
-    private final MainView view;
+    private final MainModel mainModel;
+    private final MainView mainView;
     
-    private final List<CommunicationLinkController> communicationLinkContollers;
-    private final List<DeploymentTargetController> deploymentTargetContollers;
-    private final List<ArtifactController> artifactContollers;
+    private final DeploymentDiagram model;
+    private final DeploymentDiagramView view;
+    
+    private final List<CommunicationLinkController> communicationLinkControllers;
+    private final List<DeploymentTargetController> deploymentTargetControllers;
+    private final List<ArtifactController> artifactControllers;
     
     public DeploymentDiagramController(MainModel mainModel, MainView mainView){
-        this.model = mainModel;
-        this.view = mainView;
+        this.mainModel = mainModel;
+        this.mainView = mainView;
         
-        communicationLinkContollers = new ArrayList<>();
-        deploymentTargetContollers = new ArrayList<>();
-        artifactContollers = new ArrayList<>();
-        deploymentDiagramInit(this.model.getDeploymentDiagram());
+        this.model = mainModel.getDeploymentDiagram();
+        this.view = mainView.getDeploymentDiagramView();
+        
+        communicationLinkControllers = new ArrayList<>();
+        deploymentTargetControllers = new ArrayList<>();
+        artifactControllers = new ArrayList<>();
+
+        // Creation and removal of artifacts and deployment targets
+        nodeManagerInit();
+        
+        // Creation and removal of communication links
+        communicationLinkManagerInit();
+        
+        // Connection container for connecting two deployment targets with a communication link
+        connectionContainerInit();
+        
+        // Node menu
+        nodeMenuInit();
+        
+        // Global properties menu
+        globalMenuInit();
+    }
+    
+    public DeploymentDiagram getModel() {
+        return model;
+    }
+    
+    public DeploymentDiagramView getView(){
+        return view;
     }
 
     /**
      * Creates sample deployment diagram nodes and communications links.
      */
     public void createSampleData() {
-        var deployment = model.getDeploymentDiagram();
-
-        deployment.addOperationType(new OperationType("ReadDeviceData"));
-        deployment.addOperationType(new OperationType("WriteDeviceData"));
+        model.addOperationType(new OperationType("ReadDeviceData"));
+        model.addOperationType(new OperationType("WriteDeviceData"));
         
-        var A = deployment.createDeploymentTarget(null);
+        var A = model.createDeploymentTarget(null);
         var ST_A_1 = new State("ST_A_1");
         A.addState(ST_A_1);
         A.addState(new State("ST_A_2"));
@@ -61,11 +88,11 @@ public class DeploymentDiagramController {
         var ST_A_1_op = new StateOperation(ST_A_1);
         A.addStateOperation(ST_A_1_op);
         var A_OP_1 = new OperationType("A_OP_1");
-        deployment.addOperationType(A_OP_1);
+        model.addOperationType(A_OP_1);
         ST_A_1_op.addOperationEntry(new OperationEntry(A_OP_1, null));
         A.getNameProperty().setValue("A");
         
-        var AA = deployment.createDeploymentTarget(A);
+        var AA = model.createDeploymentTarget(A);
         AA.getNameProperty().setValue("AA");
         var ST_B_1 = new State("ST_B_1");
         AA.addState(ST_B_1);
@@ -74,31 +101,25 @@ public class DeploymentDiagramController {
         var ST_B_1_op = new StateOperation(ST_B_1);
         AA.addStateOperation(ST_B_1_op);
         var B_OP_1 = new OperationType("B_OP_1");
-        deployment.addOperationType(B_OP_1);
+        model.addOperationType(B_OP_1);
         ST_B_1_op.addOperationEntry(new OperationEntry(B_OP_1, null));
 
         
-        var AAA = deployment.createDeploymentTarget(AA);
+        var AAA = model.createDeploymentTarget(AA);
         AAA.getNameProperty().setValue("AAA");
         
-        var B = deployment.createDeploymentTarget(null);
+        var B = model.createDeploymentTarget(null);
         B.getNameProperty().setValue("B");
-        var BB = deployment.createDeploymentTarget(B);
+        var BB = model.createDeploymentTarget(B);
         BB.getNameProperty().setValue("BB");
-        var BBB = deployment.createDeploymentTarget(BB);
+        var BBB = model.createDeploymentTarget(BB);
         BBB.getNameProperty().setValue("BBB");
         
-        deployment.createCommunicationLink(A, B);
+        model.createCommunicationLink(A, B);
     }
 
-    public MainView getView(){
-        return view;
-    }
-    
-    private void deploymentDiagramInit(DeploymentDiagram deployment){
-        var deploymentDiagramView = view.getDeploymentDiagramView();
-        
-        var connectionContainer = deploymentDiagramView.getConnectionContainer();
+    private void connectionContainerInit() {
+        var connectionContainer = view.getConnectionContainer();
         connectionContainer.connectionProperty().addListener(new ChangeListener(){
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
@@ -108,19 +129,21 @@ public class DeploymentDiagramController {
                 var firstElementID = connectionContainer.getFirstElementID();
                 var secondElementID = connectionContainer.getSecondElementID();
                 if(firstElementID != null){
-                    var firstDTView = deploymentDiagramView.getDeploymentTargetView(firstElementID.intValue());
+                    var firstDTView = view.getDeploymentTargetView(firstElementID.intValue());
                     firstDTView.setSelected(true);
                     
                     if(secondElementID != null){
                         if(connectionContainer.getFirstElement() instanceof DeploymentTargetView){
-                            var firstDT = deployment.getDeploymentTarget(firstElementID.intValue());
-                            var secondDT = deployment.getDeploymentTarget(secondElementID.intValue());
-                            if(deployment.areNodesConnected(firstDT, secondDT)){
-                                System.err.println("Error: Nodes \"" + firstDT.getNameProperty().getValue() + "\" and \"" + 
-                                         secondDT.getNameProperty().getValue() + "\" are already connected!");
+                            var firstDT = model.getDeploymentTarget(firstElementID.intValue());
+                            var secondDT = model.getDeploymentTarget(secondElementID.intValue());
+                            if(model.areNodesConnected(firstDT, secondDT)){
+                                System.err.println(String.format(
+                                        "Error: Nodes \"%s\" and \"%s\" are already connected!",
+                                        firstDT.getNameProperty().getValue(),
+                                        secondDT.getNameProperty().getValue()));
                             }
                             else{
-                                deployment.createCommunicationLink(firstDT, secondDT);
+                                model.createCommunicationLink(firstDT, secondDT);
                             }
                         }
                         firstDTView.setSelected(false);
@@ -129,9 +152,10 @@ public class DeploymentDiagramController {
                 }
             }
         });
-        
-        
-        deployment.addCommunicationLinksChangeListener(new MapChangeListener(){
+    }
+    
+    private void communicationLinkManagerInit() {
+        model.addCommunicationLinksChangeListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
                 if(change.wasAdded()){
@@ -139,24 +163,25 @@ public class DeploymentDiagramController {
                         var newConnection = (CommunicationLink) change.getValueAdded();
                         var firstID = newConnection.getFirst().getObjectInfo().getID();
                         var secondID = newConnection.getSecond().getObjectInfo().getID();
-                        var newConnectionView = deploymentDiagramView.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
+                        var newConnectionView = view.createConnection(firstID, secondID, newConnection.getObjectInfo().getID());
 
-                        var controller = new CommunicationLinkController(model, view, newConnection, newConnectionView);
-                        communicationLinkContollers.add(controller);
+                        var controller = new CommunicationLinkController(mainModel, mainView, newConnection, newConnectionView);
+                        communicationLinkControllers.add(controller);
                     }
                 }
                 if(change.wasRemoved()){
                     if(change.getValueRemoved() instanceof CommunicationLink) {
                         var removedConnection = (CommunicationLink) change.getValueRemoved();
-                        deploymentDiagramView.removeConnection(removedConnection.getObjectInfo().getID());
-                        communicationLinkContollers.removeIf((controller) -> controller.getModel().equals(removedConnection));
+                        view.removeConnection(removedConnection.getObjectInfo().getID());
+                        communicationLinkControllers.removeIf((controller) -> controller.getModel().equals(removedConnection));
                     }
                 }
             }
         });
-        
-        
-        deployment.addAllNodesChangeListener(new MapChangeListener(){
+    }
+    
+    private void nodeManagerInit() {
+        model.addAllNodesChangeListener(new MapChangeListener(){
             @Override
             public void onChanged(MapChangeListener.Change change) {
                 if(change.wasAdded()){
@@ -166,48 +191,51 @@ public class DeploymentDiagramController {
                         
                         DeploymentTargetView newDTParent = null;
                         if(newDT.getParent() != null)
-                            newDTParent = deploymentDiagramView.getDeploymentTargetView(newDT.getParent().getObjectInfo().getID());
+                            newDTParent = view.getDeploymentTargetView(newDT.getParent().getObjectInfo().getID());
 
-                        var newDTView = deploymentDiagramView.createDeploymentTargetView(newDTParent, newDT.getObjectInfo().getID());
-                        var controller = new DeploymentTargetController(model, view, newDT, newDTView);
-                        deploymentTargetContollers.add(controller);
+                        var newDTView = view.createDeploymentTargetView(newDTParent, newDT.getObjectInfo().getID());
+                        var controller = new DeploymentTargetController(mainModel, mainView, newDT, newDTView);
+                        deploymentTargetControllers.add(controller);
                     }
                     else if(newNode instanceof Artifact){
                         Artifact newArtifact = (Artifact) newNode;
-                        var newArtifactParent = deploymentDiagramView.getDeploymentTargetView(newArtifact.getParent().getObjectInfo().getID());
-                        var newArtifactView = deploymentDiagramView.CreateArtifact(newArtifactParent, newArtifact.getObjectInfo().getID());
+                        var newArtifactParent = view.getDeploymentTargetView(newArtifact.getParent().getObjectInfo().getID());
+                        var newArtifactView = view.CreateArtifact(newArtifactParent, newArtifact.getObjectInfo().getID());
                         
-                        var controller = new ArtifactController(model, view, newArtifact, newArtifactView);
-                        artifactContollers.add(controller);
+                        var controller = new ArtifactController(mainModel, mainView, newArtifact, newArtifactView);
+                        artifactControllers.add(controller);
                     }
                 }
                 else if(change.wasRemoved()){
                     var removedItem = change.getValueRemoved();
                     if(removedItem instanceof DeploymentTarget) {
-                        deploymentTargetContollers.removeIf(controller -> controller.getModel().equals(removedItem));
+                        deploymentTargetControllers.removeIf(controller -> controller.getModel().equals(removedItem));
                     }
                     else if(removedItem instanceof Artifact) {
-                        artifactContollers.removeIf(controller -> controller.getModel().equals(removedItem));
+                        artifactControllers.removeIf(controller -> controller.getModel().equals(removedItem));
                     }
                     var removedNode = (Artifact) change.getValueRemoved();
-                    deploymentDiagramView.removeNode(removedNode.getObjectInfo().getID());
+                    view.removeNode(removedNode.getObjectInfo().getID());
                 }
             }
         });
-
+    }
+    
+    private void nodeMenuInit() {
         Menu addNodeMenu = new Menu("Add Node");
-
         MenuItem deviceMenuItem = new MenuItem("Deployment target");
         
         EventHandler<ActionEvent> menuEventHandler = (ActionEvent tt) -> {
             if(tt.getSource().equals(deviceMenuItem))
-                deployment.createDeploymentTarget(null);
+                model.createDeploymentTarget(null);
         };
         
         deviceMenuItem.setOnAction(menuEventHandler);
         addNodeMenu.getItems().addAll(deviceMenuItem);
-        deploymentDiagramView.addMenu(addNodeMenu);
-        
+        view.addMenu(addNodeMenu);
+    }
+    
+    private void globalMenuInit() {
         Menu globalMenu = new Menu("Global");
         MenuItem operationTypesMenuItem = new MenuItem("Operation types");
         operationTypesMenuItem.setOnAction((e) -> {
@@ -215,21 +243,39 @@ public class DeploymentDiagramController {
             ArrayList<EditableListView> sections = new ArrayList();
             sections.add(operationTypesView);
 
-            this.view.createPropertiesModalWindow("Operation types", sections);
+            this.mainView.createPropertiesModalWindow("Operation types", sections);
         });
         globalMenu.getItems().addAll(operationTypesMenuItem);
+
+        MenuItem redundancyGroupsMenuItem = new MenuItem("Redundancy groups");
+        redundancyGroupsMenuItem.setOnAction((e) -> {
+            var redundancyGroupsView = createRedundancyGroupsView();
+            ArrayList<EditableListView> sections = new ArrayList();
+            sections.add(redundancyGroupsView);
+
+            this.mainView.createPropertiesModalWindow("Redundancy groups", sections);
+        });
+        globalMenu.getItems().addAll(redundancyGroupsMenuItem);
         
-        var allOperationTypes = deployment.getOperationTypes();
+        view.addMenu(globalMenu);
+        
+        // Remove corresponding annotation data when the operation type is deleted
+        globalOperationTypesInit();
+    }
+    
+    private void globalOperationTypesInit() {
+        var allOperationTypes = model.getOperationTypes();
         allOperationTypes.addListener(new ListChangeListener(){
             @Override
             public void onChanged(ListChangeListener.Change change) {
                 while (change.next()) {
                     if (change.wasRemoved()) {
                         change.getRemoved().forEach(removedItem -> {
-                            deployment.getNodes().forEach(node -> {
+                            model.getNodes().forEach(node -> {
                                 if(node instanceof DeploymentTarget) {
                                     ((DeploymentTarget) node).getStateOperations().forEach(stateOperation -> {
-                                        stateOperation.getOperationEntries().removeIf(operationEntry -> removedItem.equals(operationEntry.getOperationType()));
+                                        stateOperation.getOperationEntries().removeIf(operationEntry -> 
+                                                removedItem.equals(operationEntry.getOperationType()));
                                     });
                                 }
                             });
@@ -238,55 +284,36 @@ public class DeploymentDiagramController {
                 }
             }
         });
-        
-        MenuItem redundancyGroupsMenuItem = new MenuItem("Redundancy groups");
-        redundancyGroupsMenuItem.setOnAction((e) -> {
-            var redundancyGroupsView = createRedundancyGroupsView();
-            ArrayList<EditableListView> sections = new ArrayList();
-            sections.add(redundancyGroupsView);
-
-            this.view.createPropertiesModalWindow("Redundancy groups", sections);
-        });
-        globalMenu.getItems().addAll(redundancyGroupsMenuItem);
-        
-        deploymentDiagramView.addMenu(globalMenu);
     }
     
     private EditableListView createOperationTypesView(){
-        var deploymentDiagram = model.getDeploymentDiagram();
-        var operationTypes = deploymentDiagram.getOperationTypes();
+        var operationTypes = model.getOperationTypes();
         var operationTypesView = new EditableListView("Operation Types:", operationTypes);
         
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                deploymentDiagram.addOperationType(new OperationType("New operation"));
-            }
+        var addBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
+            model.addOperationType(new OperationType("New operation"));
         };
 
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (OperationType) operationTypesView.getSelected();
-                if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) operationTypesView.getScene().getWindow(), 
-                            "Confirm", "The operation type \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        deploymentDiagram.removeOperationType(selected);
-                    }
+        var removeBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
+            var selected = (OperationType) operationTypesView.getSelected();
+            if(selected != null){
+                var promptText = String.format("The operation type \"%s\" will be deleted. Proceed?",
+                                               Utils.shortenString(selected.toString(), 50));
+                BooleanModalWindow confirmWindow = new BooleanModalWindow(
+                                                    (Stage) operationTypesView.getScene().getWindow(),
+                                                    "Confirm",
+                                                    promptText);
+                confirmWindow.showAndWait();
+                if(confirmWindow.getResult()){
+                    model.removeOperationType(selected);
                 }
             }
         };
 
-        var editBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (OperationType) operationTypesView.getSelected();
-                view.createStringModalWindow("Rename", "New name", selected.nameProperty(), null);
-                operationTypesView.refresh();
-            }
+        var editBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
+            var selected = (OperationType) operationTypesView.getSelected();
+            mainView.createStringModalWindow("Rename", "New name", selected.nameProperty(), null);
+            operationTypesView.refresh();
         };
         
         operationTypesView.createButton("Add", addBtnHandler, false);
@@ -296,29 +323,25 @@ public class DeploymentDiagramController {
     }
 
     private EditableListView createRedundancyGroupsView(){
-        var deploymentDiagram = model.getDeploymentDiagram();
-        var redundancyGroups = deploymentDiagram.getRedundancyGroups();
+        var redundancyGroups = model.getRedundancyGroups();
         var redundancyGroupsView = new EditableListView("Redundancy Groups:", redundancyGroups);
         
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                deploymentDiagram.createRedundancyGroup();
-            }
+        var addBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
+            model.createRedundancyGroup();
         };
 
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (RedundancyGroup) redundancyGroupsView.getSelected();
-                if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) redundancyGroupsView.getScene().getWindow(), 
-                            "Confirm", "The redundancy group \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        deploymentDiagram.removeRedundancyGroup(selected);
-                    }
+        var removeBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
+            var selected = (RedundancyGroup) redundancyGroupsView.getSelected();
+            if(selected != null){
+                var promptText = String.format("The redundancy group \"%s\" will be deleted. Proceed?",
+                                               Utils.shortenString(selected.toString(), 50));
+                BooleanModalWindow confirmWindow = new BooleanModalWindow(
+                                                        (Stage) redundancyGroupsView.getScene().getWindow(),
+                                                        "Confirm",
+                                                        promptText);
+                confirmWindow.showAndWait();
+                if(confirmWindow.getResult()){
+                    model.removeRedundancyGroup(selected);
                 }
             }
         };
