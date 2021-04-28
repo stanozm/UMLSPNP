@@ -54,13 +54,7 @@ public class CommunicationLinkController {
 
     private void communicationLinkMenuInit(){
         var deploymentDiagram = this.mainModel.getDeploymentDiagram();
-        var communicationLinkObjectID = view.getObjectInfo().getID();
-        var communicationLink = deploymentDiagram.getCommunicationLink(communicationLinkObjectID);
-        
-        if(communicationLink == null){
-            System.err.println("Communication link with id " + communicationLinkObjectID + " was not found!");
-            return;
-        }
+        var communicationLinkObjectID = model.getObjectInfo().getID();
 
         view.createConfirmMenu("Delete connection", "The communication link will be deleted. Proceed?",
                                                 () -> {deploymentDiagram.removeCommunicationLink(communicationLinkObjectID);});
@@ -73,7 +67,7 @@ public class CommunicationLinkController {
         ArrayList<EditableListView> sections = new ArrayList<>();
         sections.add(linkTypesView);
         sections.add(failuresView);
-        var propertiesWindowName = String.format("\"%s\" properties", communicationLink.getLinkType().nameProperty().getValue());
+        var propertiesWindowName = String.format("\"%s\" properties", model.getLinkType().nameProperty().getValue());
         view.createPropertiesMenu(propertiesWindowName, sections);
     }
 

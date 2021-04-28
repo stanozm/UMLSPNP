@@ -4,31 +4,22 @@ import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
 import com.mycompany.umlspnp.models.*;
-import com.mycompany.umlspnp.models.NamedNode;
 import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
-import com.mycompany.umlspnp.views.common.layouts.StringModalWindow;
 import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
-import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationEntryModalWindow;
-import com.mycompany.umlspnp.views.deploymentdiagram.EditOperationModalWindow;
-import com.mycompany.umlspnp.views.deploymentdiagram.EditTransitionModalWindow;
 import java.util.ArrayList;
 import java.util.List;
-import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.stage.Stage;
 
 /**
@@ -41,12 +32,14 @@ public class DeploymentDiagramController {
     private final MainView view;
     
     private final List<CommunicationLinkController> communicationLinkContollers;
+    private final List<DeploymentTargetController> deploymentTargetContollers;
     
     public DeploymentDiagramController(MainModel mainModel, MainView mainView){
         this.model = mainModel;
         this.view = mainView;
         
         communicationLinkContollers = new ArrayList<>();
+        deploymentTargetContollers = new ArrayList<>();
         deploymentDiagramInit(this.model.getDeploymentDiagram());
     }
 
@@ -196,10 +189,8 @@ public class DeploymentDiagramController {
                             newDTParent = deploymentDiagramView.getDeploymentTargetView(newDT.getParent().getObjectInfo().getID());
 
                         var newDTView = deploymentDiagramView.createDeploymentTargetView(newDTParent, newDT.getObjectInfo().getID());
-                        newDTView.getNameProperty().bind(newDT.getNameProperty());
-                        redundancyGroupInit(newDT, newDTView);
-                        deploymentTargetMenuInit(newDTView);
-                        deploymentTargetAnnotationsInit(newDT);
+                        var controller = new DeploymentTargetController(model, view, newDT, newDTView);
+                        deploymentTargetContollers.add(controller);
                     }
                     else if(newNode instanceof Artifact){
                         Artifact newArtifact = (Artifact) newNode;
@@ -210,7 +201,14 @@ public class DeploymentDiagramController {
                     }
                 }
                 else if(change.wasRemoved()){
-                    var removedNode = (NamedNode) change.getValueRemoved();
+                    var removedItem = change.getValueRemoved();
+                    if(removedItem instanceof DeploymentTarget) {
+                        deploymentTargetContollers.removeIf(controller -> controller.getModel().equals(removedItem));
+                    }
+                    else if(removedItem instanceof Artifact) {
+                        // ...
+                    }
+                    var removedNode = (Artifact) change.getValueRemoved();
                     deploymentDiagramView.removeNode(removedNode.getObjectInfo().getID());
                 }
             }
@@ -277,21 +275,6 @@ public class DeploymentDiagramController {
         globalMenu.getItems().addAll(redundancyGroupsMenuItem);
         
         deploymentDiagramView.addMenu(globalMenu);
-    }
-
-    private void redundancyGroupInit(DeploymentTarget newDT, DeploymentTargetView newDTView) {
-        newDT.redundancyGroupProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if(newValue == null) {
-                    newDTView.getNameProperty().bind(newDT.getNameProperty());
-                }
-                else{
-                    newDTView.getNameProperty().bind(Bindings.format("[%d.] ", newDT.getRedundancyGroup().getGroupID()).concat(newDT.getNameProperty()));
-                }
-            }
-            
-        });
     }
     
     private EditableListView createOperationTypesView(){
@@ -370,136 +353,6 @@ public class DeploymentDiagramController {
         return redundancyGroupsView;
     }
 
-
-    private void deploymentTargetAnnotationsInit(DeploymentTarget DT){
-        var deploymentDiagramView = view.getDeploymentDiagramView();
-        var DTView = deploymentDiagramView.getDeploymentTargetView(DT.getObjectInfo().getID());
-        
-        DTView.getStatesAnnotation().setItems(DT.getStates());
-        DTView.getStateTransitionsAnnotation().setItems(DT.getStateTransitions());
-        DTView.getStateOperationsAnnotation().setItems(DT.getStateOperations());
-        
-        State stateUp = new State("UP");
-//        stateUp.setLocked(true);
-
-        State stateDown = new State("DOWN");
-        stateDown.setLocked(true);
-        stateDown.setStateDOWN(true);
-
-        DT.addState(stateUp);
-        DT.addState(stateDown);
-        DT.setDefaultState(stateUp);
-
-        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.01);
-//        upDownTransition.setLocked(true);
-        
-        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.5);
-//        downUpTransition.setLocked(true);
-        
-        DT.addStateTransition(upDownTransition);
-        DT.addStateTransition(downUpTransition);
-    }
-    
-    private void deploymentTargetMenuInit(DeploymentTargetView deploymentTargetView){
-        var deploymentDiagram = this.model.getDeploymentDiagram();
-        var deploymentTargetObjectID = deploymentTargetView.getObjectInfo().getID();
-        var deploymentTarget = deploymentDiagram.getDeploymentTarget(deploymentTargetObjectID);
-        
-        if(deploymentTarget == null){
-            System.err.println("Deployment target with id " + deploymentTargetObjectID + " was not found!");
-            return;
-        }
-        
-        MenuItem menuItemDelete = new MenuItem("Delete");
-        menuItemDelete.setOnAction((e) -> {
-            BooleanModalWindow confirmWindow = 
-                        new BooleanModalWindow((Stage) deploymentTargetView.getScene().getWindow(), 
-                        "Confirm", "The deployment target \"" + Utils.shortenString(deploymentTarget.getNameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
-            confirmWindow.showAndWait();
-            if(confirmWindow.getResult()){
-                deploymentDiagram.removeNode(deploymentTargetObjectID);
-            }
-        });
-        deploymentTargetView.addMenuItem(menuItemDelete);
-        
-        MenuItem menuItemRename = new MenuItem("Rename");
-        menuItemRename.setOnAction((e) -> {
-            this.view.createStringModalWindow("Rename", "New name", deploymentTarget.getNameProperty(), Utils.SPNP_NAME_RESTRICTION_REGEX);
-        });
-        deploymentTargetView.addMenuItem(menuItemRename);
-
-        
-//        MenuItem menuItemToggleAnnotations = createToggleAnnotationsMenuItem(deploymentTargetView);
-//        deploymentTargetView.addMenuItem(menuItemToggleAnnotations);
-        deploymentTargetView.createToggleAnnotationsMenuItem();
-
-
-        MenuItem menuItemAddArtifact = new MenuItem("Add artifact");
-
-        menuItemAddArtifact.setOnAction((e) -> {
-            deploymentDiagram.createArtifact(deploymentTarget);
-        });
-        
-        deploymentTargetView.addMenuItem(menuItemAddArtifact);
-        
-        MenuItem menuItemAddDT = new MenuItem("Add deployment target");
-        
-        menuItemAddDT.setOnAction((e) -> {
-            deploymentDiagram.createDeploymentTarget(deploymentTarget);
-        });
-        
-        deploymentTargetView.addMenuItem(menuItemAddDT);
-
-
-        MenuItem menuItemConnect = new MenuItem("Connect");
-        menuItemConnect.setOnAction((e) -> {
-            this.view.getDeploymentDiagramView().startConnection(deploymentTargetView);
-        });
-        deploymentTargetView.addMenuItem(menuItemConnect);
-       
-        SeparatorMenuItem separator = new SeparatorMenuItem();
-        deploymentTargetView.addMenuItem(separator);
-        
-        MenuItem menuProperties = new MenuItem("Properties");
-        menuProperties.setOnAction((e) -> {
-            var stateTransitionsView = createStateTransitionsProperties(deploymentTarget);
-            var stateOperationsView = createStateOperationsProperties(deploymentTarget);
-            var statesView = createStatesProperties(deploymentTarget, () -> {
-                stateTransitionsView.refresh();
-                stateOperationsView.refresh();
-            });
-            var redundancyGroupView = createRedundancyGroupView(deploymentTarget);
-
-            ArrayList<EditableListView> sections = new ArrayList();
-            sections.add(statesView);
-            sections.add(stateTransitionsView);
-            sections.add(stateOperationsView);
-            sections.add(redundancyGroupView);
-
-            this.view.createPropertiesModalWindow("\"" + deploymentTarget.getNameProperty().getValue() + "\" properties", sections);
-        });
-        deploymentTargetView.addMenuItem(menuProperties);
-        
-        // Remove State Transitions and State Operations when corresponding State is removed
-        deploymentTarget.addStatesChangeListener(new ListChangeListener(){
-            @Override
-            public void onChanged(ListChangeListener.Change change) {
-                while (change.next()) {
-                    if (change.wasRemoved()) {
-                        change.getRemoved().forEach(removedItem -> {
-                            deploymentTarget.getStateTransitions().removeIf(transition -> 
-                                            transition.getStateFrom().equals(removedItem) || 
-                                            transition.getStateTo().equals(removedItem));
-                            deploymentTarget.getStateOperations().removeIf(operation -> 
-                                            operation.getState().equals(removedItem));
-          
-                        });
-                    }
-                }
-            }
-        });
-    }
-    
     private void artifactMenuInit(ArtifactView artifactView){
         var deploymentDiagram = model.getDeploymentDiagram();
         var artifact = deploymentDiagram.getNode(artifactView.getObjectInfo().getID());
@@ -522,320 +375,4 @@ public class DeploymentDiagramController {
         });
         artifactView.addMenuItem(menuItemRename);
     }
-
-    private EditableListView createStatesProperties(DeploymentTarget deploymentTarget, Runnable refreshCallback){
-        var states = deploymentTarget.getStates();
-        var statesView = new EditableListView("States:", states);
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                deploymentTarget.addState(new State("New state"));
-            }
-        };
-
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (State) statesView.getSelected();
-                if(selected != null){
-                    if(selected.isLocked()) {
-                        var alert = Utils.createAlertDialog("Operation error", "Operation not allowed!", "This state can not be removed.");
-                        alert.showAndWait();
-                    }
-                    else{
-                        BooleanModalWindow confirmWindow = 
-                                new BooleanModalWindow((Stage) statesView.getScene().getWindow(), 
-                                "Confirm", "The state \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                        confirmWindow.showAndWait();
-                        if(confirmWindow.getResult()){
-                            states.remove(selected);
-                        }
-                    }
-                }
-            }
-        };
-
-        var renameBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (State) statesView.getSelected();
-                if(selected != null){
-                    if(selected.isLocked()) {
-                        var alert = Utils.createAlertDialog("Operation error", "Operation not allowed!", "This state can not be edited.");
-                        alert.showAndWait();
-                    }
-                    else {
-                        StringModalWindow renameWindow = new StringModalWindow((Stage) statesView.getScene().getWindow(), 
-                                "Rename state", "Type new name of the state \"" + Utils.shortenString(selected.toString(), 50) + "\":", selected.nameProperty());
-                        renameWindow.setStringRestrictionRegex(Utils.SPNP_NAME_RESTRICTION_REGEX);
-                        renameWindow.showAndWait();
-                        statesView.refresh();
-                        refreshCallback.run();
-                    }
-                }
-            }
-        };
-
-        var setDefaultBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (State) statesView.getSelected();
-                if(selected != null){
-                    deploymentTarget.setDefaultState(selected);
-                    statesView.refresh();
-                    refreshCallback.run();
-                }
-            }
-        };
-
-        statesView.createButton("Add", addBtnHandler, false);
-        statesView.createButton("Remove", removeBtnHandler, true);
-        statesView.createButton("Rename", renameBtnHandler, true);
-        statesView.createButton("Set default", setDefaultBtnHandler, true);
-        
-        return statesView;
-    }
-
-
-    private EditableListView createStateTransitionsProperties(DeploymentTarget deploymentTarget){
-        var states = deploymentTarget.getStates();
-        var transitions = deploymentTarget.getStateTransitions();
-        var transitionsView = new EditableListView("State Transitions:", transitions);
-        
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                // Button is disabled when there are not at least 2 states
-                var state1 = states.get(0);
-                var state2 = states.get(1);
-                deploymentTarget.addStateTransition(new StateTransition(state1, state2, "New Transition", 1.0));
-            }
-        };
-        
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (StateTransition) transitionsView.getSelected();
-                if(selected != null){
-                    if(selected.isLocked()) {
-                        var alert = Utils.createAlertDialog("Operation error", "Operation not allowed!", "This transition can not be removed.");
-                        alert.showAndWait();
-                    }
-                    else {
-                        BooleanModalWindow confirmWindow = 
-                                new BooleanModalWindow((Stage) transitionsView.getScene().getWindow(), 
-                                "Confirm", "The transition \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                        confirmWindow.showAndWait();
-                        if(confirmWindow.getResult()){
-                            transitions.remove(selected);
-                        }
-                    }
-                }
-            }
-        };
-
-        var editBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (StateTransition) transitionsView.getSelected();
-                if(selected != null){
-                    EditTransitionModalWindow editWindow = new EditTransitionModalWindow(   (Stage) transitionsView.getScene().getWindow(),
-                                                                                            "Edit transition",
-                                                                                            selected.nameProperty(),
-                                                                                            selected.rateProperty(),
-                                                                                            selected.fromStateProperty(),
-                                                                                            selected.toStateProperty(),
-                                                                                            states
-                                                                                            );
-                    editWindow.showAndWait();
-                    transitionsView.refresh();
-                }
-            }
-        };
-
-        var addBtn = transitionsView.createButton("Add", addBtnHandler, false);
-        addBtn.disableProperty().bind(Bindings.size(states).lessThan(2));
-        transitionsView.createButton("Remove", removeBtnHandler, true);
-        transitionsView.createButton("Edit", editBtnHandler, true);
-        return transitionsView;
-    }
-    
-    private EditableListView createStateOperationsProperties(DeploymentTarget deploymentTarget){
-        var statesWithNoOperations = deploymentTarget.getStatesWithoutOperations();
-        var operations = deploymentTarget.getStateOperations();
-        var operationsView = new EditableListView("Supported Operations:", operations);
-        
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                // Button is disabled when there is not at least 1 state available
-                deploymentTarget.addStateOperation(new StateOperation(statesWithNoOperations.get(0)));
-            }
-        };
-        
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (StateOperation) operationsView.getSelected();
-                if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) operationsView.getScene().getWindow(), 
-                            "Confirm", "The operation \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        deploymentTarget.removeStateOperation(selected);
-                    }
-                }
-            }
-        };
-
-        var editBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (StateOperation) operationsView.getSelected();
-                if(selected != null){
-                    EditableListView operationEntriesView = createStateOperationEntriesProperties(selected);
-                    
-                    EditOperationModalWindow editWindow = new EditOperationModalWindow(   (Stage) operationsView.getScene().getWindow(),
-                                                                                            "Edit operation",
-                                                                                            selected.stateProperty(),
-                                                                                            statesWithNoOperations,
-                                                                                            operationEntriesView
-                                                                                            );
-                    editWindow.showAndWait();
-                    operationsView.refresh();
-                }
-            }
-        };
-        
-        var addBtn = operationsView.createButton("Add", addBtnHandler, false);
-        addBtn.disableProperty().bind(Bindings.size(statesWithNoOperations).lessThan(1));
-        operationsView.createButton("Remove", removeBtnHandler, true);
-        operationsView.createButton("Edit", editBtnHandler, true);
-        return operationsView;
-    }
-
-    private ObservableList getAvailableOperationTypes(ObservableList allOperationTypes, ObservableList<OperationEntry> operationEntries) {
-        var availableOperationTypes = FXCollections.observableArrayList(allOperationTypes);
-        operationEntries.forEach(opEntry -> {
-            availableOperationTypes.remove(opEntry.getOperationType());
-        });
-        return availableOperationTypes;
-    }
-
-    private EditableListView createStateOperationEntriesProperties(StateOperation operation){
-        var allOperationTypes = model.getDeploymentDiagram().getOperationTypes();
-        var operationEntries = operation.getOperationEntries();
-        var operationEntriesView = new EditableListView("Operations:", operation.getOperationEntries());
-
-        var addBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var operationEntry = new OperationEntry(null, -1);
-                var availableOperationTypes = getAvailableOperationTypes(allOperationTypes, operationEntries);
-                var editWindow = new EditOperationEntryModalWindow( (Stage) operationEntriesView.getScene().getWindow(),
-                                                    "Edit Operation Entry",
-                                                    availableOperationTypes,
-                                                    operationEntry.operationTypeProperty(),
-                                                    operationEntry.speedLimitProperty()
-                                                    );
-                editWindow.showAndWait();
-                if(operationEntry.getOperationType() != null){
-                    boolean alreadyIn = false;
-                    for(var opEntry : operationEntries){
-                        if(opEntry.getOperationType() == operationEntry.getOperationType()) {
-                            alreadyIn = true;
-                            break;
-                        }
-                    }
-                    if(!alreadyIn)
-                        operationEntries.add(operationEntry);
-                }
-                operationEntriesView.refresh();
-            }
-        };
-
-        var editBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (OperationEntry) operationEntriesView.getSelected();
-                var availableOperationTypes = getAvailableOperationTypes(allOperationTypes, operationEntries);
-                var editWindow = new EditOperationEntryModalWindow( (Stage) operationEntriesView.getScene().getWindow(),
-                                                    "Edit Operation Entry",
-                                                    availableOperationTypes,
-                                                    selected.operationTypeProperty(),
-                                                    selected.speedLimitProperty()
-                                                    );
-                editWindow.showAndWait();
-
-                if(selected.getOperationType() == null){
-                    operationEntries.remove(selected);
-                }
-
-                operationEntriesView.refresh();
-            }
-        };
-
-        
-        var removeBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (OperationEntry) operationEntriesView.getSelected();
-                if(selected != null){
-                    BooleanModalWindow confirmWindow = 
-                            new BooleanModalWindow((Stage) operationEntriesView.getScene().getWindow(), 
-                            "Confirm", "The operation entry \"" + Utils.shortenString(selected.toString(), 50) + "\" will be deleted. Proceed?");
-                    confirmWindow.showAndWait();
-                    if(confirmWindow.getResult()){
-                        operationEntries.remove(selected);
-                    }
-                }
-            }
-        };
-        
-        var addButton = operationEntriesView.createButton("Add", addBtnHandler, false);
-        addButton.disableProperty().bind(Bindings.size(operationEntries).greaterThanOrEqualTo(Bindings.size(allOperationTypes)));
-
-        operationEntriesView.createButton("Edit", editBtnHandler, true);
-        operationEntriesView.createButton("Remove", removeBtnHandler, true);
-        return operationEntriesView;
-    }
-
-    private EditableListView createRedundancyGroupView(DeploymentTarget deploymentTarget){
-        var deploymentDiagram = model.getDeploymentDiagram();
-        var redundancyGroups = deploymentDiagram.getRedundancyGroups();
-        var redundancyGroupsView = new EditableListView("Redundancy group:", redundancyGroups);
-        
-        var selectBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var selected = (RedundancyGroup) redundancyGroupsView.getSelected();
-                if(selected != null){
-                    var currentRG = deploymentTarget.getRedundancyGroup();
-                    if(currentRG != null)
-                        currentRG.removeNode(deploymentTarget);
-                    deploymentTarget.setRedundancyGroup(selected);
-                    selected.addNode(deploymentTarget);
-                }
-            }
-        };
-        
-        var clearBtnHandler = new EventHandler<ActionEvent>(){
-            @Override
-            public void handle(ActionEvent e) {
-                var currentRG = deploymentTarget.getRedundancyGroup();
-                if(currentRG != null) {
-                    currentRG.removeNode(deploymentTarget);
-                    deploymentTarget.setRedundancyGroup(null);
-                }
-            }
-        };
-
-        redundancyGroupsView.createButton("Select", selectBtnHandler, true);
-        var clearButton = redundancyGroupsView.createButton("Clear", clearBtnHandler, false);
-        clearButton.disableProperty().bind(deploymentTarget.redundancyGroupProperty().isNull());
-        
-        return redundancyGroupsView;
-    }
-
 }

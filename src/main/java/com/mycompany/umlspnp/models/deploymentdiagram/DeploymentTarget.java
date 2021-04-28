@@ -163,11 +163,24 @@ public class DeploymentTarget extends Artifact {
     }
     
     public boolean removeState(State removedState){
-        return states.remove(removedState);
+        boolean success = states.remove(removedState);
+        if(success) {
+            getStateTransitions().removeIf(transition -> 
+                            transition.getStateFrom().equals(removedState) || 
+                            transition.getStateTo().equals(removedState));
+
+            getStateOperations().removeIf(operation -> 
+                            operation.getState().equals(removedState));
+        }
+        return success;
     }
     
     public void addStateTransition(StateTransition newTransition){
         stateTransitions.add(newTransition);
+    }
+
+    public boolean removeStateTransition(StateTransition newTransition){
+        return stateTransitions.remove(newTransition);
     }
     
     public void addStateOperation(StateOperation newOperation){
