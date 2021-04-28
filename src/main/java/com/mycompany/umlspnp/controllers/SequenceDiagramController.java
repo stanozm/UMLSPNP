@@ -720,7 +720,7 @@ public class SequenceDiagramController {
         var addBtnHandler = new EventHandler<ActionEvent>(){
             @Override
             public void handle(ActionEvent e) {
-                message.setMessageSize(0);
+                message.setMessageSize(1);
             }
         };
 
