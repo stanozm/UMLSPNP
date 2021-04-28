@@ -2,26 +2,18 @@ package com.mycompany.umlspnp.controllers.sequencediagram;
 
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
-import com.mycompany.umlspnp.models.ConnectionFailure;
-import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
 import com.mycompany.umlspnp.models.sequencediagram.Activation;
-import com.mycompany.umlspnp.models.sequencediagram.ExecutionTime;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.Loop;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
-import com.mycompany.umlspnp.models.sequencediagram.MessageSize;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
-import com.mycompany.umlspnp.views.common.AnnotationOwner;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
-import com.mycompany.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
-import com.mycompany.umlspnp.views.common.layouts.EditableListView;
 import com.mycompany.umlspnp.views.common.layouts.IntegerModalWindow;
 import com.mycompany.umlspnp.views.sequencediagram.ActivationView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
 import com.mycompany.umlspnp.views.sequencediagram.LoopView;
-import com.mycompany.umlspnp.views.sequencediagram.MessageView;
 import com.mycompany.umlspnp.views.sequencediagram.SequenceDiagramView;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +29,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SeparatorMenuItem;
 import javafx.stage.Stage;
 
 /**
@@ -53,12 +44,14 @@ public class SequenceDiagramController {
     private final SequenceDiagramView view;
     
     private final List<MessageController> messageControllers;
+    private final List<LifelineController> lifelineControllers;
     
     public SequenceDiagramController(MainModel mainModel, MainView mainView){
         this.mainModel = mainModel;
         this.mainView = mainView;
         
         messageControllers = new ArrayList<>();
+        lifelineControllers = new ArrayList<>();
         
         this.model = mainModel.getSequenceDiagram();
         this.view = mainView.getSequenceDiagramView();
@@ -273,16 +266,16 @@ public class SequenceDiagramController {
                     var newNode = change.getValueAdded();
                     if(newNode instanceof Lifeline){
                         var newLifeline = (Lifeline) newNode;
-
                         var newLifelineView = view.createLifelineView(newLifeline.getObjectInfo().getID());
-                        lifelineInit(newLifelineView, newLifeline);
-                        lifelineMenuInit(newLifelineView);
-                        //deploymentTargetAnnotationsInit(newDT);
+                        
+                        var controller = new LifelineController(mainModel, mainView, newLifeline, newLifelineView);
+                        lifelineControllers.add(controller);
                     }
                 }
                 else if(change.wasRemoved()){
                     var removedLifeline = (Lifeline) change.getValueRemoved();
                     view.removeLifelineView(removedLifeline.getObjectInfo().getID());
+                    lifelineControllers.removeIf(controller -> controller.getModel().equals(removedLifeline));
                 }
             }
         });
@@ -448,116 +441,6 @@ public class SequenceDiagramController {
         return submenu;
     }
     
-    private void lifelineInit(LifelineView newLifelineView, Lifeline newLifeline) {
-        var sequenceDiagramView = mainView.getSequenceDiagramView();
-        
-        newLifelineView.getNameProperty().bind(newLifeline.nameProperty());
-
-        newLifeline.addActivationsChangeListener(new MapChangeListener(){
-            @Override
-            public void onChanged(MapChangeListener.Change change) {
-                if(change.wasAdded()){
-                    var newNode = change.getValueAdded();
-                    if(newNode instanceof Activation){
-                        var newActivation = (Activation) newNode;
-
-                        var lifelineView = sequenceDiagramView.getLifelineView(newActivation.getLifeline().getObjectInfo().getID());
-                        var newActivationView = lifelineView.createActivationView(newActivation.getObjectInfo().getID());
-                        
-                        activationInit(newActivationView, newActivation);
-                        activationMenuInit(newActivationView);
-                        //deploymentTargetAnnotationsInit(newDT);
-                    }
-                }
-                else if(change.wasRemoved()){
-                    var removedActivation = (Activation) change.getValueRemoved();
-                    var lifeline = removedActivation.getLifeline();
-                    var lifelineView = sequenceDiagramView.getLifelineView(lifeline.getObjectInfo().getID());
-                    lifelineView.removeActivationView(removedActivation.getObjectInfo().getID());
-                }
-            }
-        });
-    }
-    
-    private void lifelineMenuInit(LifelineView lifelineView){
-        var sequenceDiagram = this.mainModel.getSequenceDiagram();
-        var lifelineObjectID = lifelineView.getObjectInfo().getID();
-        var lifeline = sequenceDiagram.getLifeline(lifelineObjectID);
-        
-        MenuItem menuItemDelete = new MenuItem("Delete");
-        menuItemDelete.setOnAction((e) -> {
-            BooleanModalWindow confirmWindow = 
-                        new BooleanModalWindow((Stage) lifelineView.getScene().getWindow(), 
-                        "Confirm", "The lifeline \"" + Utils.shortenString(lifelineView.getNameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
-            confirmWindow.showAndWait();
-            if(confirmWindow.getResult()){
-                sequenceDiagram.removeLifeline(lifelineObjectID);
-            }
-        });
-        lifelineView.addMenuItem(menuItemDelete);
-        
-        MenuItem menuItemCreateActivation = new MenuItem("Create activation");
-        menuItemCreateActivation.setOnAction((e) -> {
-            lifeline.createActivation();
-        });
-        lifelineView.addMenuItem(menuItemCreateActivation);
-    }
-    
-    private void activationInit(ActivationView newActivationView, Activation newActivation) {
-        var sequenceDiagram = mainModel.getSequenceDiagram();
-        var deploymentDiagram = mainModel.getDeploymentDiagram();
-        var sequenceDiagramView = mainView.getSequenceDiagramView();
-
-        var connectionContainer = sequenceDiagramView.getConnectionContainer();
-        
-        sequenceDiagramView.registerNodeToSelect(newActivationView, (e) -> {
-            var startElement = (ActivationView) connectionContainer.getFirstElement();
-            if(startElement != null){
-                if(startElement.getClass().equals(newActivationView.getClass())){
-                    var startActivation = sequenceDiagram.getActivation(startElement.getObjectInfo().getID());
-                    var startArtifact = startActivation.getLifeline().getArtifact();
-                    var newArtifact = newActivation.getLifeline().getArtifact();
-                    if(startActivation == newActivation || deploymentDiagram.areNodesConnected(startArtifact, newArtifact)){
-                        connectionContainer.setSecondElement(newActivationView);
-                        return;
-                    }
-                    else{
-                        System.err.println("Unable to create connection. Nodes in deployment diagram are not connected.");
-                    }
-                }
-                else{
-                    System.err.println("Unable to create connection. Select suitable destination node.");
-                }
-                startElement.setSelected(false);
-                connectionContainer.clear();
-            }
-        });
-    }
-    
-    private void activationMenuInit(ActivationView activationView){
-        var sequenceDiagram = this.mainModel.getSequenceDiagram();
-        var activationObjectID = activationView.getObjectInfo().getID();
-        var lifeline = sequenceDiagram.getActivation(activationObjectID).getLifeline();
-        
-        MenuItem menuItemDelete = new MenuItem("Delete activation");
-        menuItemDelete.setOnAction((e) -> {
-            BooleanModalWindow confirmWindow = 
-                        new BooleanModalWindow((Stage) activationView.getScene().getWindow(), 
-                        "Confirm", "The activation of lifeline \"" + Utils.shortenString(lifeline.nameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
-            confirmWindow.showAndWait();
-            if(confirmWindow.getResult()){
-                sequenceDiagram.removeActivation(activationObjectID);
-            }
-        });
-        activationView.addMenuItem(menuItemDelete);
-        
-        MenuItem menuItemConnect = new MenuItem("Create message");
-        menuItemConnect.setOnAction((e) -> {
-            this.mainView.getSequenceDiagramView().startConnection(activationView);
-        });
-        activationView.addMenuItem(menuItemConnect);
-    }
-    
     public void sortMessages() {
         Collections.sort(model.getSortedMessages(), (m1, m2) -> {
             Double first = view.getConnection(m1.getObjectInfo().getID()).getSourceConnectionSlot().getLocalToSceneTransform().getTy();
@@ -565,5 +448,4 @@ public class SequenceDiagramController {
             return first.compareTo(second);
         });
     }
-
 }
