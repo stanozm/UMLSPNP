@@ -1,7 +1,5 @@
 package com.mycompany.umlspnp.controllers.deploymentdiagram;
 
-import com.mycompany.umlspnp.controllers.deploymentdiagram.DeploymentTargetController;
-import com.mycompany.umlspnp.controllers.deploymentdiagram.CommunicationLinkController;
 import com.mycompany.umlspnp.models.OperationEntry;
 import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.views.*;
@@ -10,7 +8,6 @@ import com.mycompany.umlspnp.models.OperationType;
 import com.mycompany.umlspnp.models.deploymentdiagram.*;
 import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.EditableListView;
-import com.mycompany.umlspnp.views.deploymentdiagram.ArtifactView;
 import com.mycompany.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +32,7 @@ public class DeploymentDiagramController {
     
     private final List<CommunicationLinkController> communicationLinkContollers;
     private final List<DeploymentTargetController> deploymentTargetContollers;
+    private final List<ArtifactController> artifactContollers;
     
     public DeploymentDiagramController(MainModel mainModel, MainView mainView){
         this.model = mainModel;
@@ -42,6 +40,7 @@ public class DeploymentDiagramController {
         
         communicationLinkContollers = new ArrayList<>();
         deploymentTargetContollers = new ArrayList<>();
+        artifactContollers = new ArrayList<>();
         deploymentDiagramInit(this.model.getDeploymentDiagram());
     }
 
@@ -198,8 +197,9 @@ public class DeploymentDiagramController {
                         Artifact newArtifact = (Artifact) newNode;
                         var newArtifactParent = deploymentDiagramView.getDeploymentTargetView(newArtifact.getParent().getObjectInfo().getID());
                         var newArtifactView = deploymentDiagramView.CreateArtifact(newArtifactParent, newArtifact.getObjectInfo().getID());
-                        newArtifactView.getNameProperty().bind(newArtifact.getNameProperty());
-                        artifactMenuInit(newArtifactView);
+                        
+                        var controller = new ArtifactController(model, view, newArtifact, newArtifactView);
+                        artifactContollers.add(controller);
                     }
                 }
                 else if(change.wasRemoved()){
@@ -208,7 +208,7 @@ public class DeploymentDiagramController {
                         deploymentTargetContollers.removeIf(controller -> controller.getModel().equals(removedItem));
                     }
                     else if(removedItem instanceof Artifact) {
-                        // ...
+                        artifactContollers.removeIf(controller -> controller.getModel().equals(removedItem));
                     }
                     var removedNode = (Artifact) change.getValueRemoved();
                     deploymentDiagramView.removeNode(removedNode.getObjectInfo().getID());
@@ -353,28 +353,5 @@ public class DeploymentDiagramController {
         redundancyGroupsView.createButton("Add", addBtnHandler, false);
         redundancyGroupsView.createButton("Remove", removeBtnHandler, true);
         return redundancyGroupsView;
-    }
-
-    private void artifactMenuInit(ArtifactView artifactView){
-        var deploymentDiagram = model.getDeploymentDiagram();
-        var artifact = deploymentDiagram.getNode(artifactView.getObjectInfo().getID());
-        MenuItem menuItemDelete = new MenuItem("Delete");
-
-        menuItemDelete.setOnAction((e) -> {
-            BooleanModalWindow confirmWindow = 
-                        new BooleanModalWindow((Stage) artifactView.getScene().getWindow(), 
-                        "Confirm", "The artifact \"" + Utils.shortenString(artifact.getNameProperty().getValue(), 50) + "\" will be deleted. Proceed?");
-            confirmWindow.showAndWait();
-            if(confirmWindow.getResult()){
-                this.model.getDeploymentDiagram().removeNode(artifactView.getObjectInfo().getID());
-            }
-        });
-        artifactView.addMenuItem(menuItemDelete);
-        
-        MenuItem menuItemRename = new MenuItem("Rename");
-        menuItemRename.setOnAction((e) -> {
-            this.view.createStringModalWindow("Rename", "New name", artifact.getNameProperty(), Utils.SPNP_NAME_RESTRICTION_REGEX);
-        });
-        artifactView.addMenuItem(menuItemRename);
     }
 }
