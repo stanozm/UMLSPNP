@@ -1,15 +1,12 @@
 package com.mycompany.umlspnp.controllers.sequencediagram;
 
-import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.models.MainModel;
 import com.mycompany.umlspnp.models.deploymentdiagram.Artifact;
-import com.mycompany.umlspnp.models.sequencediagram.Activation;
 import com.mycompany.umlspnp.models.sequencediagram.Lifeline;
 import com.mycompany.umlspnp.models.sequencediagram.Loop;
 import com.mycompany.umlspnp.models.sequencediagram.Message;
 import com.mycompany.umlspnp.models.sequencediagram.SequenceDiagram;
 import com.mycompany.umlspnp.views.MainView;
-import com.mycompany.umlspnp.views.common.layouts.BooleanModalWindow;
 import com.mycompany.umlspnp.views.common.layouts.IntegerModalWindow;
 import com.mycompany.umlspnp.views.sequencediagram.ActivationView;
 import com.mycompany.umlspnp.views.sequencediagram.LifelineView;
@@ -45,6 +42,7 @@ public class SequenceDiagramController {
     
     private final List<MessageController> messageControllers;
     private final List<LifelineController> lifelineControllers;
+    private final List<LoopController> loopControllers;
     
     public SequenceDiagramController(MainModel mainModel, MainView mainView){
         this.mainModel = mainModel;
@@ -52,6 +50,7 @@ public class SequenceDiagramController {
         
         messageControllers = new ArrayList<>();
         lifelineControllers = new ArrayList<>();
+        loopControllers = new ArrayList<>();
         
         this.model = mainModel.getSequenceDiagram();
         this.view = mainView.getSequenceDiagramView();
@@ -61,6 +60,7 @@ public class SequenceDiagramController {
     
     /**
      * Creates sample sequence diagram lifelines, activations and messages.
+     * Also positions all elements properly in the diagram.
      */
     public void createSampleData() {
         var deployment = mainModel.getDeploymentDiagram();
@@ -367,11 +367,13 @@ public class SequenceDiagramController {
                     var newLoop = (Loop) change.getValueAdded();
                     var newLoopView = view.createLoop(newLoop.getObjectInfo().getID());
 
-                    loopInit(newLoop, newLoopView);
+                    var controller = new LoopController(mainModel, mainView, newLoop, newLoopView);
+                    loopControllers.add(controller);
                 }
                 if(change.wasRemoved()){
                     var removedLoop = (Loop) change.getValueRemoved();
                     view.removeLoop(removedLoop.getObjectInfo().getID());
+                    loopControllers.removeIf(controller -> controller.getModel().equals(removedLoop));
                 }
             }
         };
@@ -396,32 +398,6 @@ public class SequenceDiagramController {
                 }
             }
         });
-    }
-
-    private void loopInit(Loop loop, LoopView loopView){
-        var sequence = this.mainModel.getSequenceDiagram();
-        var loopObjectID = loop.getObjectInfo().getID();
-        
-        loopView.getNameProperty().bind(loop.nameProperty());
-        
-        MenuItem menuItemDelete = new MenuItem("Delete");
-        menuItemDelete.setOnAction((e) -> {
-            sequence.removeLoop(loopObjectID);
-        });
-        loopView.addMenuItem(menuItemDelete);
-
-        
-        MenuItem menuItemIterations = new MenuItem("Change iterations");
-        menuItemIterations.setOnAction((e) -> {
-            var iterationsWindow = new IntegerModalWindow(   (Stage) loopView.getScene().getWindow(),
-                                                                                    "Edit loop iterations",
-                                                                                    "Iterations",
-                                                                                    2,
-                                                                                    null,
-                                                                                    loop.iterationsProperty());
-            iterationsWindow.showAndWait();
-        });
-        loopView.addMenuItem(menuItemIterations);
     }
     
     private MenuItem createLifelineSubmenu(SequenceDiagram sequence, Artifact artifact){

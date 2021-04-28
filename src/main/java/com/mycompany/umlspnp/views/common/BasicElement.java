@@ -111,6 +111,13 @@ public abstract class BasicElement extends Group{
         });
     }
     
+    public void createIntegerMenu(String menuName, String windowName, String promptText,
+                                  Integer min, Integer max, IntegerProperty property) {
+        createMenuItem(menuName, (e) -> {
+            createIntegerModalWindow(windowName, promptText, min, max, property);
+        });
+    }
+    
     public void createConfirmMenu(String menuName, String promptText, Runnable callback) {
         createBooleanMenu(menuName, "Confirm", promptText, callback, null);
     }
