@@ -1,5 +1,6 @@
 package com.mycompany.umlspnp;
 
+import com.mycompany.umlspnp.common.Utils;
 import com.mycompany.umlspnp.controllers.deploymentdiagram.DeploymentDiagramController;
 import com.mycompany.umlspnp.controllers.*;
 import com.mycompany.umlspnp.models.MainModel;
@@ -30,10 +31,11 @@ public class App extends Application {
         mainController.init();
         deploymentDiagramController = new DeploymentDiagramController(mainModel, mainView);
         sequenceDiagramController = new SequenceDiagramController(mainModel, mainView);
-        
-        // TODO: remove
-        deploymentDiagramController.createSampleData();
-        sequenceDiagramController.createSampleData();
+
+        if(Utils.__DEBUG_CREATE_SAMPLE_DATA) {
+            deploymentDiagramController.createSampleData();
+            sequenceDiagramController.createSampleData();
+        }
 
         var scene = new Scene(deploymentDiagramController.getView(), 640, 480);
         stage.setTitle("UML2SPNP");

@@ -45,34 +45,13 @@ public class DeploymentDiagramController {
     }
 
     /**
-     * Creates sample annotations for a specified deployment target.
-     * @param DT Deployment Target to have the sample annotations added.
-     */
-    private void createSampleAnnotations(DeploymentTarget DT){
-        var deployment = model.getDeploymentDiagram();
-        
-        var opType1 = new OperationType("ReadDeviceData");
-        var opType2 = new OperationType("WriteDeviceData");
-        deployment.addOperationType(opType1);
-        deployment.addOperationType(opType2);
-        
-        var stateUp = DT.getStates().get(0);
-        var stateDown = DT.getStates().get(1);
-
-        StateOperation operationsUp = new StateOperation(stateUp);
-        operationsUp.addOperationEntry(opType1, null);
-        operationsUp.addOperationEntry(opType2, null);
-        StateOperation operationsDown = new StateOperation(stateDown);
-        operationsDown.addOperationEntry(opType2, 50);
-        DT.addStateOperation(operationsUp);
-        DT.addStateOperation(operationsDown);
-    }
-
-    /**
      * Creates sample deployment diagram nodes and communications links.
      */
     public void createSampleData() {
         var deployment = model.getDeploymentDiagram();
+
+        deployment.addOperationType(new OperationType("ReadDeviceData"));
+        deployment.addOperationType(new OperationType("WriteDeviceData"));
         
         var A = deployment.createDeploymentTarget(null);
         var ST_A_1 = new State("ST_A_1");
@@ -220,15 +199,9 @@ public class DeploymentDiagramController {
 
         MenuItem deviceMenuItem = new MenuItem("Deployment target");
         
-        EventHandler<ActionEvent> menuEventHandler = new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent tt) {
-                if(tt.getSource().equals(deviceMenuItem)){
-                    DeploymentTarget newDT = deployment.createDeploymentTarget(null);
-                    
-                    createSampleAnnotations(newDT);
-                }
-            }
+        EventHandler<ActionEvent> menuEventHandler = (ActionEvent tt) -> {
+            if(tt.getSource().equals(deviceMenuItem))
+                deployment.createDeploymentTarget(null);
         };
         
         deviceMenuItem.setOnAction(menuEventHandler);

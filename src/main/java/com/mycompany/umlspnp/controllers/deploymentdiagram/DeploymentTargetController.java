@@ -403,5 +403,35 @@ public class DeploymentTargetController {
         
         model.addStateTransition(upDownTransition);
         model.addStateTransition(downUpTransition);
+        
+        if(Utils.__DEBUG_CREATE_SAMPLE_DATA)
+            createSampleAnnotations();
+    }
+    
+    /**
+     * Creates sample annotations for a specified deployment target.
+     * @param DT Deployment Target to have the sample annotations added.
+     */
+    private void createSampleAnnotations(){
+        var deployment = mainModel.getDeploymentDiagram();
+
+        var stateUp = model.getStates().get(0);
+        var stateDown = model.getStates().get(1);
+
+        var opTypes = deployment.getOperationTypes();
+        var opTypesSize = opTypes.size();
+        
+        StateOperation operationsUp = new StateOperation(stateUp);
+        StateOperation operationsDown = new StateOperation(stateDown);
+        
+        if(opTypesSize >= 1){
+            operationsUp.addOperationEntry(opTypes.get(0), null);
+        }
+        if(opTypesSize >= 2){
+            operationsUp.addOperationEntry(opTypes.get(1), null);
+            operationsDown.addOperationEntry(opTypes.get(1), 50);
+        }
+        model.addStateOperation(operationsUp);
+        model.addStateOperation(operationsDown);
     }
 }
