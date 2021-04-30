@@ -27,6 +27,7 @@ public class ControlServiceSegment extends Segment {
     protected final ServiceCallTreeNode treeRoot;
 
     protected final List<Pair<ImmediateTransition, ServiceCall>> controlServiceCalls = new ArrayList<>();
+    protected StandardPlace initialPlace = null;
     protected ImmediateTransition initialTransition = null;
     protected StandardPlace endPlace = null;
     
@@ -152,40 +153,23 @@ public class ControlServiceSegment extends Segment {
         }
     }
 
-    private void transformInitialTransition(String lifelineName) {
-        var initTransitionName = SPNPUtils.createTransitionName(lifelineName, "start");
+    private void transformStart() {
+        var initialPlaceName = SPNPUtils.createPlaceName("control", "start");
+        initialPlace = new StandardPlace(SPNPUtils.placeCounter++, initialPlaceName);
+        initialPlace.setNumberOfTokens(1);
+        petriNet.addPlace(initialPlace);
+
+        var initTransitionName = SPNPUtils.createTransitionName("control", "start");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initTransitionName,
                             this.transitionPriority, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(initialTransition);
+        
+        var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, initialPlace, initialTransition);
+        petriNet.addArc(inputArc);
     }
 
-    private void transformInitialTransitionGuard(String lifelineName) {
-        var startGuardBody = new StringBuilder();
-
-        var tokenStrings = getTokenStrings();
-
-        if(tokenStrings.size() < 1){
-            startGuardBody.append("return 1;");
-        }
-        else{
-            // TODO also add loop places
-            startGuardBody.append("return !(");
-            tokenStrings.forEach(tokenString -> {
-                startGuardBody.append(tokenString);
-                if(tokenStrings.indexOf(tokenString) < tokenStrings.size() - 1)
-                    startGuardBody.append(" || ");
-            });
-            startGuardBody.append(");");
-        }
-        String guardName = SPNPUtils.createFunctionName(String.format("guard_%s_control_start", SPNPUtils.prepareName(lifelineName, 15)));
-        FunctionSPNP<Integer> startGuard = new FunctionSPNP<>(guardName, FunctionType.Guard,
-                                                              startGuardBody.toString(), Integer.class);
-        petriNet.addFunction(startGuard);
-        initialTransition.setGuardFunction(startGuard);
-    }
-
-    private void transformEnd(String lifelineName) {
-        var endPlaceName = SPNPUtils.createPlaceName(lifelineName, "end");
+    private void transformEnd() {
+        var endPlaceName = SPNPUtils.createPlaceName("control", "end");
         endPlace = new StandardPlace(SPNPUtils.placeCounter++, endPlaceName);
         petriNet.addPlace(endPlace);
 
@@ -276,17 +260,14 @@ public class ControlServiceSegment extends Segment {
     public void transform() {
         var lifelineName = treeRoot.getArtifact().getNameProperty().getValue();
         
-        // Initial transition
-        transformInitialTransition(lifelineName);
+        // Start place and transition
+        transformStart();
         
         // Control service calls
         transformServiceCalls(treeRoot);
 
-        // Initial tranision guard
-        transformInitialTransitionGuard(lifelineName);
-        
         // End place and transition
-        transformEnd(lifelineName);
+        transformEnd();
         transformEndPlaceHaltingFunction(lifelineName);
         
         // Loops
@@ -305,7 +286,8 @@ public class ControlServiceSegment extends Segment {
     public String toString() {
         var result = new StringBuilder();
         result.append(String.format("Control Service Segment:%n"));
-        result.append(String.format("[InitialTransition %s]", this.initialTransition.getName()));
+        result.append(String.format("(InitialPlace %s)", this.initialPlace.getName()));
+        result.append(String.format(" -> [InitialTransition %s]", this.initialTransition.getName()));
         controlServiceCalls.forEach(pair -> {
             result.append(String.format(" -> (%s) -> [%s]", pair.getValue().getPlace().getName(), pair.getKey().getName()));
         });
