@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.mycompany</groupId>
+    <groupId>cz.muni.fi</groupId>
     <artifactId>UMLSPNP</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
@@ -43,7 +43,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.4</version>
                 <configuration>
-                    <mainClass>com.mycompany.umlspnp.App</mainClass>
+                    <mainClass>cz.muni.fi.umlspnp.App</mainClass>
                 </configuration>
                 <executions>
                     <execution>
