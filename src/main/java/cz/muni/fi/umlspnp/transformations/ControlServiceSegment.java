@@ -49,7 +49,7 @@ public class ControlServiceSegment extends Segment {
         List<ServiceCall> result = new ArrayList<>();
         for(var pair : controlServiceCalls) {
             var serviceCall = pair.getValue();
-            if(message == serviceCall.getMessage()) {
+            if(message == null || message == serviceCall.getMessage()) {
                 result.add(serviceCall);
             }
         }

@@ -14,12 +14,14 @@ import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
 import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javafx.util.Pair;
 
 /**
  *  The execution (leaf) service segment which represents a call to a leaf message.
@@ -41,7 +43,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     protected ImmediateTransition failHWTransition = null;
     protected StandardPlace failHWPlace = null;
     
-    protected Map<TimedTransition, StandardPlace> failTypes = new HashMap<>();
+    protected Map<TimedTransition, Pair<StandardPlace, Boolean>> failTypes = new HashMap<>();
 
     
     public ServiceLeafSegment(PetriNet petriNet,
@@ -68,7 +70,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         guardBody.append(String.format("mark(\"%s\") || ", startPlace.getName()));
         guardBody.append(String.format("mark(\"%s\") || ", endPlace.getName()));
-        failTypes.values().forEach(failTypePlace -> {
+        failTypes.values().forEach(failType -> {
+            var failTypePlace = failType.getKey();
             guardBody.append(String.format("mark(\"%s\") || ", failTypePlace.getName()));
         });
         guardBody.append(String.format("mark(\"%s\"));", failHWPlace.getName()));
@@ -324,7 +327,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         petriNet.addArc(flushInputArc);
     }
     
-    private void transformFailType(String messageName, String failureName, double failureRate) {
+    private void transformFailType(String messageName, String failureName, double failureRate, boolean causeHWfailure) {
         var failTypePlaceName = SPNPUtils.createPlaceName(messageName, "FT_" + failureName);
         var failTypePlace = new StandardPlace(SPNPUtils.placeCounter++, failTypePlaceName);
         petriNet.addPlace(failTypePlace);
@@ -334,7 +337,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, this.transitionPriority, null, distribution);
         petriNet.addTransition(failTypeTransition);
 
-        failTypes.put(failTypeTransition, failTypePlace);
+        failTypes.put(failTypeTransition, new Pair(failTypePlace, causeHWfailure));
         
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failTypeTransition);
         petriNet.addArc(inputArc);
@@ -356,7 +359,15 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     
     @Override
     public Collection<StandardPlace> getFailPlaces() {
-        return this.failTypes.values();
+        var places = new ArrayList<StandardPlace>();
+        failTypes.values().forEach(failType -> {
+            places.add(failType.getKey());
+        });
+        return places;
+    }
+    
+    public Collection<Pair<StandardPlace, Boolean>> getFailTypes() {
+        return failTypes.values();
     }
 
     @Override
@@ -385,7 +396,10 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         // Service call fail types - places and transitions
         message.getMessageFailures().forEach(messageFailure -> {
-            transformFailType(messageName, messageFailure.nameProperty().getValue(), messageFailure.rateProperty().getValue());
+            transformFailType(messageName,
+                              messageFailure.nameProperty().getValue(),
+                              messageFailure.rateProperty().getValue(),
+                              messageFailure.causeHWfailProperty().getValue());
         });
 
         // Initial transition guard function
@@ -408,7 +422,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
             for(int i = 0; i < offset; i++)
                 result.append(" ");
             result.append(String.format(" -> [FailTransition %s]", failTransition.getName()));
-            result.append(String.format(" -> (FailPlace %s)", failPlace.getName()));
+            result.append(String.format(" -> (FailPlace %s)", failPlace.getKey().getName()));
             result.append(String.format(" -> [FlushTransition %s]", flushTransition.getName()));
         });
 

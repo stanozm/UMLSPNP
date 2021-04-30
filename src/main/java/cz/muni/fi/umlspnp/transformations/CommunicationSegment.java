@@ -92,15 +92,13 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     }
 
     private String getTopLevelServicePlacesString() {
-        var result = new StringBuilder();
+        var places = new ArrayList<StandardPlace>();
         if(controlServiceCalls.size() > 0) {
             controlServiceCalls.forEach(topLevelServiceCall -> {
-                result.append(String.format("mark(\"%s\")", topLevelServiceCall.getPlace().getName()));
-                if(controlServiceCalls.indexOf(topLevelServiceCall) < controlServiceCalls.size() - 1)
-                    result.append(" || ");
+                places.add(topLevelServiceCall.getPlace());
             });
         }
-        return result.toString();
+        return SPNPUtils.getPlacesString(places);
     }
     
     private void createInitialTransitionGuard(String communicationLinkName) {

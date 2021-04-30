@@ -13,24 +13,37 @@ import javafx.stage.Stage;
  *
  */
 public class EditFailureTypeModalWindow extends NameRateModalWindow {
-    private final TextField nameInput;
-    private final TextField rateInput;
+    protected final Label nameLabel;
+    protected final TextField nameInput;
+    
+    protected final Label rateLabel;
+    protected final TextField rateInput;
+    
+    protected final Button confirmButton;
+    
+    public EditFailureTypeModalWindow(  Stage parentStage, 
+                                    String windowName,
+                                    StringProperty failureName,
+                                    DoubleProperty failureRate) {
+        this(parentStage, windowName, failureName, failureRate, true);
+    }
     
     public EditFailureTypeModalWindow(  Stage parentStage, 
                                         String windowName,
                                         StringProperty failureName,
-                                        DoubleProperty failureRate) {
+                                        DoubleProperty failureRate,
+                                        boolean build) {
         super(parentStage, windowName, true);
         
 
-        var nameLabel = new Label("Failure name:");
+        nameLabel = new Label("Failure name:");
         this.nameInput = new TextField(failureName.getValue());
         
-        var rateLabel = new Label("Rate:");
+        rateLabel = new Label("Rate:");
         // TODO: Use TextFormatter or something as a better number input method
         this.rateInput = new TextField(failureRate.getValue().toString());
         
-        var confirmButton = new Button("Confirm");
+        confirmButton = new Button("Confirm");
         confirmButton.setOnAction((ActionEvent e) -> {
             if(checkNameRateInputs(nameInput.textProperty(), rateInput.textProperty())){
                 failureName.setValue(nameInput.textProperty().getValue());
@@ -39,13 +52,14 @@ public class EditFailureTypeModalWindow extends NameRateModalWindow {
                 close();
             }
         });
+        if(build) {
+            this.rootGrid.add(nameLabel, 0, 0);
+            this.rootGrid.add(this.nameInput, 1, 0);
 
-        this.rootGrid.add(nameLabel, 0, 0);
-        this.rootGrid.add(this.nameInput, 1, 0);
-        
-        this.rootGrid.add(rateLabel, 0, 1);
-        this.rootGrid.add(this.rateInput, 1, 1);
-        
-        this.rootGrid.add(confirmButton, 0, 2);
+            this.rootGrid.add(rateLabel, 0, 1);
+            this.rootGrid.add(this.rateInput, 1, 1);
+
+            this.rootGrid.add(confirmButton, 0, 2);
+        }
     }
 }

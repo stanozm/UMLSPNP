@@ -2,16 +2,16 @@ package cz.muni.fi.umlspnp.controllers.sequencediagram;
 
 import cz.muni.fi.umlspnp.common.Utils;
 import cz.muni.fi.umlspnp.controllers.BaseController;
-import cz.muni.fi.umlspnp.models.ConnectionFailure;
 import cz.muni.fi.umlspnp.models.MainModel;
 import cz.muni.fi.umlspnp.models.OperationType;
 import cz.muni.fi.umlspnp.models.sequencediagram.ExecutionTime;
 import cz.muni.fi.umlspnp.models.sequencediagram.Message;
+import cz.muni.fi.umlspnp.models.sequencediagram.MessageFailureType;
 import cz.muni.fi.umlspnp.models.sequencediagram.MessageSize;
 import cz.muni.fi.umlspnp.views.MainView;
-import cz.muni.fi.umlspnp.views.common.layouts.EditFailureTypeModalWindow;
 import cz.muni.fi.umlspnp.views.common.layouts.EditableListView;
 import cz.muni.fi.umlspnp.views.common.layouts.PropertiesModalWindow;
+import cz.muni.fi.umlspnp.views.sequencediagram.EditMessageFailureTypeModalWindow;
 import cz.muni.fi.umlspnp.views.sequencediagram.LoopView;
 import cz.muni.fi.umlspnp.views.sequencediagram.MessageView;
 import java.util.ArrayList;
@@ -204,11 +204,11 @@ public class MessageController extends BaseController<Message, MessageView>{
         var failuresView = new EditableListView("Failure types:", failures);
         
         var addBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
-            model.addMessageFailure(new ConnectionFailure("New failure", 0.01));
+            model.addMessageFailure(new MessageFailureType("New failure", 0.01, false));
         };
 
         var removeBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
-            var selected = (ConnectionFailure) failuresView.getSelected();
+            var selected = (MessageFailureType) failuresView.getSelected();
             if(selected != null){
                 Runnable callback = () -> {
                     failures.remove(selected);
@@ -220,13 +220,14 @@ public class MessageController extends BaseController<Message, MessageView>{
         };
 
         var editBtnHandler = (EventHandler<ActionEvent>) (ActionEvent e) -> {
-            var selected = (ConnectionFailure) failuresView.getSelected();
+            var selected = (MessageFailureType) failuresView.getSelected();
             if(selected != null){
-                var editWindow = new EditFailureTypeModalWindow(
+                var editWindow = new EditMessageFailureTypeModalWindow(
                                         (Stage) failuresView.getScene().getWindow(),
                                         "Edit failure type",
                                         selected.nameProperty(),
-                                        selected.rateProperty());
+                                        selected.rateProperty(),
+                                        selected.causeHWfailProperty());
                 editWindow.showAndWait();
                 failuresView.refresh();
             }

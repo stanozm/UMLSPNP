@@ -13,6 +13,7 @@ import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
 import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -96,18 +97,16 @@ public class PhysicalSegment extends Segment {
 
         stateTransitions.put(transition, stateTransition);
     }
-
-    private void transformServiceGuard() {
-        // TODO when properly specified
-    }
     
-    private void transformParentFail(String nodeName, State state, StandardPlace parentDownStatePlace) {
+    private FunctionSPNP<Integer> createStateToDownGuard(String nodeName, List<StandardPlace> failPlaces) {
+        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_state_to_down", SPNPUtils.prepareName(nodeName, 15)));
+        String guardBody = String.format("return %s;", SPNPUtils.getPlacesString(failPlaces));
+        return new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
+    }
+
+    private void transformStateToDown(String nodeName, State state, FunctionSPNP<Integer> guard) {
         var place = statePlaces.get(state);
         var downStatePlace = this.getDownStatePlace();
-
-        var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_parent_down", SPNPUtils.prepareName(nodeName, 15)));
-        String guardBody = String.format("return mark(\"%s\");", parentDownStatePlace.getName());
-        FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody, Integer.class);
 
         var transitionName = SPNPUtils.createTransitionName(nodeName, "parent");
         var parentFailTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, transitionName,
@@ -135,19 +134,49 @@ public class PhysicalSegment extends Segment {
         });
     }
     
-    public void transformPhysicalSegmentDependencies(List<PhysicalSegment> physicalSegments) {
-        var nodeName = node.getNameProperty().getValue();
-        var parentNode = this.node.getParent();
-
-        if(parentNode != null) {
-            var downPlace = this.getDownStatePlace();
-            var parentDownPlace = SPNPUtils.getDownPlace(physicalSegments, parentNode);
-            if(downPlace != null && parentDownPlace != null) {
-                statePlaces.forEach((state, place) -> {
-                    if(!state.isStateDOWN())
-                        transformParentFail(nodeName, state, parentDownPlace);
-                });
+    public StandardPlace getParentDownPlace(List<PhysicalSegment> physicalSegments) {
+        var parentNode = node.getParent();
+        if(parentNode == null)
+            return null;
+        return SPNPUtils.getDownPlace(physicalSegments, parentNode);
+    }
+    
+    private List<StandardPlace> getServiceFailPlaces(ControlServiceSegment controlSegment) {
+        var serviceFailPlaces = new ArrayList<StandardPlace>();
+        
+        var serviceCalls = controlSegment.getControlServiceCalls(null);
+        serviceCalls.forEach(serviceCall -> {
+            var message = serviceCall.getMessage();
+            var lifeline = message.getTo().getLifeline();
+            var deploymentTarget = SPNPUtils.getDeploymentTargetFromArtifact(lifeline.getArtifact());
+            if(deploymentTarget == node) {
+                var actionSegment = serviceCall.getActionSegment();
+                if(actionSegment instanceof ServiceLeafSegment) {
+                    var failTypes = ((ServiceLeafSegment)actionSegment).getFailTypes();
+                    failTypes.forEach(failType -> {
+                        if(failType.getValue())
+                            serviceFailPlaces.add(failType.getKey());
+                    });
+                }
             }
+        });
+        return serviceFailPlaces;
+    }
+    
+    public void transformControlServiceSegmentDependencies(List<PhysicalSegment> physicalSegments, ControlServiceSegment controlSegment) {
+        var failPlaces = getServiceFailPlaces(controlSegment);
+        var parentDownPlace = getParentDownPlace(physicalSegments);
+        if(parentDownPlace != null)
+            failPlaces.add(parentDownPlace);
+
+        var downPlace = getDownStatePlace();
+        if(failPlaces.size() > 0 && downPlace != null) {
+            var nodeName = node.getNameProperty().getValue();
+            var guardFunction = createStateToDownGuard(nodeName, failPlaces);
+            statePlaces.forEach((state, _unused) -> {
+                if(!state.isStateDOWN())
+                    transformStateToDown(nodeName, state, guardFunction);
+            });
         }
     }
     

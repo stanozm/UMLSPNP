@@ -1,18 +1,14 @@
 package cz.muni.fi.umlspnp.transformations;
 
 import cz.muni.fi.umlspnp.models.deploymentdiagram.Artifact;
-import cz.muni.fi.umlspnp.models.deploymentdiagram.CommunicationLink;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.State;
 import cz.muni.fi.umlspnp.models.sequencediagram.Loop;
-import cz.muni.fi.umlspnp.models.sequencediagram.Message;
 import cz.muni.fi.spnp.core.models.PetriNet;
 import cz.muni.fi.spnp.core.models.places.Place;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import javafx.util.Pair;
 
 /**
  *  Constants and functions used during the SPNP transformation process.
@@ -121,5 +117,17 @@ public class SPNPUtils {
         if(artifact instanceof DeploymentTarget)
             return (DeploymentTarget) artifact;
         return artifact.getParent();
+    }
+    
+    public static String getPlacesString(List<StandardPlace> places) {
+        var result = new StringBuilder();
+        if(places.size() > 0) {
+            places.forEach(place -> {
+                result.append(String.format("mark(\"%s\")", place.getName()));
+                if(places.indexOf(place) < places.size() - 1)
+                    result.append(" || ");
+            });
+        }
+        return result.toString();
     }
 }

@@ -123,11 +123,6 @@ public class DefaultTransformator implements Transformator{
             }
         });
 
-        // Physical segment dependency transformations
-        physicalSegments.forEach(physicalSegment -> {
-            physicalSegment.transformPhysicalSegmentDependencies(physicalSegments);
-        });
-
         // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
             var communicationSegment = new CommunicationSegment(petriNet, treeRoot, communicationLink);
@@ -140,6 +135,11 @@ public class DefaultTransformator implements Transformator{
         controlServiceSegment = new ControlServiceSegment(petriNet, physicalSegments, communicationSegments, loops, treeRoot);
         controlServiceSegment.transform();
 
+        // Physical segment dependency transformations
+        physicalSegments.forEach(physicalSegment -> {
+            physicalSegment.transformControlServiceSegmentDependencies(physicalSegments, controlServiceSegment);
+        });
+        
         // Communictaion segment finish Control Service Segment dependent transformations
         communicationSegments.forEach(communicationSegment -> {
             communicationSegment.transformControlServiceSegmentDependencies(controlServiceSegment);

@@ -1,7 +1,6 @@
 package cz.muni.fi.umlspnp.models.sequencediagram;
 
 import cz.muni.fi.umlspnp.models.Connection;
-import cz.muni.fi.umlspnp.models.ConnectionFailure;
 import cz.muni.fi.umlspnp.models.OperationType;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.Artifact;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.CommunicationLink;
@@ -27,7 +26,7 @@ public class Message extends Connection<Activation> {
     
     private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
     private final ObservableList<MessageSize> messageSize; // Exactly 1 item
-    private final ObservableList<ConnectionFailure> messageFailures;
+    private final ObservableList<MessageFailureType> messageFailures;
     private final ObservableList<OperationType> operationTypeList; // At most 1 item
     
     
@@ -44,7 +43,7 @@ public class Message extends Connection<Activation> {
             param.getStringRepresentation()
         });
         
-        messageFailures = FXCollections.observableArrayList((ConnectionFailure param) -> new Observable[]{
+        messageFailures = FXCollections.observableArrayList((MessageFailureType param) -> new Observable[]{
             param.getStringRepresentation()
         });
 
@@ -127,11 +126,11 @@ public class Message extends Connection<Activation> {
         return messageSize;
     }
     
-    public ObservableList<ConnectionFailure> getMessageFailures(){
+    public ObservableList<MessageFailureType> getMessageFailures(){
         return messageFailures;
     }
     
-    public void addMessageFailure(ConnectionFailure newMessageFailure){
+    public void addMessageFailure(MessageFailureType newMessageFailure){
         messageFailures.add(newMessageFailure);
     }
 
