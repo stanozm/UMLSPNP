@@ -129,7 +129,7 @@ public class LoopSegment extends Segment{
     private void transformRestartTransition() {
         var restartTransitionName = SPNPUtils.createTransitionName("loop", "restart");
         restartTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, restartTransitionName,
-                            this.transitionPriority, null, new ConstantTransitionProbability(1.0));
+                            1, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(restartTransition);
 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, flushPlace, restartTransition);

@@ -52,7 +52,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     public CommunicationSegment(PetriNet petriNet,
                                 ServiceCallTreeNode treeRoot,
                                 CommunicationLink communicationLink) {
-        super(petriNet, 1);
+        super(petriNet, 2);
 
         this.treeRoot = treeRoot;
         this.communicationLink = communicationLink;

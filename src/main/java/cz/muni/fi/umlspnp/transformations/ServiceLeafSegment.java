@@ -50,7 +50,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
                               List<PhysicalSegment> physicalSegments,
                               ServiceCallTreeNode serviceCallNode,
                               ServiceCall serviceCall) {
-        super(petriNet, 1);
+        super(petriNet, 2);
         
         this.physicalSegments = physicalSegments;
         this.serviceCallNode = serviceCallNode;
