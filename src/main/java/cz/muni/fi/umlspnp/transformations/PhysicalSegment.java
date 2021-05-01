@@ -74,6 +74,7 @@ public class PhysicalSegment extends Segment {
         var transitionName = SPNPUtils.createTransitionName(nodeName, transition.nameProperty().getValue());
         var rate = transition.rateProperty().getValue();
         var stateTransition = new TimedTransition(SPNPUtils.transitionCounter++, transitionName, new ExponentialTransitionDistribution(rate));
+        stateTransition.setPriority(transitionPriority);
         petriNet.addTransition(stateTransition);
 
         var stateFrom = transition.getStateFrom();
