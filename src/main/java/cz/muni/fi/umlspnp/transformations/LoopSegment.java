@@ -67,6 +67,7 @@ public class LoopSegment extends Segment{
     private FunctionSPNP<Integer> createFlushTransitionGuard() {
         var guardBody = new StringBuilder();
         
+        // All fail places from relevant execution and communication segments
         controlServiceCalls.forEach(serviceCall -> {
             ActionServiceSegment actionSegment = serviceCall.getActionSegment();
             if(actionSegment != null) {
@@ -78,8 +79,21 @@ public class LoopSegment extends Segment{
                 }
             }
         });
-        guardBody.insert(0, "return ");
-        guardBody.append(";");
+        guardBody.insert(0, "return (");
+
+        guardBody.append(String.format(") &&%n       ("));
+        if(controlServiceCalls.size() < 1){
+            guardBody.append("0"); // Just in case, this should not happend
+        }
+        // All relevant places from control segment
+        else{
+            controlServiceCalls.forEach(serviceCall -> {
+                if(controlServiceCalls.indexOf(serviceCall) > 0)
+                    guardBody.append(" || ");
+                guardBody.append(String.format("mark(\"%s\")", serviceCall.getPlace().getName()));
+            });
+        }
+        guardBody.append(");");
 
         var flushGuardName = SPNPUtils.createFunctionName(String.format("guard_loop_flush"));
         return new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);

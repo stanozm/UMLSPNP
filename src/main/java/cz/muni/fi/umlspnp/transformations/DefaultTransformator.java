@@ -127,6 +127,7 @@ public class DefaultTransformator implements Transformator{
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
             var communicationSegment = new CommunicationSegment(petriNet, treeRoot, communicationLink);
             communicationSegment.transform();
+            communicationSegment.transformPhysicalSegmentDependencies(physicalSegments);
             communicationSegments.add(communicationSegment);
         });
 
@@ -143,7 +144,6 @@ public class DefaultTransformator implements Transformator{
         // Communictaion segment finish Control Service Segment dependent transformations
         communicationSegments.forEach(communicationSegment -> {
             communicationSegment.transformControlServiceSegmentDependencies(controlServiceSegment);
-            communicationSegment.transformPhysicalSegmentDependencies(physicalSegments);
         });
         
         printDebugInfo();

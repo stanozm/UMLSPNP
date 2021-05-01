@@ -104,15 +104,22 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         if(existingGuard != null)
             petriNet.removeFunction(existingGuard);
         
+        var guardBody = new StringBuilder("return (");
+        guardBody.append(String.format("mark(\"%s\")", endPlace.getName()));
+        guardBody.append(String.format(" || mark(\"%s\")", failHWPlace.getName()));
+        failTypes.values().forEach(failTypePlace -> {
+            guardBody.append(String.format(" || mark(\"%s\")", failTypePlace.getKey().getName()));
+        });
+        guardBody.append(String.format(") &&%n       ("));
         
-        String guardBody;
         if(dependentPlace != null)
-            guardBody = String.format("return mark(\"%s\");", dependentPlace.getName());
+            guardBody.append(String.format("mark(\"%s\")", dependentPlace.getName()));
         else
-            guardBody = "return 0;";
+            guardBody.append("0");
+        guardBody.append(");");
 
         var flushGuardName = SPNPUtils.createFunctionName(String.format("guard_%s_leaf_flush", SPNPUtils.prepareName(messageName, 15)));
-        FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody, Integer.class);
+        FunctionSPNP<Integer> flushGuard = new FunctionSPNP<>(flushGuardName, FunctionType.Guard, guardBody.toString(), Integer.class);
 
         petriNet.addFunction(flushGuard);
         flushTransition.setGuardFunction(flushGuard);
@@ -322,7 +329,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         
         var cardinalityFunctionName = SPNPUtils.createFunctionName(String.format("cardinality_%s_HW_fail_to_flush", SPNPUtils.prepareName(messageName, 15)));
         var cardinalityFunctionBody = String.format("return mark(\"%s\");", failHWPlace.getName());
-        var cardinalityFunction = new FunctionSPNP<Integer>(cardinalityFunctionName, FunctionType.ArcCardinality, cardinalityFunctionBody, Integer.class);
+        var cardinalityFunction = new FunctionSPNP<>(cardinalityFunctionName, FunctionType.ArcCardinality, cardinalityFunctionBody, Integer.class);
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failHWPlace, flushTransition, cardinalityFunction);
         petriNet.addArc(flushInputArc);
     }
@@ -383,10 +390,6 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         // Flush transition
         transformFlushTransition(messageName);
-        
-        // Flush transition guard function
-        // This guard may be altered later after the loops segments are transformed
-        createFlushTransitionGuard(messageName, null);
 
         // End place and transition
         transformEnd(messageName);
@@ -404,6 +407,10 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
         // Initial transition guard function
         createInitialTransitionGuard(messageName);
+        
+        // Flush transition guard function
+        // This guard may be altered later after the loops segments are transformed
+        createFlushTransitionGuard(messageName, null);
     }
     
     @Override

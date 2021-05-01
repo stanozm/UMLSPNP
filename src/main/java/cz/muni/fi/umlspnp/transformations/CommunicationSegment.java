@@ -139,19 +139,21 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         petriNet.addTransition(flushTransition);
     }
 
-    private void createFlushTransitionGuard(String communicationLinkName, StandardPlace dependentPlace) {
-        if(dependentPlace != null) {
-            if(flushDependentPlaces.contains(dependentPlace))
-                return; // This place is already contained in the flush transition guard
-            flushDependentPlaces.add(dependentPlace);
-        }
-
+    private void createFlushTransitionGuard(String communicationLinkName) {
         var existingGuard = flushTransition.getGuardFunction();
         if(existingGuard != null)
             petriNet.removeFunction(existingGuard);
 
-        var guardBody = new StringBuilder("return ");
-        if(dependentPlace == null) {
+        var guardBody = new StringBuilder("return (");
+        guardBody.append(String.format("mark(\"%s\")", endPlace.getName()));
+        guardBody.append(String.format(" || mark(\"%s\")", failHWPlaceFirst.getName()));
+        guardBody.append(String.format(" || mark(\"%s\")", failHWPlaceSecond.getName()));
+        failTypes.values().forEach(failTypePlace -> {
+            guardBody.append(String.format(" || mark(\"%s\")", failTypePlace.getName()));
+        });
+        guardBody.append(String.format(") &&%n       ("));
+        
+        if(flushDependentPlaces.size() < 1) {
             guardBody.append("0");
         }
         else{
@@ -161,7 +163,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
                 guardBody.append(String.format("mark(\"%s\")", flushDependentPlace.getName()));
             });
         }
-        guardBody.append(";");
+        guardBody.append(");");
         var guardName = SPNPUtils.createFunctionName(String.format("guard_%s_comm_flush", SPNPUtils.prepareName(communicationLinkName, 15)));
         FunctionSPNP<Integer> guard = new FunctionSPNP<>(guardName, FunctionType.Guard, guardBody.toString(), Integer.class);
         petriNet.addFunction(guard);
@@ -308,6 +310,9 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
         // End transition
         transformEndTransition(communicationLinkName);
+        
+        // Initial transition guard function
+        createInitialTransitionGuard(communicationLinkName);
     }
     
     public void transformPhysicalSegmentDependencies(List<PhysicalSegment> physicalSegments) {
@@ -325,8 +330,9 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         failHWPlaceSecond = secondPair.getValue();
         failHWTransitionSecond = secondPair.getKey();
 
-        // Initial transition guard function
-        createInitialTransitionGuard(communicationLinkName);
+        // Flush guard
+        // This guard may be altered later after the loops segments are transformed
+        createFlushTransitionGuard(communicationLinkName);
     }
     
     @Override
@@ -341,10 +347,6 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
         // Flush transition
         transformFlushTransition(communicationLinkName);
-        
-        // Flush guard
-        // This guard may be altered later after the loops segments are transformed
-        createFlushTransitionGuard(communicationLinkName, null);
 
         // Fail type places and transitions
         communicationLink.getLinkFailures().forEach(failType -> {
@@ -395,7 +397,11 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
     @Override
     public void setFlushTransitionGuardDependentPlace(StandardPlace dependentPlace) {
-        String communicationLinkName = getCommunicationLinkNameSPNP();
-        createFlushTransitionGuard(communicationLinkName, dependentPlace);
+        if(dependentPlace != null) {
+            if(flushDependentPlaces.contains(dependentPlace))
+                return; // This place is already contained in the flush transition guard
+            flushDependentPlaces.add(dependentPlace);
+            createFlushTransitionGuard(getCommunicationLinkNameSPNP());
+        }
     }
 }
