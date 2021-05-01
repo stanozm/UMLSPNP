@@ -61,6 +61,30 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     public CommunicationLink getCommunicationLink() {
         return communicationLink;
     }
+    
+    public StandardPlace getStartPlace() {
+        return startPlace;
+    }
+    
+    public StandardPlace getFailHWFirstPlace() {
+        return failHWPlaceFirst;
+    }
+    
+    public StandardPlace getFailHWSecondPlace() {
+        return failHWPlaceSecond;
+    }
+    
+    public ImmediateTransition getFailHWFirstTransition() {
+        return failHWTransitionFirst;
+    }
+    
+    public ImmediateTransition getFailHWSecondTransition() {
+        return failHWTransitionSecond;
+    }
+    
+    public ImmediateTransition getInitialTransition() {
+        return initialTransition;
+    }
 
     @Override
     public StandardPlace getEndPlace() {
@@ -71,6 +95,10 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     public Collection<StandardPlace> getFailPlaces() {
         return this.failTypes.values();
     }
+    
+    public Map<TimedTransition, StandardPlace> getFailTypes() {
+        return failTypes;
+    } 
 
     private void resolveControlServiceCalls() {
         controlServiceSegment.getControlServiceCalls().forEach(controlPair -> {

@@ -373,8 +373,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         return places;
     }
     
-    public Collection<Pair<StandardPlace, Boolean>> getFailTypes() {
-        return failTypes.values();
+    public Map<TimedTransition, Pair<StandardPlace, Boolean>> getFailTypes() {
+        return failTypes;
     }
 
     @Override

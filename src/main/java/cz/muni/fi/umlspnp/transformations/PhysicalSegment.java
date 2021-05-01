@@ -153,7 +153,7 @@ public class PhysicalSegment extends Segment {
             if(deploymentTarget == node) {
                 var actionSegment = serviceCall.getActionSegment();
                 if(actionSegment instanceof ServiceLeafSegment) {
-                    var failTypes = ((ServiceLeafSegment)actionSegment).getFailTypes();
+                    var failTypes = ((ServiceLeafSegment)actionSegment).getFailTypes().values();
                     failTypes.forEach(failType -> {
                         if(failType.getValue())
                             serviceFailPlaces.add(failType.getKey());
