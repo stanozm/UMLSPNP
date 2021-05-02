@@ -24,8 +24,9 @@ public class SPNPUtils {
 
     public static int TR_PRIORTY_DEFAULT = 0;
     public static int TR_PRIORTY_STRUCTURE = 30;
-    public static int TR_PRIORTY_ACTION = 20;
-    public static int TR_PRIORTY_CONTROL = 10;
+    public static int TR_PRIORTY_LOOP_FLUSH = 20;
+    public static int TR_PRIORTY_ACTION_FLUSH = 10;
+    public static int TR_PRIORTY_LOOP_RESTART = 5;
 
     public static void resetCounters() {
         placeCounter = 0;

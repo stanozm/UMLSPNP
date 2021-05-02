@@ -163,7 +163,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     private void transformFlushTransition(String communicationLinkName) {
         var flushTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comFlush");
         flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
-                            SPNPUtils.TR_PRIORTY_ACTION, null, new ConstantTransitionProbability(1.0));
+                            SPNPUtils.TR_PRIORTY_ACTION_FLUSH, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
     }
 

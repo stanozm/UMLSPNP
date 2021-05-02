@@ -103,7 +103,7 @@ public class LoopSegment extends Segment{
         var flushTransitionName = SPNPUtils.createTransitionName("loop", "flush");
     
         flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
-                              SPNPUtils.TR_PRIORTY_CONTROL, createFlushTransitionGuard(), new ConstantTransitionProbability(1.0));
+                              SPNPUtils.TR_PRIORTY_LOOP_FLUSH, createFlushTransitionGuard(), new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
         
         controlServiceCalls.forEach(serviceCall -> {
@@ -129,7 +129,7 @@ public class LoopSegment extends Segment{
     private void transformRestartTransition() {
         var restartTransitionName = SPNPUtils.createTransitionName("loop", "restart");
         restartTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, restartTransitionName,
-                            SPNPUtils.TR_PRIORTY_DEFAULT, null, new ConstantTransitionProbability(1.0));
+                            SPNPUtils.TR_PRIORTY_LOOP_RESTART, null, new ConstantTransitionProbability(1.0));
         petriNet.addTransition(restartTransition);
 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, flushPlace, restartTransition);

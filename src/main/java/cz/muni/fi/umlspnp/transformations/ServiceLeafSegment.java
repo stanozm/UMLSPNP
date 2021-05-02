@@ -99,7 +99,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var flushTransitionName = SPNPUtils.createTransitionName(messageName, "flush");
         flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++,
                                                   flushTransitionName,
-                                                  SPNPUtils.TR_PRIORTY_ACTION,
+                                                  SPNPUtils.TR_PRIORTY_ACTION_FLUSH,
                                                   null,
                                                   new ConstantTransitionProbability(1.0));
         petriNet.addTransition(flushTransition);
