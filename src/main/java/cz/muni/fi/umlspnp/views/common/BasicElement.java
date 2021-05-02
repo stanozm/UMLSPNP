@@ -3,11 +3,13 @@ package cz.muni.fi.umlspnp.views.common;
 import cz.muni.fi.umlspnp.common.ObjectInfo;
 import cz.muni.fi.umlspnp.common.Utils;
 import cz.muni.fi.umlspnp.views.common.layouts.BooleanModalWindow;
+import cz.muni.fi.umlspnp.views.common.layouts.DoubleModalWindow;
 import cz.muni.fi.umlspnp.views.common.layouts.EditableListView;
 import cz.muni.fi.umlspnp.views.common.layouts.IntegerModalWindow;
 import cz.muni.fi.umlspnp.views.common.layouts.PropertiesModalWindow;
 import cz.muni.fi.umlspnp.views.common.layouts.StringModalWindow;
 import java.util.List;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -77,6 +79,16 @@ public abstract class BasicElement extends Group{
                                             promptText, min, max, property);
         modal.showAndWait();
     }
+   
+    public void createDoubleModalWindow(String windowName,
+                                        String promptText,
+                                        Double min,
+                                        Double max,
+                                        DoubleProperty property) {
+        var modal = new DoubleModalWindow((Stage) getScene().getWindow(), windowName,
+                                            promptText, min, max, property);
+        modal.showAndWait();
+    }
     
     public ContextMenu getContextMenu(){
         return contextMenu;
@@ -115,6 +127,13 @@ public abstract class BasicElement extends Group{
                                   Integer min, Integer max, IntegerProperty property) {
         createMenuItem(menuName, (e) -> {
             createIntegerModalWindow(windowName, promptText, min, max, property);
+        });
+    }
+
+    public void createDoubleMenu(String menuName, String windowName, String promptText,
+                                  Double min, Double max, DoubleProperty property) {
+        createMenuItem(menuName, (e) -> {
+            createDoubleModalWindow(windowName, promptText, min, max, property);
         });
     }
     

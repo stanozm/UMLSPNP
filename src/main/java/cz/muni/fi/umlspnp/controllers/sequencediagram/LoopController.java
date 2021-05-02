@@ -38,5 +38,12 @@ public class LoopController extends BaseController<Loop, LoopView>{
                                 2,
                                 null,
                                 model.iterationsProperty());
+        
+        view.createDoubleMenu( "Change restart rate",
+                        "Change restart rate",
+                        "Restart rate",
+                        0.0,
+                        null,
+                        model.restartRateProperty());
     }
 }

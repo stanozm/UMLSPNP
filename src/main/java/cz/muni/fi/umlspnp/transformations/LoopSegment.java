@@ -8,8 +8,11 @@ import cz.muni.fi.spnp.core.models.arcs.StandardArc;
 import cz.muni.fi.spnp.core.models.functions.FunctionType;
 import cz.muni.fi.spnp.core.models.places.StandardPlace;
 import cz.muni.fi.spnp.core.models.transitions.ImmediateTransition;
+import cz.muni.fi.spnp.core.models.transitions.TimedTransition;
+import cz.muni.fi.spnp.core.models.transitions.Transition;
 import cz.muni.fi.spnp.core.models.transitions.probabilities.ConstantTransitionProbability;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
+import cz.muni.fi.spnp.core.transformators.spnp.distributions.ExponentialTransitionDistribution;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -28,7 +31,7 @@ public class LoopSegment extends Segment{
     private ImmediateTransition flushTransition = null;
     private StandardPlace flushPlace = null;
     
-    private ImmediateTransition restartTransition = null;
+    private Transition restartTransition = null;
     private StandardPlace repeatsPlace = null;
     
     public LoopSegment(PetriNet petriNet, ControlServiceSegment controlServiceSegment, ServiceCallTreeNode treeNode, Loop loop) {
@@ -127,9 +130,17 @@ public class LoopSegment extends Segment{
     }
     
     private void transformRestartTransition() {
+        var rate = loop.getRestartRate();
         var restartTransitionName = SPNPUtils.createTransitionName("loop", "restart");
-        restartTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, restartTransitionName,
-                            SPNPUtils.TR_PRIORTY_LOOP_RESTART, null, new ConstantTransitionProbability(1.0));
+        
+        if(rate > 0.0) {
+            var distribution = new ExponentialTransitionDistribution(rate);
+            restartTransition = new TimedTransition(SPNPUtils.transitionCounter++, restartTransitionName, SPNPUtils.TR_PRIORTY_DEFAULT, null, distribution);
+        }
+        else {
+            restartTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, restartTransitionName,
+                                SPNPUtils.TR_PRIORTY_LOOP_RESTART, null, new ConstantTransitionProbability(1.0));
+        }
         petriNet.addTransition(restartTransition);
 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, flushPlace, restartTransition);
