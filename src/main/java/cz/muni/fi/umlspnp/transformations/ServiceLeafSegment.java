@@ -376,6 +376,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         failTypes.values().forEach(failType -> {
             places.add(failType.getKey());
         });
+        places.add(failHWPlace);
         return places;
     }
     

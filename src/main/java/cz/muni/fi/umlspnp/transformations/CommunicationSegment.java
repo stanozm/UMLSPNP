@@ -93,7 +93,13 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     
     @Override
     public Collection<StandardPlace> getFailPlaces() {
-        return this.failTypes.values();
+        var places = new ArrayList<StandardPlace>();
+        failTypes.values().forEach(failTypePlace -> {
+            places.add(failTypePlace);
+        });
+        places.add(failHWPlaceFirst);
+        places.add(failHWPlaceSecond);
+        return places;
     }
     
     public Map<TimedTransition, StandardPlace> getFailTypes() {
