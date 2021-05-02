@@ -86,9 +86,17 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         return initialTransition;
     }
 
+    public TimedTransition getEndTransition() {
+        return endTransition;
+    }
+    
     @Override
     public StandardPlace getEndPlace() {
         return endPlace;
+    }
+    
+    public ImmediateTransition getFlushTransition() {
+        return flushTransition;
     }
     
     @Override

@@ -12,7 +12,6 @@ import cz.muni.fi.umlspnp.views.common.layouts.TransformModalWindow;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -47,6 +46,13 @@ public class MainController extends BaseController<MainModel, MainView> {
 
             createOptions(transformator, transformWindow);
             transformator.transform();
+            
+            if(transformWindow.getDebugInfoSelected())
+                transformator.printDebugInfo();
+            
+            if(transformWindow.getGenerateDebugPrintSegmentSelected())
+                transformator.generatePrintingSegment();
+            
             System.out.println(transformator.getOutput());
         };
         transformMenuItem.setOnAction((ActionEvent tt) -> {

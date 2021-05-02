@@ -57,6 +57,49 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         this.serviceCall = serviceCall;
     }
     
+    public StandardPlace getStartPlace() {
+        return startPlace;
+    }
+    
+    public StandardPlace getFailHWPlace() {
+        return failHWPlace;
+    }
+    
+    public ImmediateTransition getInitialTransition() {
+        return initialTransition;
+    }
+    
+    public ImmediateTransition getFailHWTransition() {
+        return failHWTransition;
+    }
+    
+    public ImmediateTransition getFlushTransition() {
+        return flushTransition;
+    }
+    
+    public TimedTransition getEndTransition() {
+        return endTransition;
+    }
+    
+    @Override
+    public StandardPlace getEndPlace() {
+        return endPlace;
+    }
+    
+    @Override
+    public Collection<StandardPlace> getFailPlaces() {
+        var places = new ArrayList<StandardPlace>();
+        failTypes.values().forEach(failType -> {
+            places.add(failType.getKey());
+        });
+        places.add(failHWPlace);
+        return places;
+    }
+    
+    public Map<TimedTransition, Pair<StandardPlace, Boolean>> getFailTypes() {
+        return failTypes;
+    }
+    
     private void transformInitialTransition(String messageName) {
         var initialTransitionName = SPNPUtils.createTransitionName(messageName, "start");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++,
@@ -285,11 +328,6 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var guardBody = new StringBuilder("return ");
 
         var hwFailNodes = getMarkedNodesInTree();
-
-        // TODO: remove prints when not needed
-        System.err.println(String.format("%s  %s  checked nodes:", serviceCallNode.getCompoundOrderString(), messageName));
-        hwFailNodes.forEach(node -> { System.err.println(node.getArtifact().getNameProperty().getValue());});
-
         var controlSet = new HashSet<DeploymentTarget>();
         for(var treeNode : hwFailNodes) {
             var dt = SPNPUtils.getDeploymentTargetFromArtifact(treeNode.getArtifact());
@@ -363,25 +401,6 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var cardinalityFunction = new FunctionSPNP<Integer>(cardinalityFunctionName, FunctionType.ArcCardinality, cardinalityFunctionBody, Integer.class);
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, failTypePlace, flushTransition, cardinalityFunction);
         petriNet.addArc(flushInputArc);
-    }
-
-    @Override
-    public StandardPlace getEndPlace() {
-        return endPlace;
-    }
-    
-    @Override
-    public Collection<StandardPlace> getFailPlaces() {
-        var places = new ArrayList<StandardPlace>();
-        failTypes.values().forEach(failType -> {
-            places.add(failType.getKey());
-        });
-        places.add(failHWPlace);
-        return places;
-    }
-    
-    public Map<TimedTransition, Pair<StandardPlace, Boolean>> getFailTypes() {
-        return failTypes;
     }
 
     @Override

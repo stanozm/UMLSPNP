@@ -253,6 +253,10 @@ public class ControlServiceSegment extends Segment {
         return initialTransition;
     }
     
+    public StandardPlace getInitialPlace() {
+        return initialPlace;
+    }
+    
     public StandardPlace getEndPlace() {
         return endPlace;
     }

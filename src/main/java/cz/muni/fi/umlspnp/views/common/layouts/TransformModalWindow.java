@@ -9,6 +9,7 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
@@ -23,6 +24,9 @@ import javafx.stage.Stage;
 public class TransformModalWindow extends ModalWindow {
     private final Button transformButton;
     private final Button closeButton;
+    
+    private final CheckBox debugInfoCheckBox;
+    private final CheckBox debugPrintCheckBox;
     
     private final RadioButton simulationRadio;
     private final RadioButton numericRadio;
@@ -44,6 +48,11 @@ public class TransformModalWindow extends ModalWindow {
         numericGroup.setHgap(5);
         numericGroup.setVgap(5);
 
+        debugInfoCheckBox = new CheckBox("Print debug info to stderr");
+        debugInfoCheckBox.setSelected(true);
+
+        debugPrintCheckBox = new CheckBox("Generate debug print segment");
+        
         Label solutionLabel = new Label("Solution method:");
         ToggleGroup radioGroup = new ToggleGroup();
         simulationRadio = new RadioButton("Simulation");
@@ -75,18 +84,24 @@ public class TransformModalWindow extends ModalWindow {
             onTransform.accept(this);
         });
 
+        var generalLabel = new Label("General:");
+
         rootGrid.setHgap(10);
         rootGrid.setVgap(10);
-        rootGrid.add(solutionLabel, 0, 0);
-        rootGrid.add(simulationRadio, 0, 1);
-        rootGrid.add(numericRadio, 1, 1);
         
-        rootGrid.add(simulationGroup, 0, 2, 2, 1);
-        rootGrid.add(numericGroup, 0, 2, 2, 1);
+        rootGrid.add(generalLabel, 0, 0);
+        rootGrid.add(debugInfoCheckBox, 0, 1, 2, 1);
+        rootGrid.add(debugPrintCheckBox, 0, 2, 2, 1);
+        rootGrid.add(solutionLabel, 0, 3);
+        rootGrid.add(simulationRadio, 0, 4);
+        rootGrid.add(numericRadio, 1, 4);
+        
+        rootGrid.add(simulationGroup, 0, 5, 2, 1);
+        rootGrid.add(numericGroup, 0, 5, 2, 1);
         numericGroup.setVisible(false);
         
-        rootGrid.add(transformButton, 0, 4);
-        rootGrid.add(closeButton, 1, 4);
+        rootGrid.add(transformButton, 0, 6);
+        rootGrid.add(closeButton, 1, 6);
     }
     
     public GridPane getSimulationGroup() {
@@ -95,6 +110,14 @@ public class TransformModalWindow extends ModalWindow {
     
     public GridPane getNumericGroup() {
         return numericGroup;
+    }
+    
+    public boolean getDebugInfoSelected() {
+        return debugInfoCheckBox.isSelected();
+    }
+
+    public boolean getGenerateDebugPrintSegmentSelected() {
+        return debugPrintCheckBox.isSelected();
     }
     
     public void addConstantInputItem(String labelText, Collection<String> stringItems, int selectedIndex, boolean isSimulation) {

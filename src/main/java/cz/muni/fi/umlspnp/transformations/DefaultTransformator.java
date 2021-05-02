@@ -51,15 +51,16 @@ public class DefaultTransformator implements Transformator{
         this.transformator = new SPNPTransformator(code, options);
         
         this.serviceCallTree = new ServiceCallTree(mainModel.getSequenceDiagram());
-        
-        // TODO: remove prints when not needed
-        System.err.println(String.format("Service Call Tree:%n"));
-        System.err.println(serviceCallTree);
     }
 
     protected final SPNPCode createCode() {
         var spnpCode = new SPNPCode();
         spnpCode.addInclude(new Include("\"user.h\""));
+        
+        var acFinalBody = String.format("solve(INFINITY);%nprint_qcol();%nprint_rgraph();%nprint_qrow();%npr_mc_info();%npr_std_average();");
+        var acFinalFunction = new FunctionSPNP<>("ac_final", FunctionType.Other, acFinalBody, Void.class);
+        spnpCode.setAcFinalFunction(acFinalFunction);
+        
         return spnpCode;
     }
 
@@ -97,8 +98,11 @@ public class DefaultTransformator implements Transformator{
         return net;
     }
 
-    private void printDebugInfo() {
-        System.err.println(String.format("Debug info%n------------"));
+    public void printDebugInfo() {
+        System.err.println(String.format("Service Call Tree:%n------------------"));
+        System.err.println(serviceCallTree);
+        
+        System.err.println(String.format("%nPetri net:%n----------"));
 
         // Physical Segments
         physicalSegments.forEach(physicalSegment -> {
@@ -127,157 +131,12 @@ public class DefaultTransformator implements Transformator{
         });
     }
     
-    private void generatePrintingSegment() {
-        var control_s = controlServiceSegment;
-        var phys_s = physicalSegments;
-        var comm_s = communicationSegments;
-        var guardBody = new StringBuilder();
-        
-        guardBody.append(String.format("if(mark(\"%s\"))%n", control_s.initialPlace.getName()));
-        guardBody.append(String.format("    fprintf(stderr, \"\\n\\n\\n\\n\");%n%n"));
-        
-        guardBody.append(String.format("/* CONTROL SEGMENT */%n"));
-        guardBody.append(String.format("fprintf(stderr, \"CONTROL SEGMENT: "));
-        guardBody.append(String.format("(%%d) -> [%%d]"));
-        control_s.controlServiceCalls.forEach(servicePair -> {
-            guardBody.append(String.format(" -> (%%d) -> [%%d]"));
-        });
-        guardBody.append(String.format(" -> (%%d)\\n\""));
-        guardBody.append(String.format(", mark(\"%s\")", control_s.initialPlace.getName()));
-        guardBody.append(String.format(", enabled(\"%s\")", control_s.getInitialTransition().getName()));
-        control_s.controlServiceCalls.forEach(servicePair -> {
-            var transition = servicePair.getKey();
-            var place = servicePair.getValue().getPlace();
-            guardBody.append(String.format(", mark(\"%s\")", place.getName()));
-            guardBody.append(String.format(", enabled(\"%s\")", transition.getName()));
-        });
-        guardBody.append(String.format(", mark(\"%s\")", control_s.getEndPlace().getName()));
-        guardBody.append(String.format(");%n"));
-        
-        phys_s.forEach(ps -> {
-            guardBody.append(String.format("%n/* STRUCTURE SEGMENT of \"%s\" */%n", ps.getNode().getNameProperty().getValue()));
-            guardBody.append(String.format("fprintf(stderr, \"STRUCTURE SEGMENT of %s: ", ps.getNode().getNameProperty().getValue()));
-            var marks = new StringBuilder();
-            ps.statePlaces.forEach((state, place) -> {
-                guardBody.append(String.format("(%s %%d)  ", state.nameProperty().getValue()));
-                marks.append(String.format(", mark(\"%s\")", place.getName()));
-            });
-            guardBody.append(String.format("\\n\""));
-            guardBody.append(marks.toString());
-            guardBody.append(String.format(");%n"));
-        });
-        
-        comm_s.forEach(cs -> {
-            var commString = new StringBuilder();
-            var conditionString = new StringBuilder();
-            conditionString.append(String.format("if(enabled(\"%s\") || enabled(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\")",
-                                                cs.getInitialTransition().getName(), cs.flushTransition.getName(),
-                                                cs.startPlace.getName(), cs.endPlace.getName(),
-                                                cs.failHWPlaceFirst.getName(), cs.failHWPlaceSecond.getName()));
-            
-            guardBody.append(String.format("%n/* COMMUNICATION SEGMENT of \"%s\" */%n", cs.getCommunicationLink().getLinkType().nameProperty().getValue()));
-            commString.append(String.format("fprintf(stderr, \"COMMUNICATION SEGMENT of %s: ", cs.getCommunicationLink().getLinkType().nameProperty().getValue()));
-            var marks = new StringBuilder();
-            commString.append(String.format("[tr_start %%d] -> (pl_start %%d) -> [tr_end %%d] -> (pl_end %%d)%n"));
-            int counter = 1;
-            for(var tr : cs.getFailTypes().keySet()) {
-                var pl = cs.getFailTypes().get(tr);
-                commString.append(String.format("                    [tr_fail%d %%d] -> (pl_fail%d %%d)%n", counter, counter));
-                counter++;
-                marks.append(String.format(", enabled(\"%s\")", tr.getName()));
-                marks.append(String.format(", mark(\"%s\")", pl.getName()));
-                conditionString.append(String.format(" || mark(\"%s\")", pl.getName()));
-            }
-            commString.append(String.format("                    [tr_hw_fail_st %%d] -> (pl_hw_fail_st %%d)%n"));
-            commString.append(String.format("                    [tr_hw_fail_nd %%d] -> (pl_hw_fail_nd %%d)"));
-            commString.append(String.format("\\n\""));
-            
-            commString.append(String.format(", enabled(\"%s\")", cs.initialTransition.getName()));
-            commString.append(String.format(", mark(\"%s\")", cs.startPlace.getName()));
-            
-            commString.append(String.format(", enabled(\"%s\")", cs.endTransition.getName()));
-            commString.append(String.format(", mark(\"%s\")", cs.endPlace.getName()));
-            commString.append(marks.toString());
-            
-            commString.append(String.format(", enabled(\"%s\")", cs.failHWTransitionFirst.getName()));
-            commString.append(String.format(", mark(\"%s\")", cs.failHWPlaceFirst.getName()));
-            
-            commString.append(String.format(", enabled(\"%s\")", cs.failHWTransitionSecond.getName()));
-            commString.append(String.format(", mark(\"%s\")", cs.failHWPlaceSecond.getName()));
-            
-            commString.append(String.format(");%n"));
-            
-            conditionString.append(String.format(")%n"));
-            commString.insert(0, conditionString.toString());
-            guardBody.append(commString.toString());
-        });
-        
-        control_s.getControlServiceCalls().forEach(pair -> {
-            var serviceCall = pair.getValue();
-            var action_s = serviceCall.getActionSegment();
-            if(action_s instanceof ServiceLeafSegment){
-                var leaf_s = (ServiceLeafSegment) action_s;
-                var leafString = new StringBuilder();
-                var conditionString = new StringBuilder();
-                conditionString.append(String.format("if(enabled(\"%s\") || enabled(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\")",
-                                    leaf_s.initialTransition.getName(), leaf_s.flushTransition.getName(),
-                                    leaf_s.startPlace.getName(), leaf_s.endPlace.getName(),
-                                    leaf_s.failHWPlace.getName()));
-
-                guardBody.append(String.format("%n/* EXECUTION SEGMENT of \"%s\" */%n", serviceCall.getMessage().nameProperty().getValue()));
-                leafString.append(String.format("fprintf(stderr, \"EXECUTION SEGMENT of %s: ", serviceCall.getMessage().nameProperty().getValue()));
-                var marks = new StringBuilder();
-                leafString.append(String.format("[tr_start %%d] -> (pl_start %%d) -> [tr_end %%d] -> (pl_end %%d)%n"));
-                int counter = 1;
-                for(var tr : leaf_s.getFailTypes().keySet()) {
-                    var pl = leaf_s.getFailTypes().get(tr).getKey();
-                    leafString.append(String.format("                    [tr_fail%d %%d] -> (pl_fail%d %%d)%n", counter, counter));
-                    counter++;
-                    marks.append(String.format(", enabled(\"%s\")", tr.getName()));
-                    marks.append(String.format(", mark(\"%s\")", pl.getName()));
-                    conditionString.append(String.format(" || mark(\"%s\")", pl.getName()));
-                }
-                leafString.append(String.format("                    [tr_hw_fail %%d] -> (pl_hw_fail %%d)"));
-                leafString.append(String.format("\\n\""));
-
-                leafString.append(String.format(", enabled(\"%s\")", leaf_s.initialTransition.getName()));
-                leafString.append(String.format(", mark(\"%s\")", leaf_s.startPlace.getName()));
-                leafString.append(String.format(", enabled(\"%s\")", leaf_s.endTransition.getName()));
-                leafString.append(String.format(", mark(\"%s\")", leaf_s.endPlace.getName()));
-                leafString.append(marks.toString());
-
-                leafString.append(String.format(", enabled(\"%s\")", leaf_s.failHWTransition.getName()));
-                leafString.append(String.format(", mark(\"%s\")", leaf_s.failHWPlace.getName()));
-
-                leafString.append(String.format(");%n"));
-                
-                conditionString.append(String.format(")%n"));
-                leafString.insert(0, conditionString.toString());
-                guardBody.append(leafString.toString());
-            }
-        });
-
-        
-        guardBody.append(String.format("%nfprintf(stderr, \"\\n\");%n"));
-        guardBody.append(String.format("%nreturn 0;"));
-        
-        var p1_name = SPNPUtils.createPlaceName("PRINT", "P1");
-        var p1 = new StandardPlace(SPNPUtils.placeCounter++, p1_name);
-        p1.setNumberOfTokens(1);
-        petriNet.addPlace(p1);
-        var p2_name = SPNPUtils.createPlaceName("PRINT", "P2");
-        var p2 = new StandardPlace(SPNPUtils.placeCounter++, p2_name);
-        petriNet.addPlace(p2);
-        
-        var t1_name = SPNPUtils.createTransitionName("PRINT", "T1");
-        var guard = new FunctionSPNP<>("__PRINT_GUARD", FunctionType.Guard, guardBody.toString(), Integer.class);
-        var t1 = new ImmediateTransition(SPNPUtils.transitionCounter++, t1_name, 1000, guard, new ConstantTransitionProbability(1.0));
-        petriNet.addTransition(t1);
-
-        var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, p1, t1);
-        petriNet.addArc(inputArc);
-        var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, p2, t1);
-        petriNet.addArc(outputArc);
+    public void generatePrintingSegment() {
+        var debugPrintSegment = new DebugPrintSegment(petriNet,
+                                                      controlServiceSegment,
+                                                      physicalSegments,
+                                                      communicationSegments);
+        debugPrintSegment.transform();
     }
     
     /**
@@ -328,9 +187,6 @@ public class DefaultTransformator implements Transformator{
         communicationSegments.forEach(communicationSegment -> {
             communicationSegment.transformControlServiceSegmentDependencies(controlServiceSegment);
         });
-        
-        printDebugInfo();
-        generatePrintingSegment();
     }
 
     /**
