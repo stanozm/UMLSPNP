@@ -9,10 +9,8 @@ import cz.muni.fi.spnp.core.models.PetriNet;
  */
 public abstract class Segment {
     protected final PetriNet petriNet;
-    protected final int transitionPriority;
     
-    public Segment(PetriNet petriNet, int transitionPriority) {
+    public Segment(PetriNet petriNet) {
         this.petriNet = petriNet;
-        this.transitionPriority = transitionPriority;
     }
 }

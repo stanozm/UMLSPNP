@@ -22,6 +22,11 @@ public class SPNPUtils {
 
     public static int functionCounter = 0;
 
+    public static int TR_PRIORTY_DEFAULT = 0;
+    public static int TR_PRIORTY_STRUCTURE = 30;
+    public static int TR_PRIORTY_ACTION = 20;
+    public static int TR_PRIORTY_CONTROL = 10;
+
     public static void resetCounters() {
         placeCounter = 0;
         transitionCounter = 0;
