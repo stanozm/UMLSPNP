@@ -12,7 +12,12 @@ import cz.muni.fi.spnp.core.transformators.spnp.*;
 import cz.muni.fi.spnp.core.transformators.spnp.code.FunctionSPNP;
 import cz.muni.fi.spnp.core.transformators.spnp.code.Include;
 import cz.muni.fi.spnp.core.transformators.spnp.code.SPNPCode;
+import cz.muni.fi.spnp.core.transformators.spnp.options.ConstantTypeOption;
+import cz.muni.fi.spnp.core.transformators.spnp.options.ConstantValue;
+import cz.muni.fi.spnp.core.transformators.spnp.options.DoubleTypeOption;
+import cz.muni.fi.spnp.core.transformators.spnp.options.IntegerTypeOption;
 import cz.muni.fi.spnp.core.transformators.spnp.options.Option;
+import cz.muni.fi.spnp.core.transformators.spnp.options.OptionKey;
 import cz.muni.fi.spnp.core.transformators.spnp.options.SPNPOptions;
 import cz.muni.fi.spnp.core.transformators.spnp.parameters.InputParameter;
 import java.util.ArrayList;
@@ -60,10 +65,28 @@ public class DefaultTransformator implements Transformator{
 
     protected final SPNPOptions createOptions() {
         var parametersSet = new HashSet<InputParameter>();
-
         var optionsSet = new HashSet<Option>();
-
         return new SPNPOptions(parametersSet, optionsSet);
+    }
+    
+    public void createSPNPOptionConstant(String key, String value) {
+        var option = OptionKey.valueOf(key);
+        var optionValue = ConstantValue.valueOf(value);
+        addSPNPOption(new ConstantTypeOption(option, optionValue));
+    }
+
+    public void createSPNPOptionInteger(String key, int value) {
+        var option = OptionKey.valueOf(key);
+        addSPNPOption(new IntegerTypeOption(option, value));
+    }
+
+    public void createSPNPOptionDouble(String key, double value) {
+        var option = OptionKey.valueOf(key);
+        addSPNPOption(new DoubleTypeOption(option, value));
+    }
+    
+    private void addSPNPOption(Option option) {
+        options.getOptions().add(option);
     }
 
     protected final PetriNet createPetriNet() {
