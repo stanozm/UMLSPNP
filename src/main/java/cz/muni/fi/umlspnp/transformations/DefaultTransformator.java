@@ -145,36 +145,48 @@ public class DefaultTransformator implements Transformator{
         });
         
         comm_s.forEach(cs -> {
+            var commString = new StringBuilder();
+            var conditionString = new StringBuilder();
+            conditionString.append(String.format("if(enabled(\"%s\") || enabled(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\")",
+                                                cs.getInitialTransition().getName(), cs.flushTransition.getName(),
+                                                cs.startPlace.getName(), cs.endPlace.getName(),
+                                                cs.failHWPlaceFirst.getName(), cs.failHWPlaceSecond.getName()));
+            
             guardBody.append(String.format("%n/* COMMUNICATION SEGMENT of \"%s\" */%n", cs.getCommunicationLink().getLinkType().nameProperty().getValue()));
-            guardBody.append(String.format("fprintf(stderr, \"COMMUNICATION SEGMENT of %s: ", cs.getCommunicationLink().getLinkType().nameProperty().getValue()));
+            commString.append(String.format("fprintf(stderr, \"COMMUNICATION SEGMENT of %s: ", cs.getCommunicationLink().getLinkType().nameProperty().getValue()));
             var marks = new StringBuilder();
-            guardBody.append(String.format("[tr_start %%d] -> (pl_start %%d) -> [tr_end %%d] -> (pl_end %%d)%n"));
+            commString.append(String.format("[tr_start %%d] -> (pl_start %%d) -> [tr_end %%d] -> (pl_end %%d)%n"));
             int counter = 1;
             for(var tr : cs.getFailTypes().keySet()) {
                 var pl = cs.getFailTypes().get(tr);
-                guardBody.append(String.format("                    [tr_fail%d %%d] -> (pl_fail%d %%d)%n", counter, counter));
+                commString.append(String.format("                    [tr_fail%d %%d] -> (pl_fail%d %%d)%n", counter, counter));
                 counter++;
                 marks.append(String.format(", enabled(\"%s\")", tr.getName()));
                 marks.append(String.format(", mark(\"%s\")", pl.getName()));
+                conditionString.append(String.format(" || mark(\"%s\")", pl.getName()));
             }
-            guardBody.append(String.format("                    [tr_hw_fail_st %%d] -> (pl_hw_fail_st %%d)%n"));
-            guardBody.append(String.format("                    [tr_hw_fail_nd %%d] -> (pl_hw_fail_nd %%d)"));
-            guardBody.append(String.format("\\n\""));
+            commString.append(String.format("                    [tr_hw_fail_st %%d] -> (pl_hw_fail_st %%d)%n"));
+            commString.append(String.format("                    [tr_hw_fail_nd %%d] -> (pl_hw_fail_nd %%d)"));
+            commString.append(String.format("\\n\""));
             
-            guardBody.append(String.format(", enabled(\"%s\")", cs.initialTransition.getName()));
-            guardBody.append(String.format(", mark(\"%s\")", cs.startPlace.getName()));
+            commString.append(String.format(", enabled(\"%s\")", cs.initialTransition.getName()));
+            commString.append(String.format(", mark(\"%s\")", cs.startPlace.getName()));
             
-            guardBody.append(String.format(", enabled(\"%s\")", cs.endTransition.getName()));
-            guardBody.append(String.format(", mark(\"%s\")", cs.endPlace.getName()));
-            guardBody.append(marks.toString());
+            commString.append(String.format(", enabled(\"%s\")", cs.endTransition.getName()));
+            commString.append(String.format(", mark(\"%s\")", cs.endPlace.getName()));
+            commString.append(marks.toString());
             
-            guardBody.append(String.format(", enabled(\"%s\")", cs.failHWTransitionFirst.getName()));
-            guardBody.append(String.format(", mark(\"%s\")", cs.failHWPlaceFirst.getName()));
+            commString.append(String.format(", enabled(\"%s\")", cs.failHWTransitionFirst.getName()));
+            commString.append(String.format(", mark(\"%s\")", cs.failHWPlaceFirst.getName()));
             
-            guardBody.append(String.format(", enabled(\"%s\")", cs.failHWTransitionSecond.getName()));
-            guardBody.append(String.format(", mark(\"%s\")", cs.failHWPlaceSecond.getName()));
+            commString.append(String.format(", enabled(\"%s\")", cs.failHWTransitionSecond.getName()));
+            commString.append(String.format(", mark(\"%s\")", cs.failHWPlaceSecond.getName()));
             
-            guardBody.append(String.format(");%n"));
+            commString.append(String.format(");%n"));
+            
+            conditionString.append(String.format(")%n"));
+            commString.insert(0, conditionString.toString());
+            guardBody.append(commString.toString());
         });
         
         control_s.getControlServiceCalls().forEach(pair -> {
@@ -182,32 +194,43 @@ public class DefaultTransformator implements Transformator{
             var action_s = serviceCall.getActionSegment();
             if(action_s instanceof ServiceLeafSegment){
                 var leaf_s = (ServiceLeafSegment) action_s;
-                
+                var leafString = new StringBuilder();
+                var conditionString = new StringBuilder();
+                conditionString.append(String.format("if(enabled(\"%s\") || enabled(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\")",
+                                    leaf_s.initialTransition.getName(), leaf_s.flushTransition.getName(),
+                                    leaf_s.startPlace.getName(), leaf_s.endPlace.getName(),
+                                    leaf_s.failHWPlace.getName()));
+
                 guardBody.append(String.format("%n/* EXECUTION SEGMENT of \"%s\" */%n", serviceCall.getMessage().nameProperty().getValue()));
-                guardBody.append(String.format("fprintf(stderr, \"EXECUTION SEGMENT of %s: ", serviceCall.getMessage().nameProperty().getValue()));
+                leafString.append(String.format("fprintf(stderr, \"EXECUTION SEGMENT of %s: ", serviceCall.getMessage().nameProperty().getValue()));
                 var marks = new StringBuilder();
-                guardBody.append(String.format("[tr_start %%d] -> (pl_start %%d) -> [tr_end %%d] -> (pl_end %%d)%n"));
+                leafString.append(String.format("[tr_start %%d] -> (pl_start %%d) -> [tr_end %%d] -> (pl_end %%d)%n"));
                 int counter = 1;
                 for(var tr : leaf_s.getFailTypes().keySet()) {
                     var pl = leaf_s.getFailTypes().get(tr).getKey();
-                    guardBody.append(String.format("                    [tr_fail%d %%d] -> (pl_fail%d %%d)%n", counter, counter));
+                    leafString.append(String.format("                    [tr_fail%d %%d] -> (pl_fail%d %%d)%n", counter, counter));
                     counter++;
                     marks.append(String.format(", enabled(\"%s\")", tr.getName()));
                     marks.append(String.format(", mark(\"%s\")", pl.getName()));
+                    conditionString.append(String.format(" || mark(\"%s\")", pl.getName()));
                 }
-                guardBody.append(String.format("                    [tr_hw_fail %%d] -> (pl_hw_fail %%d)"));
-                guardBody.append(String.format("\\n\""));
+                leafString.append(String.format("                    [tr_hw_fail %%d] -> (pl_hw_fail %%d)"));
+                leafString.append(String.format("\\n\""));
 
-                guardBody.append(String.format(", enabled(\"%s\")", leaf_s.initialTransition.getName()));
-                guardBody.append(String.format(", mark(\"%s\")", leaf_s.startPlace.getName()));
-                guardBody.append(String.format(", enabled(\"%s\")", leaf_s.endTransition.getName()));
-                guardBody.append(String.format(", mark(\"%s\")", leaf_s.endPlace.getName()));
-                guardBody.append(marks.toString());
+                leafString.append(String.format(", enabled(\"%s\")", leaf_s.initialTransition.getName()));
+                leafString.append(String.format(", mark(\"%s\")", leaf_s.startPlace.getName()));
+                leafString.append(String.format(", enabled(\"%s\")", leaf_s.endTransition.getName()));
+                leafString.append(String.format(", mark(\"%s\")", leaf_s.endPlace.getName()));
+                leafString.append(marks.toString());
 
-                guardBody.append(String.format(", enabled(\"%s\")", leaf_s.failHWTransition.getName()));
-                guardBody.append(String.format(", mark(\"%s\")", leaf_s.failHWPlace.getName()));
+                leafString.append(String.format(", enabled(\"%s\")", leaf_s.failHWTransition.getName()));
+                leafString.append(String.format(", mark(\"%s\")", leaf_s.failHWPlace.getName()));
 
-                guardBody.append(String.format(");%n"));
+                leafString.append(String.format(");%n"));
+                
+                conditionString.append(String.format(")%n"));
+                leafString.insert(0, conditionString.toString());
+                guardBody.append(leafString.toString());
             }
         });
 
