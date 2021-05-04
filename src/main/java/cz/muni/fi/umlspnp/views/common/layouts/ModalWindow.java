@@ -1,6 +1,7 @@
 package cz.muni.fi.umlspnp.views.common.layouts;
 
 import cz.muni.fi.umlspnp.common.Utils;
+import static cz.muni.fi.umlspnp.common.Utils.setStageIcon;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
@@ -23,6 +24,7 @@ public abstract class ModalWindow extends Stage{
     
     public ModalWindow(Stage parentStage, String windowName){
         this.parentStage = parentStage;
+        setStageIcon(getClass(), this);
         
         this.setTitle(windowName);
         

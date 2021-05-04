@@ -3,6 +3,7 @@ package cz.muni.fi.umlspnp;
 import cz.muni.fi.umlspnp.controllers.MainController;
 import cz.muni.fi.umlspnp.controllers.sequencediagram.SequenceDiagramController;
 import cz.muni.fi.umlspnp.common.Utils;
+import static cz.muni.fi.umlspnp.common.Utils.setStageIcon;
 import cz.muni.fi.umlspnp.controllers.deploymentdiagram.DeploymentDiagramController;
 import cz.muni.fi.umlspnp.models.MainModel;
 import cz.muni.fi.umlspnp.views.MainView;
@@ -37,7 +38,8 @@ public class App extends Application {
             deploymentDiagramController.createSampleData();
             sequenceDiagramController.createSampleData();
         }
-
+        setStageIcon(getClass(), stage);
+        
         var scene = new Scene(mainView, 640, 480);
         stage.setTitle("UML2SPNP");
         stage.setScene(scene);

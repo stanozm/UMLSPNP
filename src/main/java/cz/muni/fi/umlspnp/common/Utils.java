@@ -5,7 +5,9 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 /**
  * Constants and functions used in the modeling part of the project.
@@ -62,5 +64,10 @@ public class Utils {
         errorDialog.setHeaderText(header);
         errorDialog.setContentText(errorMessage);
         return errorDialog;
+    }
+    
+    public static void setStageIcon(Class appClass, Stage stage) {
+        var icon = new Image(appClass.getResourceAsStream("/icons/icon.png"));
+        stage.getIcons().add(icon);
     }
 }
