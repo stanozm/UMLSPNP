@@ -1,7 +1,9 @@
 package cz.muni.fi.umlspnp.views.sequencediagram;
 
 import cz.muni.fi.umlspnp.common.ElementContainer;
+import cz.muni.fi.umlspnp.models.sequencediagram.Lifeline;
 import cz.muni.fi.umlspnp.views.DiagramView;
+import cz.muni.fi.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -12,6 +14,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
 import javafx.scene.Group;
+import javafx.scene.input.MouseButton;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Shape;
 
@@ -45,6 +48,21 @@ public class SequenceDiagramView extends DiagramView{
                 }
             }
         });
+
+        setMouseDraggedCallback(MouseButton.SECONDARY, (e) -> {
+            moveAll(e.getSceneX());
+        });
+    }
+
+    public void moveAll(double sceneX) {
+        double diffX = sceneX - originalPositionX;
+        allElements.getNodes().values().forEach(node -> {
+            node.setTranslateX(node.getTranslateX() + diffX);
+        });
+        loopViews.values().forEach(loop -> {
+            loop.setTranslateX(loop.getTranslateX() + diffX);
+        });
+        originalPositionX = sceneX;
     }
     
     public LifelineView createLifelineView(int modelObjectID){
@@ -58,7 +76,7 @@ public class SequenceDiagramView extends DiagramView{
             }
         });
         
-        newLifelineView.setRestrictionsInParent(root);
+//        newLifelineView.setRestrictionsInParent(root);
         root.getChildren().add(newLifelineView);
         
         newLifelineView.changeDimensions(150, 40);

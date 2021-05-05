@@ -6,6 +6,7 @@ import cz.muni.fi.umlspnp.views.common.Annotation;
 import cz.muni.fi.umlspnp.views.common.BasicRectangle;
 import cz.muni.fi.umlspnp.views.common.NamedRectangle;
 import javafx.scene.Group;
+import javafx.scene.input.MouseButton;
 
 /**
  * View rendering the deployment diagram pane and providing related functionality.
@@ -13,13 +14,30 @@ import javafx.scene.Group;
  */
 public class DeploymentDiagramView extends DiagramView {
     private final Group root;
-    
+
     private static final ElementContainer<NamedRectangle, CommunicationLinkView> allElements = new ElementContainer<>();
 
     public DeploymentDiagramView(){
         this.root = new Group();
         
         diagramPane.getChildren().add(root);
+
+        setMouseDraggedCallback(MouseButton.SECONDARY, (e) -> {
+            moveAll(e.getSceneX(), e.getSceneY());
+        });
+    }
+
+    public void moveAll(double sceneX, double sceneY) {
+        double diffX = sceneX - originalPositionX;
+        double diffY = sceneY - originalPositionY;
+        for(var node : allElements.getNodes().values()) {
+            if(!node.getParent().getClass().equals(DeploymentTargetView.class)) {
+                node.setTranslateX(node.getTranslateX() + diffX);
+                node.setTranslateY(node.getTranslateY() + diffY);
+            }
+        }
+        originalPositionX = sceneX;
+        originalPositionY = sceneY;
     }
 
     public static ElementContainer getElementContainer(){
@@ -56,7 +74,8 @@ public class DeploymentDiagramView extends DiagramView {
         });
         
         if(parentNode == null){
-            dt.setRestrictionsInParent(root);
+            // NOTE: Uncomment if the deployment target should not be moved outside the pane bounds
+//            dt.setRestrictionsInParent(root);
             root.getChildren().add(dt);
         }
         else{

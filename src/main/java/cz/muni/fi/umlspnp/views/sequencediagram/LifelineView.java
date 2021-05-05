@@ -64,7 +64,7 @@ public class LifelineView extends NamedRectangle {
         spanLine.startXProperty().bind(this.widthProperty().divide(2));
         spanLine.startYProperty().bind(this.heightProperty());
         spanLine.endXProperty().bind(spanLine.startXProperty());
-        spanLine.endYProperty().bind(new SimpleDoubleProperty(500));
+        spanLine.endYProperty().bind(new SimpleDoubleProperty(900));
     }
 
     private void initHighestLevelLabel() {

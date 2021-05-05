@@ -82,7 +82,7 @@ public class MainView extends VBox{
         
         this.getChildren().add(splitPane);
     }
- 
+     
     public Stage getAppStage(){
         return appStage;
     }

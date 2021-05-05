@@ -161,7 +161,8 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
         getChildren().add(newAnnotation.getLine());
         newAnnotation.getLine().toBack();
         
-        newAnnotation.setRestrictionsInParent(diagramRoot);
+        // NOTE: Uncomment if the annotation should not be moved outside the pane bounds
+//        newAnnotation.setRestrictionsInParent(diagramRoot);
     }
     
     @Override
