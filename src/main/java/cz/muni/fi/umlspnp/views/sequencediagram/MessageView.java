@@ -4,9 +4,6 @@ import cz.muni.fi.umlspnp.views.common.Annotation;
 import cz.muni.fi.umlspnp.views.common.AnnotationOwner;
 import cz.muni.fi.umlspnp.views.common.ConnectionSlot;
 import cz.muni.fi.umlspnp.views.common.ConnectionView;
-import cz.muni.fi.umlspnp.views.common.layouts.EditableListView;
-import cz.muni.fi.umlspnp.views.common.layouts.PropertiesModalWindow;
-import java.util.List;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
@@ -19,7 +16,6 @@ import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 
 /**
  *  View which renders the message in a sequence diagram.

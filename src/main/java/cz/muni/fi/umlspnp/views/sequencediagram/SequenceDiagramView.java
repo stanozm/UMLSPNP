@@ -1,9 +1,7 @@
 package cz.muni.fi.umlspnp.views.sequencediagram;
 
 import cz.muni.fi.umlspnp.common.ElementContainer;
-import cz.muni.fi.umlspnp.models.sequencediagram.Lifeline;
 import cz.muni.fi.umlspnp.views.DiagramView;
-import cz.muni.fi.umlspnp.views.deploymentdiagram.DeploymentTargetView;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
