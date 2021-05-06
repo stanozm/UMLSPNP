@@ -23,9 +23,6 @@ public class App extends Application {
     
     @Override
     public void start(Stage stage) {
-        var javaVersion = SystemInfo.javaVersion();
-        var javafxVersion = SystemInfo.javafxVersion();
-
         var mainModel = new MainModel();
         var mainView = new MainView(stage);
         

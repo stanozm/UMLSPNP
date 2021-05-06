@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.controllers;
 
+import cz.muni.fi.umlspnp.SystemInfo;
 import cz.muni.fi.umlspnp.models.MainModel;
 import cz.muni.fi.umlspnp.models.sequencediagram.Activation;
 import cz.muni.fi.umlspnp.models.sequencediagram.Lifeline;
@@ -8,6 +9,7 @@ import cz.muni.fi.umlspnp.views.MainView;
 import cz.muni.fi.umlspnp.views.TransformatorOptionConstant;
 import cz.muni.fi.umlspnp.views.TransformatorOptionDouble;
 import cz.muni.fi.umlspnp.views.TransformatorOptionInteger;
+import cz.muni.fi.umlspnp.views.common.layouts.AboutModalWindow;
 import cz.muni.fi.umlspnp.views.common.layouts.TransformModalWindow;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +31,7 @@ public class MainController extends BaseController<MainModel, MainView> {
         super(model, view, model, view);
 
         fileMenu = new Menu("File");
-        aboutMenu = new Menu("About");
+        aboutMenu = new Menu("Help");
         view.addMenu(fileMenu);
         view.addMenu(aboutMenu);
 
@@ -69,7 +71,28 @@ public class MainController extends BaseController<MainModel, MainView> {
     }
     
     private void initAboutMenu() {
-        aboutMenu.getItems().add(new MenuItem("Info"));
+        var aboutMenuItem = new MenuItem("About");
+        aboutMenuItem.setOnAction((ActionEvent tt) -> {
+            if(tt.getSource().equals(aboutMenuItem)){
+                var content = new StringBuilder();
+                content.append(String.format("The UML2SPNP application allows you to create a general %n"
+                                           + "system representation in UML diagrams and transform %n"
+                                           + "it into CSPL code for further analysis in the SPNP tool.%n%n"));
+                content.append(String.format("The program was developed as a part of my master's thesis. %n%n"));
+                var version = getClass().getPackage().getImplementationVersion();
+                if(version != null)
+                    content.append(String.format("Version: %s%n", version));
+                content.append(String.format("Java SE version: %s%n", SystemInfo.javaVersion()));
+                content.append(String.format("JavaFX version: %s%n%n", SystemInfo.javafxVersion()));
+                content.append(String.format("License: The 3-Clause BSD License%n"));
+                content.append(String.format("©2021 Ondrej Marek%n"));
+                var aboutWindow = new AboutModalWindow(view.getAppStage(),
+                                                       "About",
+                                                       content.toString());
+                aboutWindow.showAndWait();
+            }
+        });
+        aboutMenu.getItems().add(aboutMenuItem);
     }
     
     private void initSimulationOptions(TransformModalWindow transformWindow) {
