@@ -112,10 +112,10 @@ public class DebugPrintSegment extends Segment {
         comm_s.forEach(cs -> {
             var commString = new StringBuilder();
             var conditionString = new StringBuilder();
-            conditionString.append(String.format("if(enabled(\"%s\") || enabled(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\")",
+            conditionString.append(String.format("if(enabled(\"%s\") || enabled(\"%s\") || mark(\"%s\") || mark(\"%s\") || mark(\"%s\")",
                                                 cs.getInitialTransition().getName(), cs.getFlushTransition().getName(),
                                                 cs.getStartPlace().getName(), cs.getEndPlace().getName(),
-                                                cs.getFailHWFirstPlace().getName(), cs.getFailHWSecondPlace().getName()));
+                                                cs.getFailHWPlace().getName()));
             
             var linkTypeName = cs.getCommunicationLink().getLinkType().nameProperty().getValue();
             guardBody.append(String.format("%n/* COMMUNICATION SEGMENT of \"%s\" */%n", linkTypeName));
@@ -131,8 +131,7 @@ public class DebugPrintSegment extends Segment {
                 marks.append(String.format(", mark(\"%s\")", pl.getName()));
                 conditionString.append(String.format(" || mark(\"%s\")", pl.getName()));
             }
-            commString.append(String.format("                    [tr_hw_fail_st %%d] -> (pl_hw_fail_st %%d)%n"));
-            commString.append(String.format("                    [tr_hw_fail_nd %%d] -> (pl_hw_fail_nd %%d)"));
+            commString.append(String.format("                    [tr_hw_fail %%d] -> (pl_hw_fail %%d)"));
             commString.append(String.format("\\n\""));
             
             commString.append(String.format(", enabled(\"%s\")", cs.getInitialTransition().getName()));
@@ -141,12 +140,9 @@ public class DebugPrintSegment extends Segment {
             commString.append(String.format(", enabled(\"%s\")", cs.getEndTransition().getName()));
             commString.append(String.format(", mark(\"%s\")", cs.getEndPlace().getName()));
             commString.append(marks.toString());
-            
-            commString.append(String.format(", enabled(\"%s\")", cs.getFailHWFirstTransition().getName()));
-            commString.append(String.format(", mark(\"%s\")", cs.getFailHWFirstPlace().getName()));
-            
-            commString.append(String.format(", enabled(\"%s\")", cs.getFailHWSecondTransition().getName()));
-            commString.append(String.format(", mark(\"%s\")", cs.getFailHWSecondPlace().getName()));
+
+            commString.append(String.format(", enabled(\"%s\")", cs.getFailHWTransition().getName()));
+            commString.append(String.format(", mark(\"%s\")", cs.getFailHWPlace().getName()));
             
             commString.append(String.format(");%n"));
             
