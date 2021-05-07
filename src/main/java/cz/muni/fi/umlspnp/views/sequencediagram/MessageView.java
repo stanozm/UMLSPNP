@@ -167,6 +167,9 @@ public class MessageView extends ConnectionView implements AnnotationOwner{
             annotationsDisplayed = value;
 
             executionTimeAnnotation.setDisplayed(value);
+            messageSizeAnnotation.setDisplayed(value);
+            operationTypeAnnotation.setDisplayed(value);
+            failureTypesAnnotation.setDisplayed(value);
         }
     }
 
