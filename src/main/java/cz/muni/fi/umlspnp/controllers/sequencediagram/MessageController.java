@@ -39,6 +39,13 @@ public class MessageController extends BaseController<Message, MessageView>{
         messageInit();
         messageMenuInit();
         messageAnnotationsInit();
+        
+        model.nameProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue ov, Object t, Object t1) {
+                messageMenuInit();
+            }
+        });
     }
 
     private void messageInit(){
@@ -78,6 +85,7 @@ public class MessageController extends BaseController<Message, MessageView>{
     }
     
     private void messageMenuInit(){
+        view.clearMenuItems();
         var sequenceDiagram = this.mainModel.getSequenceDiagram();
         var messageObjectID = view.getObjectInfo().getID();
         

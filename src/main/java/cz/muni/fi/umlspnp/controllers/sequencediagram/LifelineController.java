@@ -64,6 +64,7 @@ public class LifelineController extends BaseController<Lifeline, LifelineView>{
     }
     
     private void lifelineMenuInit(){
+        view.clearMenuItems();
         var sequenceDiagram = mainModel.getSequenceDiagram();
         var lifelineObjectID = view.getObjectInfo().getID();
         

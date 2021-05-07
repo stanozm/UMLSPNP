@@ -6,6 +6,8 @@ import cz.muni.fi.umlspnp.models.MainModel;
 import cz.muni.fi.umlspnp.models.sequencediagram.Activation;
 import cz.muni.fi.umlspnp.views.MainView;
 import cz.muni.fi.umlspnp.views.sequencediagram.ActivationView;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 
 /**
  *  Controller which handles all functionalities within the activation
@@ -22,6 +24,13 @@ public class ActivationController extends BaseController<Activation, ActivationV
 
         activationInit();
         activationMenuInit();
+        
+        model.getLifeline().nameProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue ov, Object t, Object t1) {
+                activationMenuInit();
+            }
+        });
     }
 
     private void activationInit() {
@@ -55,6 +64,7 @@ public class ActivationController extends BaseController<Activation, ActivationV
     }
 
     private void activationMenuInit(){
+        view.clearMenuItems();
         var sequenceDiagram = mainModel.getSequenceDiagram();
         var sequenceDiagramView = mainView.getSequenceDiagramView();
         var activationObjectID = view.getObjectInfo().getID();

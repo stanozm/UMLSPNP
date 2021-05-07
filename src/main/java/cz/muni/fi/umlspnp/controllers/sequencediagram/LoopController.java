@@ -25,6 +25,7 @@ public class LoopController extends BaseController<Loop, LoopView>{
     }
 
     private void loopMenuInit(){
+        view.clearMenuItems();
         var sequence = this.mainModel.getSequenceDiagram();
         var loopObjectID = model.getObjectInfo().getID();
 

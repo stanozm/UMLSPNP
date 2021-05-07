@@ -25,6 +25,7 @@ public class ArtifactController extends BaseController<Artifact, ArtifactView>{
     }
 
     private void artifactMenuInit(){
+        view.clearMenuItems();
         var deploymentDiagram = mainModel.getDeploymentDiagram();
 
         var deletePromptText = String.format("The artifact \"%s\" will be deleted. Proceed?",

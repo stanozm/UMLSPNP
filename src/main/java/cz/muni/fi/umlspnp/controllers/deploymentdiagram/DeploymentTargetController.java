@@ -43,6 +43,13 @@ public class DeploymentTargetController extends BaseController<DeploymentTarget,
         redundancyGroupInit();
         deploymentTargetMenuInit();
         deploymentTargetAnnotationsInit();
+        
+        model.getNameProperty().addListener(new ChangeListener(){
+            @Override
+            public void changed(ObservableValue ov, Object t, Object t1) {
+                deploymentTargetMenuInit();
+            }
+        });
     }
     
     private void redundancyGroupInit() {
@@ -61,7 +68,8 @@ public class DeploymentTargetController extends BaseController<DeploymentTarget,
         });
     }
     
-    private void deploymentTargetMenuInit(){
+    public final void deploymentTargetMenuInit(){
+        view.clearMenuItems();
         var deploymentDiagram = mainModel.getDeploymentDiagram();
         var deploymentDiagramView = mainView.getDeploymentDiagramView();
         var deploymentTargetObjectID = model.getObjectInfo().getID();

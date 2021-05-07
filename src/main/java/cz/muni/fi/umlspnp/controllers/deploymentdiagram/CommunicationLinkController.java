@@ -38,6 +38,7 @@ public class CommunicationLinkController extends BaseController<CommunicationLin
     }
 
     private void communicationLinkMenuInit(){
+        view.clearMenuItems();
         var deploymentDiagram = this.mainModel.getDeploymentDiagram();
         var communicationLinkObjectID = model.getObjectInfo().getID();
 
@@ -52,7 +53,7 @@ public class CommunicationLinkController extends BaseController<CommunicationLin
         ArrayList<EditableListView> sections = new ArrayList<>();
         sections.add(linkTypesView);
         sections.add(failuresView);
-        var propertiesWindowName = String.format("\"%s\" properties", model.getLinkType().nameProperty().getValue());
+        var propertiesWindowName = String.format("Communication link properties");
         view.createPropertiesMenu(propertiesWindowName, sections);
     }
 

@@ -149,6 +149,10 @@ public abstract class BasicElement extends Group{
         });
         addMenuItem(menuProperties);
     }
+    
+    public void clearMenuItems() {
+        contextMenu.getItems().clear();
+    }
 
     public void showAlert(String windowName, String title, String text) {
         var alert = Utils.createAlertDialog(windowName, title, text);
