@@ -25,6 +25,7 @@ public class TransformModalWindow extends ModalWindow {
     private final Button transformButton;
     private final Button closeButton;
     
+    private final CheckBox generateCommentsCheckBox;
     private final CheckBox debugInfoCheckBox;
     private final CheckBox debugPrintCheckBox;
     
@@ -50,6 +51,9 @@ public class TransformModalWindow extends ModalWindow {
 
         debugInfoCheckBox = new CheckBox("Print debug info to stderr");
         debugInfoCheckBox.setSelected(true);
+        
+        generateCommentsCheckBox = new CheckBox("Generate comments for net elements");
+        generateCommentsCheckBox.setSelected(true);
 
         debugPrintCheckBox = new CheckBox("Generate debug print segment");
         
@@ -90,18 +94,19 @@ public class TransformModalWindow extends ModalWindow {
         rootGrid.setVgap(10);
         
         rootGrid.add(generalLabel, 0, 0);
-        rootGrid.add(debugInfoCheckBox, 0, 1, 2, 1);
-        rootGrid.add(debugPrintCheckBox, 0, 2, 2, 1);
-        rootGrid.add(solutionLabel, 0, 3);
-        rootGrid.add(simulationRadio, 0, 4);
-        rootGrid.add(numericRadio, 1, 4);
+        rootGrid.add(generateCommentsCheckBox, 0, 1, 2, 1);
+        rootGrid.add(debugInfoCheckBox, 0, 2, 2, 1);
+        rootGrid.add(debugPrintCheckBox, 0, 3, 2, 1);
+        rootGrid.add(solutionLabel, 0, 4);
+        rootGrid.add(simulationRadio, 0, 5);
+        rootGrid.add(numericRadio, 1, 5);
         
-        rootGrid.add(simulationGroup, 0, 5, 2, 1);
-        rootGrid.add(numericGroup, 0, 5, 2, 1);
+        rootGrid.add(simulationGroup, 0, 6, 2, 1);
+        rootGrid.add(numericGroup, 0, 6, 2, 1);
         numericGroup.setVisible(false);
         
-        rootGrid.add(transformButton, 0, 6);
-        rootGrid.add(closeButton, 1, 6);
+        rootGrid.add(transformButton, 0, 7);
+        rootGrid.add(closeButton, 1, 7);
     }
     
     public GridPane getSimulationGroup() {
@@ -118,6 +123,10 @@ public class TransformModalWindow extends ModalWindow {
 
     public boolean getGenerateDebugPrintSegmentSelected() {
         return debugPrintCheckBox.isSelected();
+    }
+
+    public boolean getGenerateComments() {
+        return generateCommentsCheckBox.isSelected();
     }
     
     public void addConstantInputItem(String labelText, Collection<String> stringItems, int selectedIndex, boolean isSimulation) {

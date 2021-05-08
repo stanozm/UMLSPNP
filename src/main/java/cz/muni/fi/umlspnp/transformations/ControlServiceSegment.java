@@ -20,6 +20,7 @@ import javafx.util.Pair;
  *
  */
 public class ControlServiceSegment extends Segment {
+    private final String commentPrefix;
     private final List<PhysicalSegment> physicalSegments;
     private final List<CommunicationSegment> communicationSegments;
     private final Collection<Loop> loops;
@@ -34,16 +35,19 @@ public class ControlServiceSegment extends Segment {
     private final List<LoopSegment> loopSegments = new ArrayList<>();
 
     public ControlServiceSegment(PetriNet petriNet,
+                            boolean generateComments,
                             List<PhysicalSegment> physicalSegments,
                             List<CommunicationSegment> communicationSegments,
                             Collection<Loop> loops,
                             ServiceCallTreeNode treeRoot) {
-        super(petriNet);
+        super(petriNet, generateComments);
 
         this.physicalSegments = physicalSegments;
         this.communicationSegments = communicationSegments;
         this.loops = loops;
         this.treeRoot = treeRoot;
+        
+        this.commentPrefix = "Control segment";
     }
 
     public List<ServiceCall> getControlServiceCalls(Message message) {
@@ -70,7 +74,7 @@ public class ControlServiceSegment extends Segment {
     }
 
     public ActionServiceSegment transformExecutionServiceSegment(ServiceCall serviceCall, ServiceCallTreeNode serviceCallNode) {
-        var executionServiceSegment = new ServiceLeafSegment(petriNet, physicalSegments, serviceCallNode, serviceCall);
+        var executionServiceSegment = new ServiceLeafSegment(petriNet, generateComments, physicalSegments, serviceCallNode, serviceCall);
         executionServiceSegment.transform();
         return executionServiceSegment;
     }
@@ -88,12 +92,21 @@ public class ControlServiceSegment extends Segment {
         var artifact = serviceCallNode.getArtifact();
         var message = serviceCallNode.getMessage();
         String prefix = "C_";
-        if(isExecutionCall)
+        String controlCommentType = "communication segment";
+        if(isExecutionCall) {
             prefix = "L_";
+            controlCommentType = "execution segment";
+        }
         var messageName = prefix + message.nameProperty().getValue();
 
         var serviceCallPlaceName = SPNPUtils.createPlaceName(messageName, artifact.getNameProperty().getValue());
         var serviceCallPlace = new StandardPlace(SPNPUtils.placeCounter++, serviceCallPlaceName);
+        if(generateComments) {
+            serviceCallPlace.setCommentary(String.format("%s - Control place of %s (\"%s\")",
+                                                            commentPrefix,
+                                                            controlCommentType,
+                                                            serviceCallNode.getMessage().nameProperty().getValue()));
+        }
         petriNet.addPlace(serviceCallPlace);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, serviceCallPlace, getPreviousTransition());
@@ -110,6 +123,12 @@ public class ControlServiceSegment extends Segment {
         var serviceCallTransitionName = SPNPUtils.createTransitionName(messageName);
         var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName,
                                     SPNPUtils.TR_PRIORTY_DEFAULT, null, new ConstantTransitionProbability(1.0));
+        if(generateComments) {
+            serviceCallTransition.setCommentary(String.format("%s - Control transition of %s (\"%s\")",
+                                                            commentPrefix,
+                                                            controlCommentType,
+                                                            serviceCallNode.getMessage().nameProperty().getValue()));
+        }
         petriNet.addTransition(serviceCallTransition);
         
         // Arc from the execution/communication segment end place to the control segment transition
@@ -156,12 +175,16 @@ public class ControlServiceSegment extends Segment {
     private void transformStart() {
         var initialPlaceName = SPNPUtils.createPlaceName("control", "start");
         initialPlace = new StandardPlace(SPNPUtils.placeCounter++, initialPlaceName);
+        if(generateComments)
+            initialPlace.setCommentary(String.format("%s - Control start place", commentPrefix));
         initialPlace.setNumberOfTokens(1);
         petriNet.addPlace(initialPlace);
 
         var initTransitionName = SPNPUtils.createTransitionName("control", "start");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initTransitionName,
                             SPNPUtils.TR_PRIORTY_DEFAULT, null, new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            initialTransition.setCommentary(String.format("%s - Control start transition", commentPrefix));
         petriNet.addTransition(initialTransition);
         
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, initialPlace, initialTransition);
@@ -171,6 +194,8 @@ public class ControlServiceSegment extends Segment {
     private void transformEnd() {
         var endPlaceName = SPNPUtils.createPlaceName("control", "end");
         endPlace = new StandardPlace(SPNPUtils.placeCounter++, endPlaceName);
+        if(generateComments)
+            endPlace.setCommentary(String.format("%s - Control end place", commentPrefix));
         petriNet.addPlace(endPlace);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, endPlace, getPreviousTransition());
@@ -216,7 +241,7 @@ public class ControlServiceSegment extends Segment {
         if(!validateLoop(highestServiceCallNodes))
             return;
 
-        var loopSegment = new LoopSegment(petriNet, this, highestServiceCallNodes.get(0), loop);
+        var loopSegment = new LoopSegment(petriNet, generateComments, this, highestServiceCallNodes.get(0), loop);
         loopSegment.transform();
         loopSegments.add(loopSegment);
     }

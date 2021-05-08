@@ -144,7 +144,7 @@ public class DefaultTransformator implements Transformator{
      * Several segments are transformed in phases because they depend on 
      * some other segment which needs to be transformed first
      */
-    public void transform() {
+    public void transform(boolean generateComments) {
         SPNPUtils.resetCounters();
         
         var treeRoot = serviceCallTree.getRoot();
@@ -159,7 +159,7 @@ public class DefaultTransformator implements Transformator{
         var elements = deploymentDiagram.getElementContainer();
         elements.getNodes().values().forEach(node -> {
             if(node instanceof DeploymentTarget) {
-                var physicalSegment = new PhysicalSegment(petriNet, (DeploymentTarget) node);
+                var physicalSegment = new PhysicalSegment(petriNet, generateComments, (DeploymentTarget) node);
                 physicalSegment.transform();
                 physicalSegments.add(physicalSegment);
             }
@@ -167,7 +167,7 @@ public class DefaultTransformator implements Transformator{
 
         // Communication segments
         deploymentDiagram.getCommunicationLinks().forEach(communicationLink -> {
-            var communicationSegment = new CommunicationSegment(petriNet, treeRoot, communicationLink);
+            var communicationSegment = new CommunicationSegment(petriNet, generateComments, treeRoot, communicationLink);
             communicationSegment.transform();
             communicationSegment.transformPhysicalSegmentDependencies(physicalSegments);
             communicationSegments.add(communicationSegment);
@@ -175,7 +175,7 @@ public class DefaultTransformator implements Transformator{
 
         // Control service segment
         var loops = sequenceDiagram.getLoops();
-        controlServiceSegment = new ControlServiceSegment(petriNet, physicalSegments, communicationSegments, loops, treeRoot);
+        controlServiceSegment = new ControlServiceSegment(petriNet, generateComments, physicalSegments, communicationSegments, loops, treeRoot);
         controlServiceSegment.transform();
 
         // Physical segment dependency transformations

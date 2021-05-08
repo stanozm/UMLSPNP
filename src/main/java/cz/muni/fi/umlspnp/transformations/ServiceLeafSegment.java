@@ -28,6 +28,7 @@ import javafx.util.Pair;
  *
  */
 public class ServiceLeafSegment extends Segment implements ActionServiceSegment {
+    private final String commentPrefix;
     private final List<PhysicalSegment> physicalSegments;
     private final ServiceCallTreeNode serviceCallNode;
     private final ServiceCall serviceCall;
@@ -47,14 +48,17 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
 
     
     public ServiceLeafSegment(PetriNet petriNet,
+                              boolean generateComments,
                               List<PhysicalSegment> physicalSegments,
                               ServiceCallTreeNode serviceCallNode,
                               ServiceCall serviceCall) {
-        super(petriNet);
+        super(petriNet, generateComments);
         
         this.physicalSegments = physicalSegments;
         this.serviceCallNode = serviceCallNode;
         this.serviceCall = serviceCall;
+        
+        this.commentPrefix = String.format("Execution service segment [\"%s\"]", serviceCall.getMessage().nameProperty().getValue());
     }
     
     public StandardPlace getStartPlace() {
@@ -107,6 +111,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
                                                     SPNPUtils.TR_PRIORTY_DEFAULT,
                                                     null,
                                                     new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            initialTransition.setCommentary(String.format("%s - Initial transition", commentPrefix));
         petriNet.addTransition(initialTransition);
     }
     
@@ -132,6 +138,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     private void transformStartPlace(String messageName) {
         var startPlaceName = SPNPUtils.createPlaceName(messageName, "start");
         startPlace = new StandardPlace(SPNPUtils.placeCounter++, startPlaceName);
+        if(generateComments)
+            startPlace.setCommentary(String.format("%s - Start place", commentPrefix));
         petriNet.addPlace(startPlace);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, startPlace, initialTransition);
@@ -145,6 +153,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
                                                   SPNPUtils.TR_PRIORTY_ACTION_FLUSH,
                                                   null,
                                                   new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            flushTransition.setCommentary(String.format("%s - Flush transition", commentPrefix));
         petriNet.addTransition(flushTransition);
     }
 
@@ -229,12 +239,16 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     private void transformEnd(String messageName) {
         var endPlaceName = SPNPUtils.createPlaceName(messageName, "end");
         endPlace = new StandardPlace(SPNPUtils.placeCounter++, endPlaceName);
+        if(generateComments)
+            endPlace.setCommentary(String.format("%s - End place", commentPrefix));
         petriNet.addPlace(endPlace);
 
         var endTransitionName = SPNPUtils.createTransitionName(messageName, "end");
         var distributionFunction = createEndRateDistributionFunction(messageName);
         var distribution = new ExponentialTransitionDistribution(distributionFunction);
         endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName, SPNPUtils.TR_PRIORTY_DEFAULT, null, distribution);
+        if(generateComments)
+            endTransition.setCommentary(String.format("%s - End transition", commentPrefix));
         petriNet.addTransition(endTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, endTransition);
@@ -355,6 +369,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     private void transformFailHW(String messageName) {
         var failHWPlaceName = SPNPUtils.createPlaceName(messageName, "HW_fail");
         failHWPlace = new StandardPlace(SPNPUtils.placeCounter++, failHWPlaceName);
+        if(generateComments)
+            failHWPlace.setCommentary(String.format("%s - Hardware failure place", commentPrefix));
         petriNet.addPlace(failHWPlace);
 
         var failHWTransitionName = SPNPUtils.createTransitionName(messageName, "HW_fail");
@@ -363,6 +379,8 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
                                                    SPNPUtils.TR_PRIORTY_DEFAULT, 
                                                    createHWFailGuard(messageName),
                                                    new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            failHWTransition.setCommentary(String.format("%s - Hardware failure transition", commentPrefix));
         petriNet.addTransition(failHWTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failHWTransition);
@@ -381,11 +399,15 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
     private void transformFailType(String messageName, String failureName, double failureRate, boolean causeHWfailure) {
         var failTypePlaceName = SPNPUtils.createPlaceName(messageName, "FT_" + failureName);
         var failTypePlace = new StandardPlace(SPNPUtils.placeCounter++, failTypePlaceName);
+        if(generateComments)
+            failTypePlace.setCommentary(String.format("%s - Failure place (\"%s\")", commentPrefix, failureName));
         petriNet.addPlace(failTypePlace);
 
         var failTypeTransitionName = SPNPUtils.createTransitionName(messageName, "FT_" + failureName);
         var distribution = new ExponentialTransitionDistribution(failureRate);
         var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName, SPNPUtils.TR_PRIORTY_DEFAULT, null, distribution);
+        if(generateComments)
+            failTypeTransition.setCommentary(String.format("%s - Failure transition (\"%s\")", commentPrefix, failureName));
         petriNet.addTransition(failTypeTransition);
 
         failTypes.put(failTypeTransition, new Pair(failTypePlace, causeHWfailure));

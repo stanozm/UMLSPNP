@@ -27,7 +27,7 @@ public class DebugPrintSegment extends Segment {
                              ControlServiceSegment controlServiceSegment,
                              List<PhysicalSegment> physicalSegments,
                              List<CommunicationSegment> communicationSegments) {
-        super(petriNet);
+        super(petriNet, true);
         
         this.controlServiceSegment = controlServiceSegment;
         this.physicalSegments = physicalSegments;

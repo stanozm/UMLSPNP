@@ -9,8 +9,10 @@ import cz.muni.fi.spnp.core.models.PetriNet;
  */
 public abstract class Segment {
     protected final PetriNet petriNet;
+    protected final boolean generateComments;
     
-    public Segment(PetriNet petriNet) {
+    public Segment(PetriNet petriNet, boolean generateComments) {
         this.petriNet = petriNet;
+        this.generateComments = generateComments;
     }
 }

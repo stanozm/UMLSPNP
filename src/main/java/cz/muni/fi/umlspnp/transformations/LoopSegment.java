@@ -22,6 +22,7 @@ import java.util.List;
  *
  */
 public class LoopSegment extends Segment{
+    private final String commentPrefix;
     private final ControlServiceSegment controlServiceSegment;
     private final ServiceCallTreeNode highestTreeNode;
     private final Loop loop;
@@ -34,12 +35,18 @@ public class LoopSegment extends Segment{
     private Transition restartTransition = null;
     private StandardPlace repeatsPlace = null;
     
-    public LoopSegment(PetriNet petriNet, ControlServiceSegment controlServiceSegment, ServiceCallTreeNode treeNode, Loop loop) {
-        super(petriNet);
+    public LoopSegment( PetriNet petriNet,
+                        boolean generateComments,
+                        ControlServiceSegment controlServiceSegment,
+                        ServiceCallTreeNode treeNode,
+                        Loop loop) {
+        super(petriNet, generateComments);
         
         this.controlServiceSegment = controlServiceSegment;
         this.highestTreeNode = treeNode;
         this.loop = loop;
+        
+        this.commentPrefix = String.format("Loop segment [iterations: %d rate: %.4f]", loop.getIterations(), loop.getRestartRate());
     }
 
     private void resolveControlServiceCalls(ServiceCallTreeNode serviceCallNode) {
@@ -107,6 +114,8 @@ public class LoopSegment extends Segment{
     
         flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
                               SPNPUtils.TR_PRIORTY_LOOP_FLUSH, createFlushTransitionGuard(), new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            flushTransition.setCommentary(String.format("%s - Flush transition", commentPrefix));
         petriNet.addTransition(flushTransition);
         
         controlServiceCalls.forEach(serviceCall -> {
@@ -123,6 +132,8 @@ public class LoopSegment extends Segment{
     private void transformFlushPlace() {
         var flushPlaceName = SPNPUtils.createPlaceName("loop", "flush");
         flushPlace = new StandardPlace(SPNPUtils.placeCounter++, flushPlaceName);
+        if(generateComments)
+            flushPlace.setCommentary(String.format("%s - Flush place", commentPrefix));
         petriNet.addPlace(flushPlace);
         
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, flushPlace, flushTransition);
@@ -141,6 +152,8 @@ public class LoopSegment extends Segment{
             restartTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, restartTransitionName,
                                 SPNPUtils.TR_PRIORTY_LOOP_RESTART, null, new ConstantTransitionProbability(1.0));
         }
+        if(generateComments)
+            restartTransition.setCommentary(String.format("%s - Restart transition", commentPrefix));
         petriNet.addTransition(restartTransition);
 
         var flushInputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, flushPlace, restartTransition);
@@ -153,6 +166,8 @@ public class LoopSegment extends Segment{
     private void transformRepeatsPlace() {
         var repeatsPlaceName = SPNPUtils.createPlaceName("loop", "repeats");
         repeatsPlace = new StandardPlace(SPNPUtils.placeCounter++, repeatsPlaceName);
+        if(generateComments)
+            repeatsPlace.setCommentary(String.format("%s - Repeats place", commentPrefix));
         petriNet.addPlace(repeatsPlace);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, repeatsPlace, restartTransition);

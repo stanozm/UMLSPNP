@@ -23,16 +23,20 @@ import java.util.Map;
  *
  */
 public class PhysicalSegment extends Segment {
+    private final String commentPrefix;
     protected final DeploymentTarget node;
     protected Map<State, StandardPlace> statePlaces = new HashMap<>();
     
     protected Map<StateTransition, TimedTransition> stateTransitions = new HashMap<>();
     protected Map<State, ImmediateTransition> parentFailTransitions = new HashMap<>();
 
-    public PhysicalSegment(PetriNet petriNet, DeploymentTarget node) {
-        super(petriNet);
+    public PhysicalSegment( PetriNet petriNet,
+                            boolean generateComments,
+                            DeploymentTarget node) {
+        super(petriNet, generateComments);
         
         this.node = node;
+        this.commentPrefix = String.format("Physical segment \"%s\"", node.getNameProperty().getValue());
     }
     
     public DeploymentTarget getNode() {
@@ -64,6 +68,8 @@ public class PhysicalSegment extends Segment {
     private void transformState(String nodeName, State state) {
         var statePlaceName = SPNPUtils.createPlaceName(nodeName, state.nameProperty().getValue());
         var statePlace = new StandardPlace(SPNPUtils.placeCounter++, statePlaceName);
+        if(generateComments)
+            statePlace.setCommentary(String.format("%s - State \"%s\" place", commentPrefix, state.nameProperty().getValue()));
         if(state.isDefaultProperty().getValue())
             statePlace.setNumberOfTokens(1);
         petriNet.addPlace(statePlace);
@@ -74,6 +80,11 @@ public class PhysicalSegment extends Segment {
         var transitionName = SPNPUtils.createTransitionName(nodeName, transition.nameProperty().getValue());
         var rate = transition.rateProperty().getValue();
         var stateTransition = new TimedTransition(SPNPUtils.transitionCounter++, transitionName, new ExponentialTransitionDistribution(rate));
+        if(generateComments){
+            var nameFrom = transition.getStateFrom().nameProperty().getValue();
+            var nameTo = transition.getStateTo().nameProperty().getValue();
+            stateTransition.setCommentary(String.format("%s - State transition [\"%s\" -> \"%s\"] ", commentPrefix, nameFrom, nameTo));
+        }
         petriNet.addTransition(stateTransition);
 
         var stateFrom = transition.getStateFrom();
@@ -111,6 +122,8 @@ public class PhysicalSegment extends Segment {
         var transitionName = SPNPUtils.createTransitionName(nodeName, "parent");
         var parentFailTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, transitionName,
                                    SPNPUtils.TR_PRIORTY_STRUCTURE, guard, new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            parentFailTransition.setCommentary(String.format("%s - State to down transition [state \"%s\"]", commentPrefix, state.nameProperty().getValue()));
         petriNet.addTransition(parentFailTransition);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, downStatePlace, parentFailTransition);

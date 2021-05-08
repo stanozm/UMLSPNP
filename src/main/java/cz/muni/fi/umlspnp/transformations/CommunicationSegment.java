@@ -17,13 +17,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javafx.util.Pair;
 
 /**
  *  Communication segment of the net which is modeled once for each communication link.
  *
  */
 public class CommunicationSegment extends Segment implements ActionServiceSegment {
+    private final String commentPrefix;
     protected ControlServiceSegment controlServiceSegment = null;
     protected List<PhysicalSegment> physicalSegments = null;
 
@@ -47,12 +47,17 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     protected List<StandardPlace> flushDependentPlaces = new ArrayList<>();
 
     public CommunicationSegment(PetriNet petriNet,
+                                boolean generateComments,
                                 ServiceCallTreeNode treeRoot,
                                 CommunicationLink communicationLink) {
-        super(petriNet);
+        super(petriNet, generateComments);
 
         this.treeRoot = treeRoot;
         this.communicationLink = communicationLink;
+        var linkName = communicationLink.getLinkType().nameProperty().getValue();
+        var firstNodeName = communicationLink.getFirst().getNameProperty().getValue();
+        var secondNodeName = communicationLink.getSecond().getNameProperty().getValue();
+        this.commentPrefix = String.format("Communication segment \"%s\" [%s - %s]", linkName, firstNodeName, secondNodeName);
     }
     
     public CommunicationLink getCommunicationLink() {
@@ -118,6 +123,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         var initialTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comStart");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName,
                             SPNPUtils.TR_PRIORTY_DEFAULT, null, new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            initialTransition.setCommentary(String.format("%s - Initial transition", commentPrefix));
         petriNet.addTransition(initialTransition);
     }
 
@@ -155,6 +162,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     private void transformStartPlace(String communicationLinkName) {
         var startPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "trStart");
         startPlace = new StandardPlace(SPNPUtils.placeCounter++, startPlaceName);
+        if(generateComments)
+            startPlace.setCommentary(String.format("%s - Start place", commentPrefix));
         petriNet.addPlace(startPlace);
 
         var outputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Output, startPlace, initialTransition);
@@ -165,6 +174,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         var flushTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comFlush");
         flushTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, flushTransitionName,
                             SPNPUtils.TR_PRIORTY_ACTION_FLUSH, null, new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            flushTransition.setCommentary(String.format("%s - Flush transition", commentPrefix));
         petriNet.addTransition(flushTransition);
     }
 
@@ -210,6 +221,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     private void transformFailHW(DeploymentTarget targetNodeFirst, DeploymentTarget targetNodeSecond, String communicationLinkName) {
         String failHWPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "HWf");
         failHWPlace = new StandardPlace(SPNPUtils.placeCounter++, failHWPlaceName);
+        if(generateComments)
+            failHWPlace.setCommentary(String.format("%s - Hardware failure place", commentPrefix));
         petriNet.addPlace(failHWPlace);
 
         String guardNameFormatString = "guard_%s_HW_fail";
@@ -222,6 +235,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         String failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HWf");
         failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName,
                                 SPNPUtils.TR_PRIORTY_DEFAULT, guard, new ConstantTransitionProbability(1.0));
+        if(generateComments)
+            failHWTransition.setCommentary(String.format("%s - Hardware failure transition", commentPrefix));
         petriNet.addTransition(failHWTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, failHWTransition);
@@ -268,6 +283,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     private void transformEndPlace(String communicationLinkName) {
         var endPlaceName = SPNPUtils.createPlaceName(communicationLinkName, "trEnd");
         endPlace = new StandardPlace(SPNPUtils.placeCounter++, endPlaceName);
+        if(generateComments)
+            endPlace.setCommentary(String.format("%s - End place", commentPrefix));
         petriNet.addPlace(endPlace);
     }
     
@@ -277,6 +294,8 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
         var distribution = new ExponentialTransitionDistribution(createDistributionFunction(communicationLinkName));
         endTransition = new TimedTransition(SPNPUtils.transitionCounter++, endTransitionName,
                         SPNPUtils.TR_PRIORTY_DEFAULT, null, distribution);
+        if(generateComments)
+            endTransition.setCommentary(String.format("%s - End transition", commentPrefix));
         petriNet.addTransition(endTransition);
 
         var inputArc = new StandardArc(SPNPUtils.arcCounter++, ArcDirection.Input, startPlace, endTransition);
@@ -295,12 +314,16 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     private void transformFailType(String failTypeName, double failTypeRate) {
         var failTypePlaceName = SPNPUtils.createPlaceName(failTypeName, "trFail");
         var failTypePlace = new StandardPlace(SPNPUtils.placeCounter++, failTypePlaceName);
+        if(generateComments)
+            failTypePlace.setCommentary(String.format("%s - Failure place (\"%s\")", commentPrefix, failTypeName));
         petriNet.addPlace(failTypePlace);
 
         var failTypeTransitionName = SPNPUtils.createTransitionName(failTypeName, "trFail");       
         var distribution = new ExponentialTransitionDistribution(failTypeRate);
         var failTypeTransition = new TimedTransition(SPNPUtils.transitionCounter++, failTypeTransitionName,
                                     SPNPUtils.TR_PRIORTY_DEFAULT, null, distribution);
+        if(generateComments)
+            failTypeTransition.setCommentary(String.format("%s - Failure transition (\"%s\")", commentPrefix, failTypeName));
         petriNet.addTransition(failTypeTransition);
 
         failTypes.put(failTypeTransition, failTypePlace);

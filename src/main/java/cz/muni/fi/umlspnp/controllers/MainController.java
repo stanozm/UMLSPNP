@@ -47,7 +47,7 @@ public class MainController extends BaseController<MainModel, MainView> {
             var transformator = new DefaultTransformator(model);
 
             createOptions(transformator, transformWindow);
-            transformator.transform();
+            transformator.transform(transformWindow.getGenerateComments());
             
             if(transformWindow.getDebugInfoSelected())
                 transformator.printDebugInfo();
