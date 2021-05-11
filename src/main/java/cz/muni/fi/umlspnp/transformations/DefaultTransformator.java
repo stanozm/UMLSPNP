@@ -57,7 +57,7 @@ public class DefaultTransformator implements Transformator{
         var spnpCode = new SPNPCode();
         spnpCode.addInclude(new Include("\"user.h\""));
         
-        var acFinalBody = String.format("solve(INFINITY);%nprint_qcol();%nprint_rgraph();%nprint_qrow();%npr_mc_info();%npr_std_average();");
+        var acFinalBody = String.format("solve(INFINITY);%nsolve(100);%nprint_qcol();%nprint_rgraph();%nprint_qrow();%npr_mc_info();%npr_std_average();");
         var acFinalFunction = new FunctionSPNP<>("ac_final", FunctionType.Other, acFinalBody, Void.class);
         spnpCode.setAcFinalFunction(acFinalFunction);
         
