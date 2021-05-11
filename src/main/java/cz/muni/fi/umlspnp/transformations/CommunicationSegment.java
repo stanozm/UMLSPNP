@@ -122,7 +122,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
     private void transformInitialTransition(String communicationLinkName) {
         var initialTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "comStart");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initialTransitionName,
-                            SPNPUtils.TR_PRIORTY_DEFAULT, null, new ConstantTransitionProbability(1.0));
+                            SPNPUtils.TR_PRIORTY_DEFAULT_IMMEDIATE, null, new ConstantTransitionProbability(1.0));
         if(generateComments)
             initialTransition.setCommentary(String.format("%s - Initial transition", commentPrefix));
         petriNet.addTransition(initialTransition);
@@ -234,7 +234,7 @@ public class CommunicationSegment extends Segment implements ActionServiceSegmen
 
         String failHWTransitionName = SPNPUtils.createTransitionName(communicationLinkName, "HWf");
         failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, failHWTransitionName,
-                                SPNPUtils.TR_PRIORTY_DEFAULT, guard, new ConstantTransitionProbability(1.0));
+                                SPNPUtils.TR_PRIORTY_DEFAULT_IMMEDIATE, guard, new ConstantTransitionProbability(1.0));
         if(generateComments)
             failHWTransition.setCommentary(String.format("%s - Hardware failure transition", commentPrefix));
         petriNet.addTransition(failHWTransition);

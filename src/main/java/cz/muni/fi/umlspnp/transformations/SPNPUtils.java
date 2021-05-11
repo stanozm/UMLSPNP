@@ -23,6 +23,7 @@ public class SPNPUtils {
     public static int functionCounter = 0;
 
     public static int TR_PRIORTY_DEFAULT = 0;
+    public static int TR_PRIORTY_DEFAULT_IMMEDIATE = 1;
     public static int TR_PRIORTY_STRUCTURE = 30;
     public static int TR_PRIORTY_LOOP_FLUSH = 20;
     public static int TR_PRIORTY_ACTION_FLUSH = 10;

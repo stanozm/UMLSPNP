@@ -108,7 +108,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var initialTransitionName = SPNPUtils.createTransitionName(messageName, "start");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++,
                                                     initialTransitionName,
-                                                    SPNPUtils.TR_PRIORTY_DEFAULT,
+                                                    SPNPUtils.TR_PRIORTY_DEFAULT_IMMEDIATE,
                                                     null,
                                                     new ConstantTransitionProbability(1.0));
         if(generateComments)
@@ -376,7 +376,7 @@ public class ServiceLeafSegment extends Segment implements ActionServiceSegment 
         var failHWTransitionName = SPNPUtils.createTransitionName(messageName, "HW_fail");
         failHWTransition = new ImmediateTransition(SPNPUtils.transitionCounter++,
                                                    failHWTransitionName,
-                                                   SPNPUtils.TR_PRIORTY_DEFAULT, 
+                                                   SPNPUtils.TR_PRIORTY_DEFAULT_IMMEDIATE, 
                                                    createHWFailGuard(messageName),
                                                    new ConstantTransitionProbability(1.0));
         if(generateComments)

@@ -122,7 +122,7 @@ public class ControlServiceSegment extends Segment {
         
         var serviceCallTransitionName = SPNPUtils.createTransitionName(messageName);
         var serviceCallTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, serviceCallTransitionName,
-                                    SPNPUtils.TR_PRIORTY_DEFAULT, null, new ConstantTransitionProbability(1.0));
+                                    SPNPUtils.TR_PRIORTY_DEFAULT_IMMEDIATE, null, new ConstantTransitionProbability(1.0));
         if(generateComments) {
             serviceCallTransition.setCommentary(String.format("%s - Control transition of %s (\"%s\")",
                                                             commentPrefix,
@@ -182,7 +182,7 @@ public class ControlServiceSegment extends Segment {
 
         var initTransitionName = SPNPUtils.createTransitionName("control", "start");
         initialTransition = new ImmediateTransition(SPNPUtils.transitionCounter++, initTransitionName,
-                            SPNPUtils.TR_PRIORTY_DEFAULT, null, new ConstantTransitionProbability(1.0));
+                            SPNPUtils.TR_PRIORTY_DEFAULT_IMMEDIATE, null, new ConstantTransitionProbability(1.0));
         if(generateComments)
             initialTransition.setCommentary(String.format("%s - Control start transition", commentPrefix));
         petriNet.addTransition(initialTransition);
