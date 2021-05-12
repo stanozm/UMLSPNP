@@ -16,7 +16,9 @@ import javafx.stage.Stage;
 public class Utils {
     public static boolean __DEBUG_CREATE_SAMPLE_DATA = true;
     
-    public static String SPNP_NAME_RESTRICTION_REGEX = "^([a-zA-Z])[a-zA-Z0-9\\s_]*$";
+    // Note: The name itself is not restricted anymore, however during the 
+    // transformation all illegal characters will be removed (replaced with a "")
+    public static String SPNP_NAME_RESTRICTION_REGEX = "^.*$";
     public static String SPNP_NAME_RESTRICTION_REPLACE_REGEX = "[^a-zA-Z0-9_]";
     private static int objectIDCounter = 0;
     
