@@ -422,7 +422,6 @@ public class DeploymentTargetController extends BaseController<DeploymentTarget,
         }
         if(opTypesSize >= 2){
             operationsUp.addOperationEntry(opTypes.get(1), null);
-            operationsDown.addOperationEntry(opTypes.get(1), 50);
         }
         model.addStateOperation(operationsUp);
         model.addStateOperation(operationsDown);
