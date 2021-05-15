@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.common;
 
+import com.google.gson.annotations.Expose;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
@@ -12,7 +13,9 @@ import javafx.collections.ObservableMap;
  * @param <T2>  Data type of the connection
  */
 public class ElementContainer<T1, T2> {
+    @Expose(serialize = true)
     private final ObservableMap<Number, T1> allNodes = FXCollections.observableHashMap();
+    @Expose(serialize = true)
     private final ObservableMap<Number, T2> allConnections = FXCollections.observableHashMap();
     
     public ElementContainer(){

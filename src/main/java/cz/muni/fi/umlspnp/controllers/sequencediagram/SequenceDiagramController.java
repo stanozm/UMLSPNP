@@ -14,6 +14,7 @@ import cz.muni.fi.umlspnp.views.sequencediagram.SequenceDiagramView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -186,6 +187,12 @@ public class SequenceDiagramController extends BaseController<SequenceDiagram, S
         mess2_1_view.getDestinationConnectionSlot().setTranslateY(mess2_view.getSourceConnectionSlot().getTranslateY() + 15);
         mess2_1.nameProperty().setValue("21");
     }
+    
+    public void refresh() {
+        messageControllers.forEach(controller -> {
+            controller.refreshAnnotationVisibility();
+        });
+    }
 
     private void sequenceDiagramInit(){
         var deployment = mainModel.getDeploymentDiagram();
@@ -282,12 +289,14 @@ public class SequenceDiagramController extends BaseController<SequenceDiagram, S
                     controller.addSortMessagesCallback(() -> sortMessages());
                     messageControllers.add(controller);
                     sortMessages();
+                    Platform.runLater(() -> refresh());
                 }
                 if(change.wasRemoved()){
                     var removedMessage = (Message) change.getValueRemoved();
                     view.removeMessage(removedMessage.getObjectInfo().getID());
                     messageControllers.removeIf(controller -> controller.getModel().equals(removedMessage));
                     sortMessages();
+                    Platform.runLater(() -> refresh());
                 }
             }
         });

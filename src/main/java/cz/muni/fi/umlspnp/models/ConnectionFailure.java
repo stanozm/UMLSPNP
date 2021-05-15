@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models;
 
+import com.google.gson.annotations.Expose;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -14,7 +15,9 @@ import javafx.beans.value.ObservableValue;
  * 
  */
 public class ConnectionFailure extends ObservableString {
+    @Expose(serialize = true)
     private final StringProperty failureName = new SimpleStringProperty();
+    @Expose(serialize = true)
     private final DoubleProperty rate = new SimpleDoubleProperty();
     
     public ConnectionFailure(String name, double rate){

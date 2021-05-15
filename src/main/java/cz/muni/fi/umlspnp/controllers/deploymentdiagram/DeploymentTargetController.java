@@ -376,54 +376,5 @@ public class DeploymentTargetController extends BaseController<DeploymentTarget,
         view.getStatesAnnotation().setItems(model.getStates());
         view.getStateTransitionsAnnotation().setItems(model.getStateTransitions());
         view.getStateOperationsAnnotation().setItems(model.getStateOperations());
-        
-        State stateUp = new State("UP");
-//        stateUp.setLocked(true);
-
-        State stateDown = new State("DOWN");
-        stateDown.setLocked(true);
-        stateDown.setStateDOWN(true);
-
-        model.addState(stateUp);
-        model.addState(stateDown);
-        model.setDefaultState(stateUp);
-
-        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.01);
-//        upDownTransition.setLocked(true);
-        
-        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.5);
-//        downUpTransition.setLocked(true);
-        
-        model.addStateTransition(upDownTransition);
-        model.addStateTransition(downUpTransition);
-        
-        if(Utils.__DEBUG_CREATE_SAMPLE_DATA)
-            createSampleAnnotations();
-    }
-    
-    /**
-     * Creates sample annotations for a specified deployment target.
-     * @param DT Deployment Target to have the sample annotations added.
-     */
-    private void createSampleAnnotations(){
-        var deployment = mainModel.getDeploymentDiagram();
-
-        var stateUp = model.getStates().get(0);
-        var stateDown = model.getStates().get(1);
-
-        var opTypes = deployment.getOperationTypes();
-        var opTypesSize = opTypes.size();
-        
-        StateOperation operationsUp = new StateOperation(stateUp);
-        StateOperation operationsDown = new StateOperation(stateDown);
-        
-        if(opTypesSize >= 1){
-            operationsUp.addOperationEntry(opTypes.get(0), null);
-        }
-        if(opTypesSize >= 2){
-            operationsUp.addOperationEntry(opTypes.get(1), null);
-        }
-        model.addStateOperation(operationsUp);
-        model.addStateOperation(operationsDown);
     }
 }

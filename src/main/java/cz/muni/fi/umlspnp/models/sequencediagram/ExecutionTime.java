@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.ObservableString;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -11,6 +12,7 @@ import javafx.beans.value.ObservableValue;
  *
  */
 public class ExecutionTime extends ObservableString{
+    @Expose(serialize = true)
     private final IntegerProperty executionTime = new SimpleIntegerProperty();
     
     public ExecutionTime(int value){

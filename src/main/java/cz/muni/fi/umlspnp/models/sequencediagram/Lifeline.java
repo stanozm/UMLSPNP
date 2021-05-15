@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.BasicNode;
 import cz.muni.fi.umlspnp.models.OperationEntry;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.Artifact;
@@ -20,6 +21,7 @@ import javafx.collections.ObservableMap;
  */
 public class Lifeline extends BasicNode {
     private final Artifact artifact;
+    @Expose(serialize = true)
     private final ObservableMap<Number, Activation> activations;
     
     // Only available while transforming to SPNP
@@ -33,8 +35,12 @@ public class Lifeline extends BasicNode {
     
     public Activation createActivation(){
         var newActivation = new Activation(this);
-        activations.put(newActivation.getObjectInfo().getID(), newActivation);
+        addActivation(newActivation);
         return newActivation;
+    }
+    
+    public void addActivation(Activation activation) {
+        activations.put(activation.getObjectInfo().getID(), activation);
     }
 
     public boolean removeActivation(int objectID){

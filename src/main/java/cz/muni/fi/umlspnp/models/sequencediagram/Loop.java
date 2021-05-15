@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.BasicNode;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,8 +18,11 @@ import javafx.beans.value.ObservableValue;
  *
  */
 public class Loop extends BasicNode {
+    @Expose(serialize = true)
     private final StringProperty name = new SimpleStringProperty();
+    @Expose(serialize = true)
     private final IntegerProperty iterations = new SimpleIntegerProperty();
+    @Expose(serialize = true)
     private final DoubleProperty restartRate = new SimpleDoubleProperty();
 
     private final Set<Message> messages = new HashSet<>();
@@ -32,7 +36,6 @@ public class Loop extends BasicNode {
                 name.setValue(String.format("Loop " + iterations.getValue().toString() + "x [restart %s]", rateString));
             }
         };
-        
         iterations.addListener(stringChangeListener);
         restartRate.addListener(stringChangeListener);
         

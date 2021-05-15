@@ -1,10 +1,7 @@
 package cz.muni.fi.umlspnp;
 
 import cz.muni.fi.umlspnp.controllers.MainController;
-import cz.muni.fi.umlspnp.controllers.sequencediagram.SequenceDiagramController;
-import cz.muni.fi.umlspnp.common.Utils;
 import static cz.muni.fi.umlspnp.common.Utils.setStageIcon;
-import cz.muni.fi.umlspnp.controllers.deploymentdiagram.DeploymentDiagramController;
 import cz.muni.fi.umlspnp.models.MainModel;
 import cz.muni.fi.umlspnp.views.MainView;
 
@@ -18,8 +15,6 @@ import javafx.stage.Stage;
  */
 public class App extends Application {
     private MainController mainController;
-    private DeploymentDiagramController deploymentDiagramController;
-    private SequenceDiagramController sequenceDiagramController;
     
     @Override
     public void start(Stage stage) {
@@ -28,13 +23,6 @@ public class App extends Application {
         
         mainController = new MainController(mainModel, mainView);
 
-        deploymentDiagramController = new DeploymentDiagramController(mainModel, mainView);
-        sequenceDiagramController = new SequenceDiagramController(mainModel, mainView);
-
-        if(Utils.__DEBUG_CREATE_SAMPLE_DATA) {
-            deploymentDiagramController.createSampleData();
-            sequenceDiagramController.createSampleData();
-        }
         setStageIcon(getClass(), stage);
         
         var scene = new Scene(mainView, 640, 480);

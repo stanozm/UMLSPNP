@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.deploymentdiagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.ObservableString;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -13,6 +14,7 @@ import javafx.collections.ObservableList;
  *
  */
 public class RedundancyGroup extends ObservableString {
+    @Expose(serialize = true)
     private final IntegerProperty groupID = new SimpleIntegerProperty();
     private final ObservableList<DeploymentTarget> nodes;
 
@@ -40,10 +42,13 @@ public class RedundancyGroup extends ObservableString {
     }
     
     public void clear() {
-        nodes.forEach(node -> {
-            node.setRedundancyGroup(null);
-        });
-        nodes.clear();
+        if(nodes != null) {
+            nodes.forEach(node -> {
+                node.setRedundancyGroup(null);
+            });
+
+            nodes.clear();
+        }
     }
 
     public ObservableList<DeploymentTarget> getNodes() {

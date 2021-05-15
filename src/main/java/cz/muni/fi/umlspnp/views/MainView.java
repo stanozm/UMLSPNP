@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.views;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.views.sequencediagram.SequenceDiagramView;
 import cz.muni.fi.umlspnp.views.deploymentdiagram.DeploymentDiagramView;
 import cz.muni.fi.umlspnp.views.common.layouts.StringModalWindow;
@@ -24,8 +25,13 @@ import javafx.stage.Stage;
  * 
  */
 public class MainView extends VBox{
-    private final DeploymentDiagramView deploymentDiagramView;
-    private final SequenceDiagramView sequenceDiagramView;
+    @Expose(serialize = true)
+    private DeploymentDiagramView deploymentDiagramView;
+    @Expose(serialize = true)
+    private SequenceDiagramView sequenceDiagramView;
+
+    private final Tab deploymentDiagramTab;
+    private final Tab sequenceDiagramTab;
     private final Stage appStage;
     private final MenuBar mainMenu = new MenuBar();
     
@@ -39,15 +45,11 @@ public class MainView extends VBox{
         /* Diagram tabs */
         TabPane diagramTabPane = new TabPane();
         diagramTabPane.setTabClosingPolicy(TabClosingPolicy.UNAVAILABLE);
-        Tab deploymentDiagramTab = new Tab("Deployment Diagram");
-        Tab sequenceDiagramTab = new Tab("Sequence Diagram");
+        deploymentDiagramTab = new Tab("Deployment Diagram");
+        sequenceDiagramTab = new Tab("Sequence Diagram");
         diagramTabPane.getTabs().addAll(deploymentDiagramTab, sequenceDiagramTab);
 
-        deploymentDiagramView = new DeploymentDiagramView();
-        deploymentDiagramTab.setContent(deploymentDiagramView);
-        
-        sequenceDiagramView = new SequenceDiagramView();
-        sequenceDiagramTab.setContent(sequenceDiagramView);
+        reinit();
 
         /* Console output tabs */
         TabPane debugTabPane = new TabPane();
@@ -82,7 +84,15 @@ public class MainView extends VBox{
         
         this.getChildren().add(splitPane);
     }
-     
+    
+    public final void reinit() {
+        deploymentDiagramView = new DeploymentDiagramView();
+        deploymentDiagramTab.setContent(deploymentDiagramView);
+        
+        sequenceDiagramView = new SequenceDiagramView();
+        sequenceDiagramTab.setContent(sequenceDiagramView);
+    }
+
     public Stage getAppStage(){
         return appStage;
     }

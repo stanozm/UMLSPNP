@@ -3,6 +3,7 @@ package cz.muni.fi.umlspnp.views;
 import cz.muni.fi.umlspnp.views.common.BasicElement;
 import cz.muni.fi.umlspnp.views.common.BasicRectangle;
 import cz.muni.fi.umlspnp.views.common.ConnectionContainer;
+import cz.muni.fi.umlspnp.views.common.ConnectionView;
 import java.util.function.Consumer;
 import javafx.event.EventHandler;
 import javafx.scene.control.Menu;
@@ -81,4 +82,7 @@ public abstract class DiagramView extends GridPane{
     public void registerNodeToSelect(BasicRectangle node, EventHandler eh){
         node.addEventHandler(MouseEvent.MOUSE_PRESSED, eh);
     }
+    
+    public abstract BasicRectangle getNode(int objectID);
+    public abstract ConnectionView getConnection(int objectID);
 }

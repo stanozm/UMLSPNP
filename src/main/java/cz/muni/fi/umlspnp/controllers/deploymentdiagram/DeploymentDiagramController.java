@@ -66,10 +66,13 @@ public class DeploymentDiagramController extends BaseController<DeploymentDiagra
      * Creates sample deployment diagram nodes and communications links.
      */
     public void createSampleData() {
-        model.addOperationType(new OperationType("ReadDeviceData"));
-        model.addOperationType(new OperationType("WriteDeviceData"));
+        var ot1 = new OperationType("ReadDeviceData");
+        var ot2 = new OperationType("WriteDeviceData");
+        model.addOperationType(ot1);
+        model.addOperationType(ot2);
         
         var A = model.createDeploymentTarget(null);
+        A.createSampleData(ot1, ot2);
         var ST_A_1 = new State("ST_A_1");
         A.addState(ST_A_1);
         A.addState(new State("ST_A_2"));
@@ -82,6 +85,7 @@ public class DeploymentDiagramController extends BaseController<DeploymentDiagra
         A.getNameProperty().setValue("A");
         
         var AA = model.createDeploymentTarget(A);
+        AA.createSampleData(ot1, ot2);
         AA.getNameProperty().setValue("AA");
         var ST_B_1 = new State("ST_B_1");
         AA.addState(ST_B_1);
@@ -95,16 +99,21 @@ public class DeploymentDiagramController extends BaseController<DeploymentDiagra
 
 
         var AAA = model.createDeploymentTarget(AA);
+        AAA.createSampleData(ot1, ot2);
         AAA.getNameProperty().setValue("AAA");
         
         var B = model.createDeploymentTarget(null);
+        B.createSampleData(ot1, ot2);
         B.getNameProperty().setValue("B");
         var BB = model.createDeploymentTarget(B);
+        BB.createSampleData(ot1, ot2);
         BB.getNameProperty().setValue("BB");
         var BBB = model.createDeploymentTarget(BB);
+        BBB.createSampleData(ot1, ot2);
         BBB.getNameProperty().setValue("BBB");
         
-        model.createCommunicationLink(A, B);
+        var cl = model.createCommunicationLink(A, B);
+        cl.createSampleData();
     }
 
     private void connectionContainerInit() {

@@ -1,7 +1,9 @@
 package cz.muni.fi.umlspnp.models.deploymentdiagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.OperationEntry;
 import cz.muni.fi.umlspnp.common.ElementContainer;
+import cz.muni.fi.umlspnp.models.OperationType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,15 +26,20 @@ import javafx.util.Pair;
  *
  */
 public class DeploymentTarget extends Artifact {
-    private final ObjectProperty<RedundancyGroup> redundancyGroup = new SimpleObjectProperty<>();
     private final ElementContainer<Artifact, CommunicationLink> allElements;
+    
+    @Expose(serialize = true)
+    private final ObjectProperty<RedundancyGroup> redundancyGroup = new SimpleObjectProperty<>();
 
     private final ObservableMap<Number, Artifact> innerNodes;
     private final ObservableMap<Number, CommunicationLink> innerConnections;
 
     // Annotations
+    @Expose(serialize = true)
     private final ObservableList<State> states;
+    @Expose(serialize = true)
     private final ObservableList<StateTransition> stateTransitions;
+    @Expose(serialize = true)
     private final ObservableList<StateOperation> stateOperations;
 
     // Listeners
@@ -50,23 +57,59 @@ public class DeploymentTarget extends Artifact {
         innerConnections = FXCollections.observableHashMap();
         
         states = FXCollections.observableArrayList((State param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
         
         stateTransitions = FXCollections.observableArrayList((StateTransition param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
 
         stateOperations = FXCollections.observableArrayList((StateOperation param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
 
         allOperationEntries = FXCollections.observableArrayList((OperationEntry param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
         
         statesWithoutOperations = FXCollections.observableArrayList();
         initStatesWithoutOperations();
+    }
+    
+    /**
+     * Creates sample annotations for a specified deployment target.
+     * @param ot1 Sample operation type 1
+     * @param ot2 Sample operation type 2
+     */
+    public final void createSampleData(OperationType ot1, OperationType ot2) {
+        State stateUp = new State("UP");
+//        stateUp.setLocked(true);
+
+        State stateDown = new State("DOWN");
+        stateDown.setLocked(true);
+        stateDown.setStateDOWN(true);
+
+        addState(stateUp);
+        addState(stateDown);
+        setDefaultState(stateUp);
+
+        StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.01);
+//        upDownTransition.setLocked(true);
+        
+        StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.5);
+//        downUpTransition.setLocked(true);
+        
+        addStateTransition(upDownTransition);
+        addStateTransition(downUpTransition);
+        
+        StateOperation operationsUp = new StateOperation(stateUp);
+        StateOperation operationsDown = new StateOperation(stateDown);
+        
+        operationsUp.addOperationEntry(ot1, null);
+        operationsUp.addOperationEntry(ot2, null);
+
+        addStateOperation(operationsUp);
+        addStateOperation(operationsDown);
     }
     
     private void cleanup(){
@@ -156,6 +199,16 @@ public class DeploymentTarget extends Artifact {
     
     public void addStateOperationsChangeListener(ListChangeListener listener){
         stateOperations.addListener(listener);
+    }
+    
+    public State getState(String stateName) {
+        for (var state : getStates()) {
+            var name = state.nameProperty().getValue();
+            if(name.equals(stateName)){
+                return state;
+            }
+        }
+        return null;
     }
     
     public void addState(State newState){

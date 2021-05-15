@@ -25,6 +25,11 @@ public class Utils {
     public static int generateObjectID(){
         return ++objectIDCounter;
     }
+    
+    public static void updateId(Integer id) {
+        if(id > objectIDCounter)
+            objectIDCounter = id;
+    }
 
     public static double getStringWidth(String text){
         final Text t = new Text(text);

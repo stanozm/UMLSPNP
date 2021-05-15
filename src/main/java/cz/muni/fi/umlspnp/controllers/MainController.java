@@ -1,6 +1,10 @@
 package cz.muni.fi.umlspnp.controllers;
 
 import cz.muni.fi.umlspnp.SystemInfo;
+import cz.muni.fi.umlspnp.common.Serializer;
+import cz.muni.fi.umlspnp.common.Utils;
+import cz.muni.fi.umlspnp.controllers.deploymentdiagram.DeploymentDiagramController;
+import cz.muni.fi.umlspnp.controllers.sequencediagram.SequenceDiagramController;
 import cz.muni.fi.umlspnp.models.MainModel;
 import cz.muni.fi.umlspnp.models.sequencediagram.Activation;
 import cz.muni.fi.umlspnp.models.sequencediagram.Lifeline;
@@ -26,9 +30,16 @@ import javafx.scene.layout.GridPane;
 public class MainController extends BaseController<MainModel, MainView> {
     private final Menu fileMenu;
     private final Menu aboutMenu;
+    
+    private final Serializer serializer;
+    
+    private DeploymentDiagramController deploymentDiagramController;
+    private SequenceDiagramController sequenceDiagramController;
 
     public MainController(MainModel model, MainView view){
         super(model, view, model, view);
+        
+        serializer = new Serializer(this);
 
         fileMenu = new Menu("File");
         aboutMenu = new Menu("Help");
@@ -37,13 +48,53 @@ public class MainController extends BaseController<MainModel, MainView> {
 
         initTransformMenu();
         initAboutMenu();
+        
+        setDeploymentDiagramController(new DeploymentDiagramController(mainModel, mainView));
+        setSequenceDiagramController(new SequenceDiagramController(mainModel, mainView));
+
+        if(Utils.__DEBUG_CREATE_SAMPLE_DATA) {
+            deploymentDiagramController.createSampleData();
+            sequenceDiagramController.createSampleData();
+        }
+    }
+    
+    public final void setDeploymentDiagramController(DeploymentDiagramController ddc) {
+        deploymentDiagramController = ddc;
+    }
+    
+    public final DeploymentDiagramController getDeploymentDiagramController() {
+        return deploymentDiagramController;
+    }
+    
+    public final void setSequenceDiagramController(SequenceDiagramController sdc) {
+        sequenceDiagramController = sdc;
     }
 
+    public final SequenceDiagramController getSequenceDiagramController() {
+        return sequenceDiagramController;
+    }
+    
     private void initTransformMenu() {
+        var saveMenuItem = new MenuItem("Save");
+        saveMenuItem.setOnAction((ActionEvent tt) -> {
+            var jsonString = serializer.toJson(this);
+            System.out.println(jsonString);
+        });
+        fileMenu.getItems().add(saveMenuItem);
+        
+        var loadMenuItem = new MenuItem("Load");
+        loadMenuItem.setOnAction((ActionEvent tt) -> {
+            var jsonString = serializer.toJson(this);
+            serializer.fromJson(jsonString);
+        });
+        fileMenu.getItems().add(loadMenuItem);
+        
+
         var transformMenuItem = new MenuItem("Transform...");
 
         Consumer<TransformModalWindow> onTransform = (transformWindow) -> {
             performPreTransformActions();
+
             var transformator = new DefaultTransformator(model);
 
             createOptions(transformator, transformWindow);

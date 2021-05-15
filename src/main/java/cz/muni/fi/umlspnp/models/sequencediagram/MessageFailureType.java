@@ -1,16 +1,15 @@
 package cz.muni.fi.umlspnp.models.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.ConnectionFailure;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 
-/**
- *
- *
- */
+
 public class MessageFailureType extends ConnectionFailure {
+    @Expose(serialize = true)
     private final BooleanProperty causeHWfail;
 
     public MessageFailureType(String name, double rate, boolean HWfail) {

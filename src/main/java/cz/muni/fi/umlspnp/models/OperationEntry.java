@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models;
 
+import com.google.gson.annotations.Expose;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -13,7 +14,9 @@ import javafx.beans.value.ObservableValue;
  * 
  */
 public class OperationEntry extends ObservableString {
+    @Expose(serialize = true)
     private final ObjectProperty<OperationType> operationType = new SimpleObjectProperty<>();
+    @Expose(serialize = true)
     private final IntegerProperty speedLimit;
     
     public OperationEntry(OperationType operationType, Integer speedLimit){
@@ -35,11 +38,11 @@ public class OperationEntry extends ObservableString {
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
                 if(oldValue != null) {
                     var oldOperationType = (OperationType) oldValue;
-                    oldOperationType.getStringRepresentation().removeListener(stringChangeListener);
+                    oldOperationType.stringRepresentationProperty().removeListener(stringChangeListener);
                 }
                 if(newValue != null) {
                     var newOperationType = (OperationType) newValue;
-                    newOperationType.getStringRepresentation().addListener(stringChangeListener);
+                    newOperationType.stringRepresentationProperty().addListener(stringChangeListener);
                 }
             }
         };

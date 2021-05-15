@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models;
 
+import com.google.gson.annotations.Expose;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -8,6 +9,7 @@ import javafx.beans.property.StringProperty;
  *
  */
 public abstract class NamedNode extends BasicNode{
+    @Expose(serialize = true)
     private final StringProperty name = new SimpleStringProperty();
     
     public NamedNode(String name){

@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.views.common;
 
+import cz.muni.fi.umlspnp.common.BaseObject;
 import cz.muni.fi.umlspnp.common.ObjectInfo;
 import cz.muni.fi.umlspnp.common.Utils;
 import cz.muni.fi.umlspnp.views.common.layouts.BooleanModalWindow;
@@ -29,7 +30,7 @@ import javafx.stage.Stage;
  * Each of these elements move in a virtual grid for better alignment.
  *
  */
-public abstract class BasicElement extends Group{
+public abstract class BasicElement extends Group implements BaseObject {
     private final ObjectInfo objectInfo;
     protected double gridSize = 10;
     
@@ -41,6 +42,7 @@ public abstract class BasicElement extends Group{
         contextMenu = new ContextMenu();
     }
     
+    @Override
     public ObjectInfo getObjectInfo(){
         return this.objectInfo;
     }

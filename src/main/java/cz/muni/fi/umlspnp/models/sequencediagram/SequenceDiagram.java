@@ -1,6 +1,10 @@
 package cz.muni.fi.umlspnp.models.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.common.ElementContainer;
+import cz.muni.fi.umlspnp.models.BasicNode;
+import cz.muni.fi.umlspnp.models.Connection;
+import cz.muni.fi.umlspnp.models.Diagram;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.Artifact;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,10 +18,12 @@ import javafx.collections.ObservableMap;
  * related information and functionality.
  *
  */
-public class SequenceDiagram {
+public class SequenceDiagram implements Diagram {
+    @Expose(serialize = true, deserialize = false)
     private final ElementContainer<Lifeline, Message> allElements = new ElementContainer<>();
     private final ObservableList<Message> sortedMessages;
     
+    @Expose(serialize = true)
     private final ObservableMap<Number, Loop> loops;
     private Lifeline highestLevelLifeline = null;
     
@@ -49,8 +55,12 @@ public class SequenceDiagram {
     public Lifeline createLifeline(Artifact artifact){
         var newLifeline = new Lifeline(artifact);
         
-        allElements.addNode(newLifeline, newLifeline.getObjectInfo().getID());
+        addLifeline(newLifeline);
         return newLifeline;
+    }
+    
+    public void addLifeline(Lifeline lifeline) {
+        allElements.addNode(lifeline, lifeline.getObjectInfo().getID());
     }
     
     public boolean removeLifeline(int objectID){
@@ -126,13 +136,16 @@ public class SequenceDiagram {
     public Message createMessage(Activation source, Activation destination){
         var message = new Message(source, destination);
         
+        addMessage(message);
+        return message;
+    }
+    
+    public void addMessage(Message message) {
         sortedMessages.add(message);
         allElements.addConnection(message, message.getObjectInfo().getID());
 
-        source.addMessage(message);
-        destination.addMessage(message);
-        
-        return message;
+        message.getFrom().addMessage(message);
+        message.getTo().addMessage(message);
     }
     
     public boolean removeMessage(int objectID){
@@ -157,8 +170,12 @@ public class SequenceDiagram {
     public Loop createLoop(){
         var loop = new Loop();
         
-        loops.put(loop.getObjectInfo().getID(), loop);
+        addLoop(loop);
         return loop;
+    }
+    
+    public void addLoop(Loop loop) {
+        loops.put(loop.getObjectInfo().getID(), loop);
     }
     
     public boolean removeLoop(int objectID){
@@ -183,5 +200,33 @@ public class SequenceDiagram {
     
     public Lifeline getHighestLevelLifeline() {
         return highestLevelLifeline;
+    }
+    
+    public void clear() {
+        highestLevelLifeline = null;
+        
+        for(var loop : new ArrayList<>(getLoops())) {
+            removeLoop(loop.getObjectInfo().getID());
+        }
+        
+        var messages = new ArrayList<>(allElements.getConnections().values());
+        for(var message : messages) {
+            removeMessage(message.getObjectInfo().getID());
+        }
+        
+        var lifelines = new ArrayList<>(allElements.getNodes().values());
+        for(var lifeline : lifelines) {
+            this.removeLifeline(lifeline.getObjectInfo().getID());
+        }
+    }
+
+    @Override
+    public BasicNode getNode(int modelID) {
+        return getLifeline(modelID);
+    }
+
+    @Override
+    public Connection getConnection(int modelID) {
+        return getMessage(modelID);
     }
 }

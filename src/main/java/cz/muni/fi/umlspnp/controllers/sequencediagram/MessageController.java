@@ -47,19 +47,23 @@ public class MessageController extends BaseController<Message, MessageView>{
             }
         });
     }
+    
+    public void refreshAnnotationVisibility() {
+        if(model.isLeafMessage()) {
+            view.getExecutionTimeAnnotation().setDisplayed(true);
+            view.getFailureTypesAnnotation().setDisplayed(true);
+        }
+        else {
+            view.getExecutionTimeAnnotation().setDisplayed(false);
+            view.getFailureTypesAnnotation().setDisplayed(false);
+        }
+    }
 
     private void messageInit(){
         model.orderProperty().addListener(new ChangeListener() {
             @Override
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
-                if(model.isLeafMessage()) {
-                    view.getExecutionTimeAnnotation().setDisplayed(true);
-                    view.getFailureTypesAnnotation().setDisplayed(true);
-                }
-                else {
-                    view.getExecutionTimeAnnotation().setDisplayed(false);
-                    view.getFailureTypesAnnotation().setDisplayed(false);
-                }
+                refreshAnnotationVisibility();
             }
         });
 

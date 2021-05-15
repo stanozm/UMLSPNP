@@ -32,9 +32,6 @@ public class CommunicationLinkController extends BaseController<CommunicationLin
         
         communicationLinkMenuInit();
         communicationLinkAnnotationsInit();
-        if(Utils.__DEBUG_CREATE_SAMPLE_DATA) {
-            createSampleAnnotations();
-        }
     }
 
     private void communicationLinkMenuInit(){
@@ -150,14 +147,5 @@ public class CommunicationLinkController extends BaseController<CommunicationLin
     private void communicationLinkAnnotationsInit(){
         view.getLinkTypeAnnotation().setItems(model.getLinkTypeList());
         view.getLinkFailuresAnnotation().setItems(model.getLinkFailures());
-    }
-
-    /**
-     * Creates sample annotations for a specified communication link.
-     *
-     */
-    private void createSampleAnnotations(){
-        model.addLinkFailure(new ConnectionFailure("PacketLost", 0.02));
-        model.addLinkFailure(new ConnectionFailure("ConnectionDropped", 0.001));
     }
 }

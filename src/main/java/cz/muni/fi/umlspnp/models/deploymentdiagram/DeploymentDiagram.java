@@ -1,8 +1,12 @@
 package cz.muni.fi.umlspnp.models.deploymentdiagram;
 
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.common.ElementContainer;
+import cz.muni.fi.umlspnp.models.Connection;
+import cz.muni.fi.umlspnp.models.Diagram;
 import cz.muni.fi.umlspnp.models.OperationType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
@@ -17,27 +21,33 @@ import javafx.util.Pair;
  * communication links and related information and functionality.
  *
  */
-public class DeploymentDiagram {
+public class DeploymentDiagram implements Diagram {
+    @Expose(serialize = true, deserialize = false)
     private final ElementContainer<Artifact, CommunicationLink> allElements = new ElementContainer<>();
-    private final ObservableList<LinkType> allLinkTypes;
     
+    @Expose(serialize = true)
+    private final ObservableList<LinkType> allLinkTypes;
+    @Expose(serialize = true)
     private final ObservableList<OperationType> operationTypes;
+    @Expose(serialize = true)
     private final ObservableList<RedundancyGroup> redundancyGroups;
     
     public DeploymentDiagram(){
 	operationTypes = FXCollections.observableArrayList((OperationType param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
 
 	redundancyGroups = FXCollections.observableArrayList();
 
         allLinkTypes = FXCollections.observableArrayList((LinkType param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
-        
-        allLinkTypes.add(new LinkType("Default", 1.0));
-        
+
         initAllElements();
+    }
+    
+    public void createSampleData() {
+        allLinkTypes.add(new LinkType("Default", 1.0));
     }
     
     private void initAllElements(){
@@ -70,6 +80,14 @@ public class DeploymentDiagram {
         return operationTypes;
     }
     
+    public OperationType getOperationType(String name) {
+        for(var ot : getOperationTypes()) {
+            if(ot.getName().equals(name))
+                return ot;
+        }
+        return null;
+    }
+    
     public void addOperationType(OperationType operationType) {
         operationTypes.add(operationType);
     }
@@ -80,6 +98,14 @@ public class DeploymentDiagram {
 
     public ObservableList<RedundancyGroup> getRedundancyGroups() {
         return redundancyGroups;
+    }
+    
+    public RedundancyGroup getRedundancyGroup(Integer num) {
+        for(var rg : getRedundancyGroups()) {
+            if(rg.getGroupID().equals(num))
+                return rg;
+        }
+        return null;
     }
     
     public void createRedundancyGroup() {
@@ -96,6 +122,10 @@ public class DeploymentDiagram {
             }
         }
         redundancyGroups.add(new RedundancyGroup(newGroupID));
+    }
+    
+    public void addRedundancyGroup(Integer groupID) {
+        redundancyGroups.add(new RedundancyGroup(groupID));
     }
 
     public boolean removeRedundancyGroup(RedundancyGroup rg) {
@@ -150,6 +180,7 @@ public class DeploymentDiagram {
         return true;
     }
     
+    @Override
     public Artifact getNode(int objectID){
         return allElements.getNode(objectID);
     }
@@ -168,7 +199,7 @@ public class DeploymentDiagram {
     public CommunicationLink createCommunicationLink(DeploymentTarget source, DeploymentTarget destination){
         var commLink = new CommunicationLink(source, destination, allLinkTypes);
         
-        allElements.addConnection(commLink, commLink.getObjectInfo().getID());
+        addCommunicationLink(commLink);
         
         source.addInnerConnection(commLink);
         destination.addInnerConnection(commLink);
@@ -176,8 +207,17 @@ public class DeploymentDiagram {
         return commLink;
     }
     
+    public void addCommunicationLink(CommunicationLink cl) {
+        allElements.addConnection(cl, cl.getObjectInfo().getID());
+    }
+    
     public boolean removeCommunicationLink(int objectID){
         return allElements.removeConnection(objectID);
+    }
+    
+    @Override
+    public Connection getConnection(int objectID) {
+        return getCommunicationLink(objectID);
     }
     
     public CommunicationLink getCommunicationLink(int objectID){
@@ -188,6 +228,14 @@ public class DeploymentDiagram {
         return allElements.getConnections().values();
     }
     
+    public LinkType getLinkType(String name) {
+        for(var lt : getAllLinkTypes()) {
+            if(lt.getName().equals(name))
+                return lt;
+        }
+        return null;
+    }
+    
     public LinkType createLinkType(String name, Double rate){
         var newLinkType = new LinkType(name, rate); 
         allLinkTypes.add(newLinkType);
@@ -195,13 +243,11 @@ public class DeploymentDiagram {
         return newLinkType;
     }
     
-    public boolean removeLinkType(LinkType linkType){
-        if(allLinkTypes.size() > 1) // One default link type must remain
-            return allLinkTypes.remove(linkType);
-        return false;
+    public boolean removeLinkType(LinkType linkType) {
+        return allLinkTypes.remove(linkType);
     }
 
-    public ObservableList getAllLinkTypes(){
+    public ObservableList<LinkType> getAllLinkTypes(){
         return allLinkTypes;
     }
     
@@ -220,5 +266,28 @@ public class DeploymentDiagram {
                 return true;
         }
         return false;
+    }
+    
+    public void clear() {
+        var links = new ArrayList<>(getCommunicationLinks());
+        for(var link : links) {
+            removeCommunicationLink(link.getObjectInfo().getID());
+        }
+        var nodes = new ArrayList<>(getNodes());
+        for(var node : nodes) {
+            removeNode(node.getObjectInfo().getID());
+        }
+        var linkTypes = new ArrayList<>(getAllLinkTypes());
+        for(var linkType : linkTypes) {
+            removeLinkType(linkType);
+        }
+        var opTypes = new ArrayList<>(getOperationTypes());
+        for(var operationType : opTypes) {
+            removeOperationType(operationType);
+        }
+        var redGroups = new ArrayList<>(getRedundancyGroups());
+        for(var redundancyGroup : redGroups) {
+            this.removeRedundancyGroup(redundancyGroup);
+        }
     }
 }

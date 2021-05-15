@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.deploymentdiagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.ObservableString;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -15,10 +16,14 @@ import javafx.beans.value.ObservableValue;
  *
  */
 public class State extends ObservableString{
+    @Expose(serialize = true)
     private final StringProperty stateName = new SimpleStringProperty();
+    @Expose(serialize = true)
     private final BooleanProperty isDefaultState = new SimpleBooleanProperty();
     
+    @Expose(serialize = true)
     private boolean isLocked = false; // Locked state can not be edited or removed
+    @Expose(serialize = true)
     private boolean isStateDOWN = false;
     
     public State(String name){

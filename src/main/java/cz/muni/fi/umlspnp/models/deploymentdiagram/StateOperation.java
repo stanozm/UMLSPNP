@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.deploymentdiagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.OperationEntry;
 import cz.muni.fi.umlspnp.models.ObservableString;
 import cz.muni.fi.umlspnp.models.OperationType;
@@ -17,12 +18,14 @@ import javafx.collections.ObservableList;
  *
  */
 public class StateOperation extends ObservableString {
+    @Expose(serialize = true)
     private final ObjectProperty<State> state = new SimpleObjectProperty<>();
+    @Expose(serialize = true)
     private final ObservableList<OperationEntry> operationEntries;
     
     public StateOperation(State state){
         this.operationEntries = FXCollections.observableArrayList((OperationEntry param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
 
         var stringChangeListener = new ChangeListener(){
@@ -37,11 +40,11 @@ public class StateOperation extends ObservableString {
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
                 if(oldValue != null) {
                     var oldState = (State) oldValue;
-                    oldState.getStringRepresentation().removeListener(stringChangeListener);
+                    oldState.stringRepresentationProperty().removeListener(stringChangeListener);
                 }
                 if(newValue != null) {
                     var newState = (State) newValue;
-                    newState.getStringRepresentation().addListener(stringChangeListener);
+                    newState.stringRepresentationProperty().addListener(stringChangeListener);
                 }
             }
         };

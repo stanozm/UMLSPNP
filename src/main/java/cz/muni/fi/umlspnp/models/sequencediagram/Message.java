@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.Connection;
 import cz.muni.fi.umlspnp.models.OperationType;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.Artifact;
@@ -21,34 +22,39 @@ import javafx.util.Pair;
  *
  */
 public class Message extends Connection<Activation> {
+    @Expose(serialize = true)
     private final IntegerProperty order = new SimpleIntegerProperty();
+    @Expose(serialize = true)
     private final StringProperty name = new SimpleStringProperty();
     
+    @Expose(serialize = true)
     private final ObservableList<ExecutionTime> executionTime; // Exactly 1 item
+    @Expose(serialize = true)
     private final ObservableList<MessageSize> messageSize; // Exactly 1 item
+    @Expose(serialize = true)
     private final ObservableList<MessageFailureType> messageFailures;
+    @Expose(serialize = true)
     private final ObservableList<OperationType> operationTypeList; // At most 1 item
     
     
     public Message(Activation from, Activation to) {
         super(from, to);
-        
         name.setValue("newMessage()");
         
         executionTime = FXCollections.observableArrayList((ExecutionTime param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
         
         messageSize = FXCollections.observableArrayList((MessageSize param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
         
         messageFailures = FXCollections.observableArrayList((MessageFailureType param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
 
         operationTypeList = FXCollections.observableArrayList((OperationType param) -> new Observable[]{
-            param.getStringRepresentation()
+            param.stringRepresentationProperty()
         });
 
         setExecutionTime(1);

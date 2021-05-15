@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models;
 
+import com.google.gson.annotations.Expose;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
@@ -10,6 +11,7 @@ import javafx.beans.value.ObservableValue;
  *
  */
 public class OperationType extends ObservableString {
+    @Expose(serialize = true)
     private final StringProperty name;
     
     public OperationType(String name){

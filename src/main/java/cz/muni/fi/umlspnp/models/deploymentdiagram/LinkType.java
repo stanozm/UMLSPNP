@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.deploymentdiagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.ObservableString;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -13,7 +14,9 @@ import javafx.beans.value.ObservableValue;
  *
  */
 public class LinkType extends ObservableString {
+    @Expose(serialize = true)
     private final StringProperty name = new SimpleStringProperty();
+    @Expose(serialize = true)
     private final DoubleProperty rate = new SimpleDoubleProperty();
     
     public LinkType(String name, double rate){
@@ -31,12 +34,20 @@ public class LinkType extends ObservableString {
         this.rate.addListener(stringChangeListener);
     }
 
+    public final String getName() {
+        return this.name.get();
+    }
+    
     public final void setName(String name){
         this.name.setValue(name);
     }
-    
+        
     public StringProperty nameProperty(){
         return this.name;
+    }
+    
+    public final double getRate() {
+        return this.rate.get();
     }
     
     public final void setRate(double rate){

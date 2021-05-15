@@ -15,7 +15,7 @@ public abstract class ObservableString {
     
     }
     
-    public StringExpression getStringRepresentation(){
+    public StringExpression stringRepresentationProperty(){
         return stringRepresentation;
     }
     

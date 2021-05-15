@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.views.deploymentdiagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.common.ElementContainer;
 import cz.muni.fi.umlspnp.views.DiagramView;
 import cz.muni.fi.umlspnp.views.common.Annotation;
@@ -15,7 +16,8 @@ import javafx.scene.input.MouseButton;
 public class DeploymentDiagramView extends DiagramView {
     private final Group root;
 
-    private static final ElementContainer<NamedRectangle, CommunicationLinkView> allElements = new ElementContainer<>();
+    @Expose(serialize = true, deserialize = false)
+    private final ElementContainer<NamedRectangle, CommunicationLinkView> allElements = new ElementContainer<>();
 
     public DeploymentDiagramView(){
         this.root = new Group();
@@ -40,10 +42,11 @@ public class DeploymentDiagramView extends DiagramView {
         originalPositionY = sceneY;
     }
 
-    public static ElementContainer getElementContainer(){
+    public ElementContainer getElementContainer(){
         return allElements;
     }
     
+    @Override
     public NamedRectangle getNode(int objectID){
         return (NamedRectangle) allElements.getNode(objectID);
     }
@@ -129,6 +132,7 @@ public class DeploymentDiagramView extends DiagramView {
         return result;
     }
     
+    @Override
     public CommunicationLinkView getConnection(int objectID){
         return allElements.getConnection(objectID);
     }

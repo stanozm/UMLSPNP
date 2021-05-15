@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.views.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.views.common.NamedRectangle;
 import java.util.Collection;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import javafx.scene.shape.Line;
  */
 public class LifelineView extends NamedRectangle {
     private final Line spanLine;
+    @Expose(serialize = true)
     private final HashMap<Number, ActivationView> activationViews;
     
     protected final Label highestLevelLabel;

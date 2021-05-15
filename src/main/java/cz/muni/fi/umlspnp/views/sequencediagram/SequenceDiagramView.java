@@ -1,7 +1,9 @@
 package cz.muni.fi.umlspnp.views.sequencediagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.common.ElementContainer;
 import cz.muni.fi.umlspnp.views.DiagramView;
+import cz.muni.fi.umlspnp.views.common.BasicRectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,9 +25,11 @@ import javafx.scene.shape.Shape;
 public class SequenceDiagramView extends DiagramView{
     private final Group root;
     
-    private static final ElementContainer<LifelineView, MessageView> allElements = new ElementContainer<>();
+    @Expose(serialize = true, deserialize = false)
+    private final ElementContainer<LifelineView, MessageView> allElements = new ElementContainer<>();
     private final ObjectProperty<LifelineView> highestLifelineProperty = new SimpleObjectProperty(null);
 
+    @Expose(serialize = true, deserialize = false)
     private final ObservableMap<Number, LoopView> loopViews;
     
     public SequenceDiagramView(){
@@ -52,6 +56,10 @@ public class SequenceDiagramView extends DiagramView{
         });
     }
 
+    public Collection<LoopView> getLoopViews() {
+        return loopViews.values();
+    }
+    
     public void moveAll(double sceneX) {
         double diffX = sceneX - originalPositionX;
         allElements.getNodes().values().forEach(node -> {
@@ -80,6 +88,31 @@ public class SequenceDiagramView extends DiagramView{
         newLifelineView.changeDimensions(150, 40);
         checkHighestLifeline();
         return newLifelineView;
+    }
+    
+    @Override
+    public BasicRectangle getNode(int objectID) {
+        BasicRectangle result = null;
+        var lifelineView = allElements.getNode(objectID);
+        if(lifelineView != null) {
+            result = lifelineView;
+        }
+        else {
+            for(var lv : allElements.getNodes().values()) {
+                var activationView = lv.getActivationView(objectID);
+                if(activationView != null) {
+                    result = activationView;
+                    break;
+                }
+            }
+            for(var loopView : getLoopViews()) {
+                if(loopView.getObjectInfo().getID() == objectID) {
+                    result = loopView;
+                    break;
+                }
+            }
+        }
+        return result;
     }
     
     public LifelineView getLifelineView(int objectID){
@@ -152,6 +185,7 @@ public class SequenceDiagramView extends DiagramView{
         return true;
     }
     
+    @Override
     public MessageView getConnection(int objectID){
         return allElements.getConnection(objectID);
     }

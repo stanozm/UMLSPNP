@@ -1,5 +1,6 @@
 package cz.muni.fi.umlspnp.models.deploymentdiagram;
 
+import com.google.gson.annotations.Expose;
 import cz.muni.fi.umlspnp.models.ObservableString;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
@@ -15,11 +16,16 @@ import javafx.beans.value.ObservableValue;
  *
  */
 public class StateTransition extends ObservableString {
+    @Expose(serialize = true)
     private final ObjectProperty<State> from = new SimpleObjectProperty<>();
+    @Expose(serialize = true)
     private final ObjectProperty<State> to = new SimpleObjectProperty<>();
+    @Expose(serialize = true)
     private final StringProperty transitionName = new SimpleStringProperty();
+    @Expose(serialize = true)
     private final DoubleProperty rate = new SimpleDoubleProperty();
     
+    @Expose(serialize = true)
     private boolean isLocked = false; // Locked transition can not be edited or removed
     
     public StateTransition(State fromState, State toState, String name, double rate){
@@ -38,11 +44,11 @@ public class StateTransition extends ObservableString {
             public void changed(ObservableValue ov, Object oldValue, Object newValue) {
                 if(oldValue != null) {
                     var oldState = (State) oldValue;
-                    oldState.getStringRepresentation().removeListener(stringChangeListener);
+                    oldState.stringRepresentationProperty().removeListener(stringChangeListener);
                 }
                 if(newValue != null) {
                     var newState = (State) newValue;
-                    newState.getStringRepresentation().addListener(stringChangeListener);
+                    newState.stringRepresentationProperty().addListener(stringChangeListener);
                 }
             }
         };
