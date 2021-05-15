@@ -15,6 +15,7 @@ import cz.muni.fi.umlspnp.views.TransformatorOptionDouble;
 import cz.muni.fi.umlspnp.views.TransformatorOptionInteger;
 import cz.muni.fi.umlspnp.views.common.layouts.AboutModalWindow;
 import cz.muni.fi.umlspnp.views.common.layouts.TransformModalWindow;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.function.Consumer;
@@ -22,6 +23,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.layout.GridPane;
+import javafx.stage.FileChooser;
 
 /**
  *  Main controller which handles the main menu functionality.
@@ -32,6 +34,7 @@ public class MainController extends BaseController<MainModel, MainView> {
     private final Menu aboutMenu;
     
     private final Serializer serializer;
+    private File file = null;
     
     private DeploymentDiagramController deploymentDiagramController;
     private SequenceDiagramController sequenceDiagramController;
@@ -74,24 +77,70 @@ public class MainController extends BaseController<MainModel, MainView> {
         return sequenceDiagramController;
     }
     
+    private void open(File file) {
+        if(!file.canRead()) {
+            System.err.println(String.format("Error: unable to read file \"%s\"", file.getAbsolutePath()));
+            return;
+        }
+        if(serializer.loadFromFile(file)) {
+            System.err.println(String.format("Successfully loaded from \"%s\"", file.getAbsolutePath()));
+        }
+    }
+    
+    private void openFrom() {
+        var fileChooser = new FileChooser();
+
+        var extensionFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+        fileChooser.getExtensionFilters().add(extensionFilter);
+        var tmpFile = fileChooser.showOpenDialog(mainView.getAppStage());
+        if(tmpFile != null) {
+            open(tmpFile);
+        }
+    }
+    
+    private void save(File file) {
+        if(serializer.saveToFile(file)) {
+            System.err.println(String.format("Successfully saved to \"%s\"", file.getAbsolutePath()));
+        }
+    }
+    
+    private void saveAs() {
+        var fileChooser = new FileChooser();
+        fileChooser.setInitialFileName("uml2spnp_project");
+
+        var extensionFilter = new FileChooser.ExtensionFilter("JSON files (*.json)", "*.json");
+        fileChooser.getExtensionFilters().add(extensionFilter);
+        var tmpFile = fileChooser.showSaveDialog(mainView.getAppStage());
+        if(tmpFile != null) {
+            file = tmpFile;
+            save(file);
+        }
+    }
+    
     private void initTransformMenu() {
+        var openMenuItem = new MenuItem("Open...");
+        openMenuItem.setOnAction((ActionEvent tt) -> {
+            openFrom();
+        });
+        fileMenu.getItems().add(openMenuItem);
+
         var saveMenuItem = new MenuItem("Save");
         saveMenuItem.setOnAction((ActionEvent tt) -> {
-            var jsonString = serializer.toJson(this);
-            System.out.println(jsonString);
+            if(file == null)
+                saveAs();
+            else
+                save(file);
         });
         fileMenu.getItems().add(saveMenuItem);
         
-        var loadMenuItem = new MenuItem("Load");
-        loadMenuItem.setOnAction((ActionEvent tt) -> {
-            var jsonString = serializer.toJson(this);
-            serializer.fromJson(jsonString);
+        var saveAsMenuItem = new MenuItem("Save as...");
+        saveAsMenuItem.setOnAction((ActionEvent tt) -> {
+            saveAs();
         });
-        fileMenu.getItems().add(loadMenuItem);
-        
+        fileMenu.getItems().add(saveAsMenuItem);
+
 
         var transformMenuItem = new MenuItem("Transform...");
-
         Consumer<TransformModalWindow> onTransform = (transformWindow) -> {
             performPreTransformActions();
 

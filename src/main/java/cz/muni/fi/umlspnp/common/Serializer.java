@@ -41,6 +41,10 @@ import cz.muni.fi.umlspnp.views.sequencediagram.LifelineView;
 import cz.muni.fi.umlspnp.views.sequencediagram.LoopView;
 import cz.muni.fi.umlspnp.views.sequencediagram.MessageView;
 import cz.muni.fi.umlspnp.views.sequencediagram.SequenceDiagramView;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.HashSet;
 import java.util.Set;
@@ -125,6 +129,30 @@ public class Serializer {
         gson.fromJson(json, MainController.class);
     }
 
+    public boolean saveToFile(File file) {
+        try {
+            var writer = new FileWriter(file);
+            gson.toJson(mainController, writer);
+            writer.close();
+            return true;
+        } catch (IOException ex) {
+            System.err.println("Error: unable to save file. " + ex.getMessage());
+        }
+        return false;
+    }
+    
+    public boolean loadFromFile(File file) {
+        try {
+            var reader = new FileReader(file);
+            gson.fromJson(reader, MainController.class);
+            reader.close();
+            return true;
+        } catch (IOException ex) {
+            System.err.println("Error: unable to load file. " + ex.getMessage());
+        }
+        return false;
+    }
+    
     private JsonSerializer<MainController> createMainControllerSerializer() {
         return new JsonSerializer<MainController>() {
             @Override
