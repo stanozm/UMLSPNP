@@ -184,6 +184,9 @@ public class Message extends Connection<Activation> {
     }
     
     public CommunicationLink getCommunicationLink() {
+        if(isSelfMessage())
+            return null;
+
         var firstLifeline = this.getFrom().getLifeline();
         var secondLifeline = this.getTo().getLifeline();
         var firstArtifact = firstLifeline.getArtifact();

@@ -465,9 +465,9 @@ public class Serializer {
         
     private void recreateSequenceDiagram(DeploymentDiagram dd, SequenceDiagram sd) {
         var tmpLoops = new HashSet<>(sd.getLoops());
+        sd.clearLoops();
+        
         tmpLoops.forEach(loop -> {
-            sd.removeLoop(loop.getObjectInfo().getID());
-
             var newLoop = new Loop();
             newLoop.setId(loop.getObjectInfo().getID());
             sd.addLoop(newLoop);

@@ -52,7 +52,12 @@ public class Artifact extends NamedNode{
             return connectedNodes;
         }
         else {
-            return getConnectedNodes();
+            var connectedNodes = new HashSet<Pair<CommunicationLink, Artifact>>();
+            if(this.DTparent != null){
+                connectedNodes.add(new Pair<>(null, this.DTparent));
+                connectedNodes.addAll(this.DTparent.getConnectedNodes(false, shallow));
+            }
+            return connectedNodes;
         }
     }
     

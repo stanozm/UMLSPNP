@@ -182,6 +182,10 @@ public class SequenceDiagram implements Diagram {
         return loops.remove(objectID) != null;
     }
     
+    public void clearLoops() {
+        loops.clear();
+    }
+    
     public Loop getLoop(int objectID){
         return loops.get(objectID);
     }

@@ -144,7 +144,7 @@ public class ControlServiceSegment extends Segment {
     
     private void transformCommunicationControlServiceCall(ServiceCallTreeNode treeNode) {
         var message = treeNode.getMessage();
-        if(message == null)
+        if(message == null || message.isSelfMessage())
             return;
         
         var communicationLink = message.getCommunicationLink();

@@ -76,12 +76,7 @@ public class DeploymentTarget extends Artifact {
         initStatesWithoutOperations();
     }
     
-    /**
-     * Creates sample annotations for a specified deployment target.
-     * @param ot1 Sample operation type 1
-     * @param ot2 Sample operation type 2
-     */
-    public final void createSampleData(OperationType ot1, OperationType ot2) {
+    public final void createInitialData() {
         State stateUp = new State("UP");
 //        stateUp.setLocked(true);
 
@@ -92,24 +87,41 @@ public class DeploymentTarget extends Artifact {
         addState(stateUp);
         addState(stateDown);
         setDefaultState(stateUp);
-
+        
         StateTransition upDownTransition = new StateTransition(stateUp, stateDown, "Failure", 0.01);
 //        upDownTransition.setLocked(true);
         
         StateTransition downUpTransition = new StateTransition(stateDown, stateUp, "Restart", 0.5);
 //        downUpTransition.setLocked(true);
-        
+
         addStateTransition(upDownTransition);
         addStateTransition(downUpTransition);
-        
-        StateOperation operationsUp = new StateOperation(stateUp);
-        StateOperation operationsDown = new StateOperation(stateDown);
-        
-        operationsUp.addOperationEntry(ot1, null);
-        operationsUp.addOperationEntry(ot2, null);
+    }
+    
+    /**
+     * Creates sample annotations for a specified deployment target.
+     * @param ot1 Sample operation type 1
+     * @param ot2 Sample operation type 2
+     */
+    public final void createSampleData(OperationType ot1, OperationType ot2) {
+        State stateUp = null;
+        State stateDown = null;
+        for(var state : getStates()) {
+            if(state.isStateDOWN())
+                stateDown = state;
+            else if(state.nameProperty().getName().equals("UP"))
+                stateUp = state;
+        }
+        if(stateUp != null && stateDown != null) {
+            StateOperation operationsUp = new StateOperation(stateUp);
+            StateOperation operationsDown = new StateOperation(stateDown);
 
-        addStateOperation(operationsUp);
-        addStateOperation(operationsDown);
+            operationsUp.addOperationEntry(ot1, null);
+            operationsUp.addOperationEntry(ot2, null);
+
+            addStateOperation(operationsUp);
+            addStateOperation(operationsDown);
+        }
     }
     
     private void cleanup(){

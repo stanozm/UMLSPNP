@@ -90,7 +90,8 @@ public class DeploymentTargetController extends BaseController<DeploymentTarget,
         });
 
         view.createMenuItem("Add deployment target", (e) -> {
-            deploymentDiagram.createDeploymentTarget(model);
+            var dt = deploymentDiagram.createDeploymentTarget(model);
+            dt.createInitialData();
         });
 
         view.createMenuItem("Connect", (e) -> {

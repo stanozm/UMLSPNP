@@ -224,8 +224,10 @@ public class DeploymentDiagramController extends BaseController<DeploymentDiagra
         MenuItem deviceMenuItem = new MenuItem("Deployment target");
         
         EventHandler<ActionEvent> menuEventHandler = (ActionEvent tt) -> {
-            if(tt.getSource().equals(deviceMenuItem))
-                model.createDeploymentTarget(null);
+            if(tt.getSource().equals(deviceMenuItem)) {
+                var dt = model.createDeploymentTarget(null);
+                dt.createInitialData();
+            }
         };
         
         deviceMenuItem.setOnAction(menuEventHandler);
