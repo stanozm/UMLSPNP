@@ -60,7 +60,7 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.4</version>
                 <configuration>
-                    <mainClass>cz.muni.fi.umlspnp.App</mainClass>
+                    <mainClass>cz.muni.fi.umlspnp.Main</mainClass>
                 </configuration>
                 <executions>
                     <execution>
