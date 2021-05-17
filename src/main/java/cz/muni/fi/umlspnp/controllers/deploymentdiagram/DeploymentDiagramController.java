@@ -5,11 +5,8 @@ import cz.muni.fi.umlspnp.models.deploymentdiagram.DeploymentDiagram;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.CommunicationLink;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.Artifact;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.RedundancyGroup;
-import cz.muni.fi.umlspnp.models.deploymentdiagram.StateOperation;
-import cz.muni.fi.umlspnp.models.deploymentdiagram.State;
 import cz.muni.fi.umlspnp.models.deploymentdiagram.DeploymentTarget;
 import cz.muni.fi.umlspnp.models.MainModel;
-import cz.muni.fi.umlspnp.models.OperationEntry;
 import cz.muni.fi.umlspnp.common.Utils;
 import cz.muni.fi.umlspnp.controllers.BaseController;
 import cz.muni.fi.umlspnp.models.OperationType;
@@ -60,60 +57,6 @@ public class DeploymentDiagramController extends BaseController<DeploymentDiagra
         
         // Global properties menu
         globalMenuInit();
-    }
-
-    /**
-     * Creates sample deployment diagram nodes and communications links.
-     */
-    public void createSampleData() {
-        var ot1 = new OperationType("ReadDeviceData");
-        var ot2 = new OperationType("WriteDeviceData");
-        model.addOperationType(ot1);
-        model.addOperationType(ot2);
-        
-        var A = model.createDeploymentTarget(null);
-        A.createSampleData(ot1, ot2);
-        var ST_A_1 = new State("ST_A_1");
-        A.addState(ST_A_1);
-        A.addState(new State("ST_A_2"));
-        A.addState(new State("ST_A_3"));
-        var ST_A_1_op = new StateOperation(ST_A_1);
-        A.addStateOperation(ST_A_1_op);
-        var A_OP_1 = new OperationType("A_OP_1");
-        model.addOperationType(A_OP_1);
-        ST_A_1_op.addOperationEntry(new OperationEntry(A_OP_1, null));
-        A.getNameProperty().setValue("A");
-        
-        var AA = model.createDeploymentTarget(A);
-        AA.createSampleData(ot1, ot2);
-        AA.getNameProperty().setValue("AA");
-        var ST_B_1 = new State("ST_B_1");
-        AA.addState(ST_B_1);
-        AA.addState(new State("ST_B_2"));
-        AA.addState(new State("ST_B_3"));
-        var ST_B_1_op = new StateOperation(ST_B_1);
-        AA.addStateOperation(ST_B_1_op);
-        var B_OP_1 = new OperationType("B_OP_1");
-        model.addOperationType(B_OP_1);
-        ST_B_1_op.addOperationEntry(new OperationEntry(B_OP_1, null));
-
-
-        var AAA = model.createDeploymentTarget(AA);
-        AAA.createSampleData(ot1, ot2);
-        AAA.getNameProperty().setValue("AAA");
-        
-        var B = model.createDeploymentTarget(null);
-        B.createSampleData(ot1, ot2);
-        B.getNameProperty().setValue("B");
-        var BB = model.createDeploymentTarget(B);
-        BB.createSampleData(ot1, ot2);
-        BB.getNameProperty().setValue("BB");
-        var BBB = model.createDeploymentTarget(BB);
-        BBB.createSampleData(ot1, ot2);
-        BBB.getNameProperty().setValue("BBB");
-        
-        var cl = model.createCommunicationLink(A, B);
-        cl.createSampleData();
     }
 
     private void connectionContainerInit() {

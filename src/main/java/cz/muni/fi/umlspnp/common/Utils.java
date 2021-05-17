@@ -14,8 +14,6 @@ import javafx.stage.Stage;
  * 
  */
 public class Utils {
-    public static boolean __DEBUG_CREATE_SAMPLE_DATA = true;
-    
     // Note: The name itself is not restricted anymore, however during the 
     // transformation all illegal characters will be removed (replaced with a "")
     public static String SPNP_NAME_RESTRICTION_REGEX = "^.*$";

@@ -2,7 +2,6 @@ package cz.muni.fi.umlspnp.controllers;
 
 import cz.muni.fi.umlspnp.SystemInfo;
 import cz.muni.fi.umlspnp.common.Serializer;
-import cz.muni.fi.umlspnp.common.Utils;
 import cz.muni.fi.umlspnp.controllers.deploymentdiagram.DeploymentDiagramController;
 import cz.muni.fi.umlspnp.controllers.sequencediagram.SequenceDiagramController;
 import cz.muni.fi.umlspnp.models.MainModel;
@@ -54,11 +53,6 @@ public class MainController extends BaseController<MainModel, MainView> {
         
         setDeploymentDiagramController(new DeploymentDiagramController(mainModel, mainView));
         setSequenceDiagramController(new SequenceDiagramController(mainModel, mainView));
-
-        if(Utils.__DEBUG_CREATE_SAMPLE_DATA) {
-            deploymentDiagramController.createSampleData();
-            sequenceDiagramController.createSampleData();
-        }
     }
     
     public final void setDeploymentDiagramController(DeploymentDiagramController ddc) {
